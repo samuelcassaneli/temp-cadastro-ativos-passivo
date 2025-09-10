@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciador de Ativos de TI</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --black: #000000;
+            --tiffany-blue: #96D1D3;
+            --midnight-green: #005C73;
+            --teal: #01848C;
+            --white: #f0f8ff;
+            --shadow: rgba(0, 0, 0, 0.2);
+            --gradient: linear-gradient(135deg, var(--midnight-green), var(--teal));
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--midnight-green);
+            color: var(--white);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background-color: rgba(1, 132, 140, 0.2);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px var(--shadow);
+            padding: 25px;
+            backdrop-filter: blur(5px);
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 25px;
+            border-bottom: 2px solid var(--tiffany-blue);
+            padding-bottom: 15px;
+        }
+
+        header h1 {
+            color: var(--tiffany-blue);
+            font-size: 2.5rem;
+            text-shadow: 1px 1px 3px var(--black);
+        }
+
+        .actions-bar {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .btn, input[type="file"]::file-selector-button {
+            background: var(--teal);
+            color: var(--white);
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px var(--shadow);
+        }
+
+        .btn:hover, input[type="file"]::file-selector-button:hover {
+            background: var(--tiffany-blue);
+            color: var(--midnight-green);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px var(--shadow);
+        }
+
+        .btn-edit {
+            background-color: var(--tiffany-blue);
+            color: var(--midnight-green);
+        }
+        .btn-edit:hover {
+            background-color: #b0e0e6; /* Um pouco mais claro */
+            color: var(--black);
+        }
+
+        .btn-danger { background-color: #c0392b; }
+        .btn-danger:hover { background-color: #e74c3c; }
+        
+        .btn-secondary { background-color: #7f8c8d; }
+        .btn-secondary:hover { background-color: #95a5a6; }
+
+        input[type="file"] {
+            color: var(--tiffany-blue);
+        }
+
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid var(--teal);
+            margin-bottom: 20px;
+        }
+
+        .tab-button {
+            padding: 10px 20px;
+            cursor: pointer;
+            background: none;
+            border: none;
+            color: var(--tiffany-blue);
+            font-size: 1.1rem;
+            font-weight: 500;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .tab-button.active {
+            color: var(--white);
+            border-bottom-color: var(--tiffany-blue);
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        #asset-form {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            margin-bottom: 5px;
+            color: var(--tiffany-blue);
+            font-weight: bold;
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--teal);
+            background-color: rgba(0, 92, 115, 0.5);
+            color: var(--white);
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+        
+        .form-group input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+        }
+
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: var(--tiffany-blue);
+            box-shadow: 0 0 10px rgba(150, 209, 211, 0.5);
+        }
+
+        .form-group select option {
+            background-color: var(--midnight-green);
+        }
+
+        .form-actions {
+            grid-column: 1 / -1;
+            text-align: right;
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+        
+        #notebook-fields {
+            display: none; /* Hidden by default */
+            grid-column: 1 / -1; /* Ocupa toda a largura */
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            border: 1px dashed var(--teal);
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+        #notebook-fields.visible {
+            display: grid;
+        }
+        .section-title {
+            grid-column: 1 / -1;
+            color: var(--tiffany-blue);
+            border-bottom: 1px solid var(--teal);
+            padding-bottom: 5px;
+            margin-top: 20px;
+            font-size: 1.2rem;
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+        
+        #asset-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        #asset-table thead {
+            background-color: var(--teal);
+        }
+
+        #asset-table th, #asset-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--midnight-green);
+            white-space: nowrap;
+        }
+        
+        #asset-table tbody tr:nth-child(even) {
+            background-color: rgba(0, 92, 115, 0.3);
+        }
+        
+        #asset-table tbody tr:hover {
+            background-color: rgba(150, 209, 211, 0.2);
+        }
+        
+        #asset-table .actions-cell {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 25px;
+            margin-top: 20px;
+        }
+
+        .chart-container {
+            background-color: rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px var(--shadow);
+            position: relative;
+            height: 400px;
+        }
+        
+        .chart-container h3 {
+            text-align: center;
+            color: var(--tiffany-blue);
+            margin-bottom: 15px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Gerenciador de Ativos de TI</h1>
+        </header>
+
+        <div class="actions-bar">
+            <button id="export-csv-btn" class="btn">Exportar para CSV</button>
+            <button id="export-system-btn" class="btn">Exportar para Sistema (JSON)</button>
+            <input type="file" id="import-system-input" accept=".json" style="display: none;">
+            <label for="import-system-input" class="btn">Importar do Sistema (JSON)</label>
+        </div>
+
+        <div class="tabs">
+            <button id="form-tab-btn" class="tab-button active" data-tab="tab-form">Cadastrar Ativo</button>
+            <button class="tab-button" data-tab="tab-list">Lista de Ativos</button>
+            <button class="tab-button" data-tab="tab-dashboard">Dashboard</button>
+        </div>
+
+        <!-- Tab: Formulário -->
+        <div id="tab-form" class="tab-content active">
+            <form id="asset-form">
+                <!-- Informações do Ativo -->
+                <h3 class="section-title">Informações do Ativo</h3>
+                <div class="form-group">
+                    <label for="etiqueta">Etiqueta de Patrimônio</label>
+                    <input type="text" id="etiqueta" required>
+                </div>
+                <div class="form-group">
+                    <label for="tipoItem">Tipo do Item</label>
+                    <select id="tipoItem">
+                        <option>Notebook</option>
+                        <option>Celular</option>
+                        <option>Cadeira</option>
+                        <option>Carregador</option>
+                        <option>Monitor</option>
+                        <option>Mouse</option>
+                        <option>Teclado</option>
+                        <option>Desktop</option>
+                        <option>Outro</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="marca">Marca</label>
+                    <input type="text" id="marca">
+                </div>
+                <div class="form-group">
+                    <label for="modelo">Modelo</label>
+                    <input type="text" id="modelo">
+                </div>
+                <div class="form-group">
+                    <label for="nSerie">N. Série</label>
+                    <input type="text" id="nSerie">
+                </div>
+                <div class="form-group">
+                    <label for="imei1">IMEI 1</label>
+                    <input type="text" id="imei1">
+                </div>
+                <div class="form-group">
+                    <label for="imei2">IMEI 2</label>
+                    <input type="text" id="imei2">
+                </div>
+
+                <!-- Status e Localização -->
+                <h3 class="section-title">Status e Localização</h3>
+                <div class="form-group">
+                    <label for="statusLocalizacao">Status Localização</label>
+                    <select id="statusLocalizacao">
+                        <option>Em estoque</option>
+                        <option>Em uso</option>
+                        <option>Em manutenção</option>
+                        <option>Para descarte</option>
+                    </select>
+                </div>
+                 <div class="form-group">
+                    <label for="status">Status Geral</label>
+                    <select id="status">
+                        <option>Ativo</option>
+                        <option>Inativo</option>
+                        <option>Baixado</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="usuario">Usuário Responsável</label>
+                    <input type="text" id="usuario" placeholder="Nome do usuário responsável">
+                </div>
+                <div class="form-group">
+                    <label for="dpto">Departamento (Dpto)</label>
+                    <input type="text" id="dpto" list="dptos-list" placeholder="Digite para pesquisar...">
+                    <datalist id="dptos-list">
+                        <option value="TI - Infraestrutura"></option>
+                        <option value="TI - Sistemas"></option>
+                        <option value="Recursos Humanos"></option>
+                        <option value="Financeiro"></option>
+                        <option value="Marketing"></option>
+                    </datalist>
+                </div>
+                 <div class="form-group">
+                    <label for="localizacao">Localização Física</label>
+                    <input type="text" id="localizacao" placeholder="Ex: Prédio A, Sala 101">
+                </div>
+
+                <!-- Informações Contábeis e de Compra -->
+                 <h3 class="section-title">Informações Contábeis e de Compra</h3>
+                <div class="form-group">
+                    <label for="classificacaoContabil">Classificação Contábil</label>
+                    <input type="text" id="classificacaoContabil">
+                </div>
+                 <div class="form-group">
+                    <label for="proprietario">Proprietário</label>
+                    <input type="text" id="proprietario" list="proprietarios-list" placeholder="Digite para pesquisar...">
+                     <datalist id="proprietarios-list">
+                        <option value="Empresa A (Matriz)"></option>
+                        <option value="Empresa B (Filial)"></option>
+                        <option value="Leasing C"></option>
+                    </datalist>
+                </div>
+                <div class="form-group">
+                    <label for="notaFiscal">Nota Fiscal</label>
+                    <input type="text" id="notaFiscal">
+                </div>
+                <div class="form-group">
+                    <label for="anexoNotaFiscal">Anexo Nota Fiscal</label>
+                    <input type="text" id="anexoNotaFiscal" placeholder="Link ou caminho do arquivo">
+                </div>
+                 <div class="form-group">
+                    <label for="valor">Valor (R$)</label>
+                    <input type="number" id="valor" step="0.01" placeholder="Ex: 1500.50">
+                </div>
+                 <div class="form-group">
+                    <label for="dataCompra">Data da Compra</label>
+                    <input type="date" id="dataCompra">
+                </div>
+                 <div class="form-group">
+                    <label for="dataInventario">Data do Inventário</label>
+                    <input type="date" id="dataInventario">
+                </div>
+
+                <!-- Condição e Descrição -->
+                <h3 class="section-title">Condição e Descrição</h3>
+                 <div class="form-group">
+                    <label for="estadoBem">Estado do Bem</label>
+                    <select id="estadoBem">
+                        <option>Novo</option>
+                        <option>Bom</option>
+                        <option>Regular</option>
+                        <option>Ruim</option>
+                        <option>Sucata</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="descarte">Descarte</label>
+                    <select id="descarte">
+                        <option>Não</option>
+                        <option>Sim</option>
+                    </select>
+                </div>
+                 <div class="form-group" style="grid-column: 1 / -1;">
+                    <label for="descricao">Descrição</label>
+                    <textarea id="descricao" rows="3" placeholder="Detalhes adicionais sobre o ativo..."></textarea>
+                </div>
+                
+                <!-- Campos Específicos para Notebook -->
+                <div id="notebook-fields">
+                    <h3 class="section-title" style="margin-top:0;">Detalhes do Notebook</h3>
+                    <div class="form-group">
+                        <label for="proc">Processador</label>
+                        <input type="text" id="proc">
+                    </div>
+                    <div class="form-group">
+                        <label for="ram">RAM (GB)</label>
+                        <input type="text" id="ram">
+                    </div>
+                    <div class="form-group">
+                        <label for="rom">Armazenamento (ROM)</label>
+                        <input type="text" id="rom">
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" id="cancel-edit-btn" class="btn btn-secondary" style="display: none;">Cancelar Edição</button>
+                    <button type="submit" id="submit-btn" class="btn">Salvar Ativo</button>
+                </div>
+            </form>
+        </div>
+
+        <div id="tab-list" class="tab-content">
+            <div class="table-container">
+                <table id="asset-table">
+                    <thead>
+                        <tr>
+                            <th>ETIQUETA DE PATRIMÔNIO (DEFINITIVA)</th>
+                            <th>Status.localizacao</th>
+                            <th>Tipo.item</th>
+                            <th>Marca</th>
+                            <th>Modelo</th>
+                            <th>N.Série</th>
+                            <th>IMEI.1</th>
+                            <th>IMEI.2</th>
+                            <th>Item.Classificacao.usuario</th>
+                            <th>Notebook.Processador</th>
+                            <th>Notebook.RAM</th>
+                            <th>Notebook.ROM</th>
+                            <th>Descarte</th>
+                            <th>Estado do bem</th>
+                            <th>Descrição</th>
+                            <th>Classificação Contábil</th>
+                            <th>Localização</th>
+                            <th>Dpto</th>
+                            <th>Nota Fiscal</th>
+                            <th>Anexo Nota Fiscal</th>
+                            <th>Valor</th>
+                            <th>Data da Compra</th>
+                            <th>Data inventário</th>
+                            <th>Status</th>
+                            <th>Proprietário</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="asset-table-body">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="tab-dashboard" class="tab-content">
+            <div class="dashboard-grid">
+                <div class="chart-container">
+                    <h3>Ativos por Tipo</h3>
+                    <canvas id="chart-by-type"></canvas>
+                </div>
+                <div class="chart-container">
+                    <h3>Ativos por Estado</h3>
+                    <canvas id="chart-by-state"></canvas>
+                </div>
+                 <div class="chart-container">
+                    <h3>Ativos por Status</h3>
+                    <canvas id="chart-by-status"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.getElementById('asset-form');
+            const tableBody = document.getElementById('asset-table-body');
+            const tipoItemSelect = document.getElementById('tipoItem');
+            const notebookFields = document.getElementById('notebook-fields');
+            const exportCsvBtn = document.getElementById('export-csv-btn');
+            const exportSystemBtn = document.getElementById('export-system-btn');
+            const importSystemInput = document.getElementById('import-system-input');
+            const tabs = document.querySelectorAll('.tab-button');
+            const tabContents = document.querySelectorAll('.tab-content');
+            const submitBtn = document.getElementById('submit-btn');
+            const cancelEditBtn = document.getElementById('cancel-edit-btn');
+            const formTabBtn = document.getElementById('form-tab-btn');
+
+            let ativos = [];
+            let editingIndex = null;
+            let charts = {};
+
+            // Nomes exatos para exportação
+            const COLUMNS_EXPORT = [
+                'ETIQUETA DE PATRIMÔNIO (DEFINITIVA)', 'Status.localizacao', 'Tipo.item', 'Marca', 'Modelo',
+                'N.Série', 'IMEI.1', 'IMEI.2', 'Item.Classificacao.usuario', 'Notebook.Processador', 'Notebook.RAM',
+                'Notebook.ROM', 'Descarte', 'Estado do bem', 'Descrição', 'Classificação Contábil', 'Localização',
+                'Dpto', 'Nota Fiscal', 'Anexo Nota Ficas', 'Valor', 'Data da Compra', 'Data inventário', 'Status', 'Proprietário'
+            ];
+            
+            const renderTable = () => {
+                tableBody.innerHTML = '';
+                ativos.forEach((ativo, index) => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${ativo.etiqueta || ''}</td>
+                        <td>${ativo.statusLocalizacao || ''}</td>
+                        <td>${ativo.tipoItem || ''}</td>
+                        <td>${ativo.marca || ''}</td>
+                        <td>${ativo.modelo || ''}</td>
+                        <td>${ativo.nSerie || ''}</td>
+                        <td>${ativo.imei1 || ''}</td>
+                        <td>${ativo.imei2 || ''}</td>
+                        <td>${ativo.usuario || ''}</td>
+                        <td>${ativo.proc || ''}</td>
+                        <td>${ativo.ram || ''}</td>
+                        <td>${ativo.rom || ''}</td>
+                        <td>${ativo.descarte || ''}</td>
+                        <td>${ativo.estadoBem || ''}</td>
+                        <td>${ativo.descricao || ''}</td>
+                        <td>${ativo.classificacaoContabil || ''}</td>
+                        <td>${ativo.localizacao || ''}</td>
+                        <td>${ativo.dpto || ''}</td>
+                        <td>${ativo.notaFiscal || ''}</td>
+                        <td>${ativo.anexoNotaFiscal || ''}</td>
+                        <td>${ativo.valor || ''}</td>
+                        <td>${ativo.dataCompra || ''}</td>
+                        <td>${ativo.dataInventario || ''}</td>
+                        <td>${ativo.status || ''}</td>
+                        <td>${ativo.proprietario || ''}</td>
+                        <td class="actions-cell">
+                            <button class="btn btn-edit edit-btn" data-index="${index}">Editar</button>
+                            <button class="btn btn-danger remove-btn" data-index="${index}">Remover</button>
+                        </td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+                updateDashboard();
+            };
+
+            const handleFormSubmit = (e) => {
+                e.preventDefault();
+                const ativoData = {
+                    // Campos existentes
+                    etiqueta: document.getElementById('etiqueta').value,
+                    statusLocalizacao: document.getElementById('statusLocalizacao').value,
+                    tipoItem: document.getElementById('tipoItem').value,
+                    marca: document.getElementById('marca').value,
+                    modelo: document.getElementById('modelo').value,
+                    nSerie: document.getElementById('nSerie').value,
+                    imei1: document.getElementById('imei1').value,
+                    imei2: document.getElementById('imei2').value,
+                    usuario: document.getElementById('usuario').value,
+                    proc: document.getElementById('proc').value,
+                    ram: document.getElementById('ram').value,
+                    rom: document.getElementById('rom').value,
+                    descarte: document.getElementById('descarte').value,
+                    estadoBem: document.getElementById('estadoBem').value,
+                    descricao: document.getElementById('descricao').value,
+                    classificacaoContabil: document.getElementById('classificacaoContabil').value,
+                    localizacao: document.getElementById('localizacao').value,
+                    // Novos campos
+                    dpto: document.getElementById('dpto').value,
+                    notaFiscal: document.getElementById('notaFiscal').value,
+                    anexoNotaFiscal: document.getElementById('anexoNotaFiscal').value,
+                    valor: document.getElementById('valor').value,
+                    dataCompra: document.getElementById('dataCompra').value,
+                    dataInventario: document.getElementById('dataInventario').value,
+                    status: document.getElementById('status').value,
+                    proprietario: document.getElementById('proprietario').value
+                };
+
+                if (editingIndex !== null) {
+                    ativos[editingIndex] = ativoData;
+                    alert('Ativo atualizado com sucesso!');
+                } else {
+                    ativos.push(ativoData);
+                    alert('Ativo cadastrado com sucesso!');
+                }
+                
+                resetFormMode();
+                renderTable();
+            };
+            
+            const startEditing = (index) => {
+                editingIndex = index;
+                const ativo = ativos[index];
+
+                // Preencher campos existentes
+                document.getElementById('etiqueta').value = ativo.etiqueta || '';
+                document.getElementById('statusLocalizacao').value = ativo.statusLocalizacao || '';
+                document.getElementById('tipoItem').value = ativo.tipoItem || '';
+                document.getElementById('marca').value = ativo.marca || '';
+                document.getElementById('modelo').value = ativo.modelo || '';
+                document.getElementById('nSerie').value = ativo.nSerie || '';
+                document.getElementById('imei1').value = ativo.imei1 || '';
+                document.getElementById('imei2').value = ativo.imei2 || '';
+                document.getElementById('usuario').value = ativo.usuario || '';
+                document.getElementById('proc').value = ativo.proc || '';
+                document.getElementById('ram').value = ativo.ram || '';
+                document.getElementById('rom').value = ativo.rom || '';
+                document.getElementById('descarte').value = ativo.descarte || '';
+                document.getElementById('estadoBem').value = ativo.estadoBem || '';
+                document.getElementById('descricao').value = ativo.descricao || '';
+                document.getElementById('classificacaoContabil').value = ativo.classificacaoContabil || '';
+                document.getElementById('localizacao').value = ativo.localizacao || '';
+                // Preencher novos campos
+                document.getElementById('dpto').value = ativo.dpto || '';
+                document.getElementById('notaFiscal').value = ativo.notaFiscal || '';
+                document.getElementById('anexoNotaFiscal').value = ativo.anexoNotaFiscal || '';
+                document.getElementById('valor').value = ativo.valor || '';
+                document.getElementById('dataCompra').value = ativo.dataCompra || '';
+                document.getElementById('dataInventario').value = ativo.dataInventario || '';
+                document.getElementById('status').value = ativo.status || '';
+                document.getElementById('proprietario').value = ativo.proprietario || '';
+                
+                toggleNotebookFields();
+                submitBtn.textContent = 'Atualizar Ativo';
+                cancelEditBtn.style.display = 'inline-block';
+                formTabBtn.click();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            };
+
+            const resetFormMode = () => {
+                editingIndex = null;
+                form.reset();
+                toggleNotebookFields();
+                submitBtn.textContent = 'Salvar Ativo';
+                cancelEditBtn.style.display = 'none';
+            };
+
+            const removeAtivo = (index) => {
+                if (confirm('Tem certeza que deseja remover este ativo?')) {
+                    ativos.splice(index, 1);
+                    if (editingIndex === index) {
+                        resetFormMode();
+                    }
+                    renderTable();
+                }
+            };
+            
+            const toggleNotebookFields = () => {
+                if (tipoItemSelect.value === 'Notebook') {
+                    notebookFields.classList.add('visible');
+                } else {
+                    notebookFields.classList.remove('visible');
+                }
+            };
+
+            const switchTab = (e) => {
+                tabs.forEach(tab => tab.classList.remove('active'));
+                tabContents.forEach(content => content.classList.remove('active'));
+                e.currentTarget.classList.add('active');
+                document.getElementById(e.currentTarget.dataset.tab).classList.add('active');
+            };
+
+            const exportToCsv = () => { 
+                if(ativos.length === 0) {
+                    alert('Não há dados para exportar.');
+                    return;
+                }
+                const csvRows = [];
+                csvRows.push(COLUMNS_EXPORT.join(';')); 
+
+                ativos.forEach(a => {
+                    const values = [
+                        `"${a.etiqueta || ''}"`, `"${a.statusLocalizacao || ''}"`, `"${a.tipoItem || ''}"`, `"${a.marca || ''}"`,
+                        `"${a.modelo || ''}"`, `"${a.nSerie || ''}"`, `"${a.imei1 || ''}"`, `"${a.imei2 || ''}"`,
+                        `"${a.usuario || ''}"`, `"${a.proc || ''}"`, `"${a.ram || ''}"`, `"${a.rom || ''}"`,
+                        `"${a.descarte || ''}"`, `"${a.estadoBem || ''}"`, `"${(a.descricao || '').replace(/"/g, '""')}"`,
+                        `"${a.classificacaoContabil || ''}"`, `"${a.localizacao || ''}"`, `"${a.dpto || ''}"`,
+                        `"${a.notaFiscal || ''}"`, `"${a.anexoNotaFiscal || ''}"`, `"${a.valor || ''}"`,
+                        `"${a.dataCompra || ''}"`, `"${a.dataInventario || ''}"`, `"${a.status || ''}"`, `"${a.proprietario || ''}"`
+                    ];
+                    csvRows.push(values.join(';'));
+                });
+
+                const csvString = csvRows.join('\n');
+                const blob = new Blob([`\uFEFF${csvString}`], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.setAttribute('href', url);
+                a.setAttribute('download', 'cadastro_ativos.csv');
+                a.click();
+            };
+
+            const exportToSystem = () => {
+                if(ativos.length === 0) {
+                    alert('Não há dados para exportar.');
+                    return;
+                }
+                // Mapeia os dados para o formato de exportação com os nomes de coluna corretos
+                const exportData = ativos.map(a => ({
+                    [COLUMNS_EXPORT[0]]: a.etiqueta, [COLUMNS_EXPORT[1]]: a.statusLocalizacao, [COLUMNS_EXPORT[2]]: a.tipoItem,
+                    [COLUMNS_EXPORT[3]]: a.marca, [COLUMNS_EXPORT[4]]: a.modelo, [COLUMNS_EXPORT[5]]: a.nSerie,
+                    [COLUMNS_EXPORT[6]]: a.imei1, [COLUMNS_EXPORT[7]]: a.imei2, [COLUMNS_EXPORT[8]]: a.usuario,
+                    [COLUMNS_EXPORT[9]]: a.proc, [COLUMNS_EXPORT[10]]: a.ram, [COLUMNS_EXPORT[11]]: a.rom,
+                    [COLUMNS_EXPORT[12]]: a.descarte, [COLUMNS_EXPORT[13]]: a.estadoBem, [COLUMNS_EXPORT[14]]: a.descricao,
+                    [COLUMNS_EXPORT[15]]: a.classificacaoContabil, [COLUMNS_EXPORT[16]]: a.localizacao, [COLUMNS_EXPORT[17]]: a.dpto,
+                    [COLUMNS_EXPORT[18]]: a.notaFiscal, [COLUMNS_EXPORT[19]]: a.anexoNotaFiscal, [COLUMNS_EXPORT[20]]: a.valor,
+                    [COLUMNS_EXPORT[21]]: a.dataCompra, [COLUMNS_EXPORT[22]]: a.dataInventario, [COLUMNS_EXPORT[23]]: a.status,
+                    [COLUMNS_EXPORT[24]]: a.proprietario
+                }));
+
+                const dataStr = JSON.stringify(exportData, null, 2);
+                const blob = new Blob([dataStr], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.setAttribute('href', url);
+                a.setAttribute('download', 'backup_ativos.json');
+                a.click();
+            };
+
+            const importFromSystem = (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    try {
+                        const importedData = JSON.parse(event.target.result);
+                        if (Array.isArray(importedData)) {
+                           if (confirm('Isso substituirá todos os dados atuais. Deseja continuar?')) {
+                                // Mapeia os dados do JSON (com nomes de coluna longos) de volta para o formato interno
+                                ativos = importedData.map(item => ({
+                                    etiqueta: item[COLUMNS_EXPORT[0]], statusLocalizacao: item[COLUMNS_EXPORT[1]], tipoItem: item[COLUMNS_EXPORT[2]],
+                                    marca: item[COLUMNS_EXPORT[3]], modelo: item[COLUMNS_EXPORT[4]], nSerie: item[COLUMNS_EXPORT[5]],
+                                    imei1: item[COLUMNS_EXPORT[6]], imei2: item[COLUMNS_EXPORT[7]], usuario: item[COLUMNS_EXPORT[8]],
+                                    proc: item[COLUMNS_EXPORT[9]], ram: item[COLUMNS_EXPORT[10]], rom: item[COLUMNS_EXPORT[11]],
+                                    descarte: item[COLUMNS_EXPORT[12]], estadoBem: item[COLUMNS_EXPORT[13]], descricao: item[COLUMNS_EXPORT[14]],
+                                    classificacaoContabil: item[COLUMNS_EXPORT[15]], localizacao: item[COLUMNS_EXPORT[16]], dpto: item[COLUMNS_EXPORT[17]],
+                                    notaFiscal: item[COLUMNS_EXPORT[18]], anexoNotaFiscal: item[COLUMNS_EXPORT[19]], valor: item[COLUMNS_EXPORT[20]],
+                                    dataCompra: item[COLUMNS_EXPORT[21]], dataInventario: item[COLUMNS_EXPORT[22]], status: item[COLUMNS_EXPORT[23]],
+                                    proprietario: item[COLUMNS_EXPORT[24]]
+                                }));
+
+                                resetFormMode();
+                                renderTable();
+                                alert('Dados importados com sucesso!');
+                           }
+                        } else {
+                            throw new Error('Formato de arquivo inválido.');
+                        }
+                    } catch (error) {
+                        alert('Erro ao importar o arquivo: ' + error.message);
+                    }
+                };
+                reader.readAsText(file);
+                e.target.value = null; 
+            };
+            
+            const updateDashboard = () => { 
+                const getAggregatedData = (key) => ativos.reduce((acc, ativo) => ({ ...acc, [ativo[key]]: (acc[ativo[key]] || 0) + 1 }), {});
+                const createChart = (ctx, type, data, options) => {
+                    if (charts[ctx.canvas.id]) charts[ctx.canvas.id].destroy();
+                    charts[ctx.canvas.id] = new Chart(ctx, { type, data, options });
+                };
+                const chartColors = ['#96D1D3', '#01848C', '#005C73', '#ADD8E6', '#87CEEB', '#4682B4'];
+
+                const byTypeData = getAggregatedData('tipoItem');
+                createChart(document.getElementById('chart-by-type').getContext('2d'), 'doughnut', { labels: Object.keys(byTypeData), datasets: [{ data: Object.values(byTypeData), backgroundColor: chartColors }] }, { responsive: true, maintainAspectRatio: false });
+                const byStateData = getAggregatedData('estadoBem');
+                createChart(document.getElementById('chart-by-state').getContext('2d'), 'pie', { labels: Object.keys(byStateData), datasets: [{ data: Object.values(byStateData), backgroundColor: chartColors }] }, { responsive: true, maintainAspectRatio: false });
+                const byStatusData = getAggregatedData('statusLocalizacao');
+                createChart(document.getElementById('chart-by-status').getContext('2d'), 'bar', { labels: Object.keys(byStatusData), datasets: [{ label: 'Quantidade de Ativos', data: Object.values(byStatusData), backgroundColor: '#96D1D3', borderColor: '#01848C', borderWidth: 1 }] }, { responsive: true, maintainAspectRatio: false, indexAxis: 'y' });
+            };
+
+            // Event Listeners
+            form.addEventListener('submit', handleFormSubmit);
+            tipoItemSelect.addEventListener('change', toggleNotebookFields);
+            tabs.forEach(tab => tab.addEventListener('click', switchTab));
+            cancelEditBtn.addEventListener('click', resetFormMode);
+            tableBody.addEventListener('click', (e) => {
+                if (e.target.classList.contains('remove-btn')) {
+                    removeAtivo(parseInt(e.target.dataset.index, 10));
+                }
+                if (e.target.classList.contains('edit-btn')) {
+                    startEditing(parseInt(e.target.dataset.index, 10));
+                }
+            });
+
+            exportCsvBtn.addEventListener('click', exportToCsv);
+            exportSystemBtn.addEventListener('click', exportToSystem);
+            importSystemInput.addEventListener('change', importFromSystem);
+            
+            // Inicialização
+            renderTable();
+            toggleNotebookFields();
+        });
+    </script>
+</body>
+</html>
