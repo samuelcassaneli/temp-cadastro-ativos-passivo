@@ -3,241 +3,115 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerenciador de Ativos de TI</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>Gerenciador de Ativos</title>
+    <!-- Biblioteca para menus suspensos com busca -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css"/>
+    <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
     <style>
         :root {
-            --black: #000000;
-            --tiffany-blue: #96D1D3;
-            --midnight-green: #005C73;
-            --teal: #01848C;
-            --white: #f0f8ff;
-            --shadow: rgba(0, 0, 0, 0.2);
-            --gradient: linear-gradient(135deg, var(--midnight-green), var(--teal));
+            --black: #000000; --tiffany-blue: #96D1D3; --midnight-green: #005C73; --teal: #01848C; --white: #f0f8ff; --shadow: rgba(0, 0, 0, 0.2);
         }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        html {
-            scroll-behavior: smooth;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--midnight-green);
-            color: var(--white);
-            line-height: 1.6;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 1800px;
-            margin: 0 auto;
-            background-color: rgba(1, 132, 140, 0.2);
-            border-radius: 15px;
-            box-shadow: 0 10px 30px var(--shadow);
-            padding: 25px;
-            backdrop-filter: blur(5px);
-        }
-
-        header {
-            text-align: center;
-            margin-bottom: 25px;
-            border-bottom: 2px solid var(--tiffany-blue);
-            padding-bottom: 15px;
-        }
-
-        header h1 {
-            color: var(--tiffany-blue);
-            font-size: 2.5rem;
-            text-shadow: 1px 1px 3px var(--black);
-        }
-
-        .actions-bar {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin-bottom: 25px;
-            flex-wrap: wrap;
-        }
-
-        .btn, input[type="file"]::file-selector-button, .btn-like-input-label {
-            background: var(--teal);
-            color: var(--white);
-            border: none;
-            padding: 12px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 1rem;
-            font-weight: bold;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 10px var(--shadow);
-            display: inline-block;
-            text-align: center;
-        }
-
-        .btn:hover, input[type="file"]::file-selector-button:hover, .btn-like-input-label:hover {
-            background: var(--tiffany-blue);
-            color: var(--midnight-green);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 15px var(--shadow);
-        }
-
-        .btn-edit {
-            background-color: var(--tiffany-blue);
-            color: var(--midnight-green);
-        }
-        .btn-edit:hover {
-            background-color: #b0e0e6;
-            color: var(--black);
-        }
-
-        .btn-danger { background-color: #c0392b; }
-        .btn-danger:hover { background-color: #e74c3c; }
-        
-        .btn-secondary { background-color: #7f8c8d; }
-        .btn-secondary:hover { background-color: #95a5a6; }
-
-        input[type="file"] {
-            display: none;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--midnight-green); color: var(--white); line-height: 1.6; padding: 20px; }
+        .container { max-width: 1800px; margin: 0 auto; background-color: rgba(1, 132, 140, 0.2); border-radius: 15px; box-shadow: 0 10px 30px var(--shadow); padding: 25px; backdrop-filter: blur(5px); }
+        header { text-align: center; margin-bottom: 25px; border-bottom: 2px solid var(--tiffany-blue); padding-bottom: 15px; }
+        header h1 { color: var(--tiffany-blue); font-size: 2.5rem; text-shadow: 1px 1px 3px var(--black); }
+        .actions-bar { display: flex; justify-content: center; gap: 15px; margin-bottom: 25px; flex-wrap: wrap; }
+        .btn, .btn-like-input-label { background: var(--teal); color: var(--white); border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-size: 1rem; font-weight: bold; transition: all 0.3s ease; box-shadow: 0 4px 10px var(--shadow); display: inline-block; text-align: center; }
+        .btn:hover, .btn-like-input-label:hover { background: var(--tiffany-blue); color: var(--midnight-green); transform: translateY(-2px); box-shadow: 0 6px 15px var(--shadow); }
+        .btn-edit { background-color: var(--tiffany-blue); color: var(--midnight-green); } .btn-edit:hover { background-color: #b0e0e6; color: var(--black); }
+        .btn-danger { background-color: #c0392b; } .btn-danger:hover { background-color: #e74c3c; }
+        .btn-secondary { background-color: #7f8c8d; } .btn-secondary:hover { background-color: #95a5a6; }
+        input[type="file"] { display: none; }
         .tabs { display: flex; border-bottom: 2px solid var(--teal); margin-bottom: 20px; }
         .tab-button { padding: 10px 20px; cursor: pointer; background: none; border: none; color: var(--tiffany-blue); font-size: 1.1rem; font-weight: 500; border-bottom: 3px solid transparent; transition: all 0.3s ease; }
         .tab-button.active { color: var(--white); border-bottom-color: var(--tiffany-blue); }
-        .tab-content { display: none; animation: fadeIn 0.5s; }
-        .tab-content.active { display: block; }
-
+        .tab-content { display: none; animation: fadeIn 0.5s; } .tab-content.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
         #asset-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
         .form-group { display: flex; flex-direction: column; }
         .form-group label { margin-bottom: 5px; color: var(--tiffany-blue); font-weight: bold; }
         .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px; border: 1px solid var(--teal); background-color: rgba(0, 92, 115, 0.5); color: var(--white); border-radius: 5px; font-size: 1rem; }
-        .form-group input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); }
         .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: var(--tiffany-blue); box-shadow: 0 0 10px rgba(150, 209, 211, 0.5); }
-        .form-group select option { background-color: var(--midnight-green); }
-        
         #image-preview-container { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; }
         #image-controls { display: flex; align-items: center; gap: 15px; flex-wrap: wrap; }
         #image-preview { max-width: 150px; max-height: 150px; border-radius: 5px; border: 1px dashed var(--teal); display: none; }
-        #download-image-link { text-decoration: none; }
-
         .form-actions { grid-column: 1 / -1; text-align: right; display: flex; gap: 10px; justify-content: flex-end; }
-        
-        #notebook-fields { display: none; grid-column: 1 / -1; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; border: 1px dashed var(--teal); padding: 15px; border-radius: 8px; margin-top: 10px; }
-        #notebook-fields.visible { display: grid; }
         .section-title { grid-column: 1 / -1; color: var(--tiffany-blue); border-bottom: 1px solid var(--teal); padding-bottom: 5px; margin-top: 20px; font-size: 1.2rem; }
-
         .table-container { overflow-x: auto; }
         #asset-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        #asset-table thead { background-color: var(--teal); }
         #asset-table th, #asset-table td { padding: 12px; text-align: left; border-bottom: 1px solid var(--midnight-green); white-space: nowrap; }
-        #asset-table tbody tr:nth-child(even) { background-color: rgba(0, 92, 115, 0.3); }
-        #asset-table tbody tr:hover { background-color: rgba(150, 209, 211, 0.2); }
-        #asset-table .actions-cell { display: flex; gap: 8px; }
         .asset-image-thumbnail { max-width: 60px; max-height: 60px; border-radius: 5px; cursor: pointer; transition: transform 0.2s; }
         .asset-image-thumbnail:hover { transform: scale(1.1); }
         
-        .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 25px; margin-top: 20px; }
-        .chart-container { background-color: rgba(0, 0, 0, 0.2); padding: 20px; border-radius: 10px; box-shadow: 0 5px 15px var(--shadow); position: relative; height: 400px; }
-        .chart-container h3 { text-align: center; color: var(--tiffany-blue); margin-bottom: 15px; }
+        /* Estilos do Modal da Câmera */
+        #camera-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.8); z-index: 1000; display: none; justify-content: center; align-items: center; flex-direction: column; gap: 20px; }
+        #camera-feed { max-width: 80%; max-height: 70%; border-radius: 10px; }
+        .modal-buttons { display: flex; gap: 20px; }
 
+        /* Estilos para Choices.js */
+        .choices { width: 100%; }
+        .choices__inner { background-color: rgba(0, 92, 115, 0.5); border: 1px solid var(--teal); border-radius: 5px; padding: 7px; font-size: 1rem; color: var(--white); }
+        .choices__list--dropdown { background-color: var(--midnight-green); border-color: var(--teal); }
+        .choices__item--choice { color: var(--white); }
+        .choices__item--choice.is-highlighted { background-color: var(--teal); }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <header>
-            <h1>Gerenciador de Ativos</h1>
-        </header>
+        <header><h1>Gerenciador de Ativos</h1></header>
 
         <div class="actions-bar">
             <button id="export-csv-btn" class="btn">Exportar para CSV</button>
-            <button id="export-system-btn" class="btn">Exportar para Sistema (JSON)</button>
-            <label for="import-system-input" class="btn-like-input-label">Importar do Sistema (JSON)</label>
+            <button id="export-system-btn" class="btn">Exportar Sistema (JSON)</button>
+            <label for="import-system-input" class="btn-like-input-label">Importar Sistema (JSON)</label>
             <input type="file" id="import-system-input" accept=".json">
-            <label for="import-images-input" id="import-images-label" class="btn-like-input-label" style="display: none;">Importar Imagens</label>
-            <input type="file" id="import-images-input" accept="image/*" multiple>
         </div>
 
         <div class="tabs">
             <button id="form-tab-btn" class="tab-button active" data-tab="tab-form">Cadastrar Ativo</button>
             <button class="tab-button" data-tab="tab-list">Lista de Ativos</button>
-            <button class="tab-button" data-tab="tab-dashboard">Dashboard</button>
         </div>
 
-        <!-- Tab: Formulário -->
         <div id="tab-form" class="tab-content active">
             <form id="asset-form">
-                <!-- Informações do Ativo -->
                 <h3 class="section-title">Informações do Ativo</h3>
-                <div class="form-group">
-                    <label for="etiqueta">Etiqueta de Patrimônio</label>
-                    <input type="text" id="etiqueta" required placeholder="Preencha para gerar nome da imagem">
-                </div>
-                <!-- ... outros campos do ativo ... -->
-                 <div class="form-group">
-                    <label for="tipoItem">Tipo do Item</label>
-                    <input type="text" id="tipoItem" list="tipos-list" placeholder="Digite para pesquisar...">
-                    <datalist id="tipos-list">
-                        <option value="Notebook"></option> <option value="Desktop"></option> <option value="Monitor"></option> <option value="Teclado"></option> <option value="Mouse"></option> <option value="Celular"></option> <option value="Tablet"></option> <option value="Carregador"></option> <option value="Headset"></option> <option value="Webcam"></option> <option value="Impressora"></option> <option value="Scanner"></option> <option value="Nobreak (UPS)"></option> <option value="Roteador"></option> <option value="Switch"></option> <option value="Servidor"></option> <option value="Projetor"></option> <option value="TV"></option> <option value="Mesa"></option> <option value="Cadeira de Escritório"></option> <option value="Cadeira de Reunião"></option> <option value="Armário"></option> <option value="Gaveteiro"></option> <option value="Estante"></option> <option value="Sofá"></option> <option value="Poltrona"></option> <option value="Quadro Branco"></option> <option value="Lixeira"></option> <option value="Geladeira"></option> <option value="Micro-ondas"></option> <option value="Bebedouro"></option> <option value="Cafeteira"></option> <option value="Ar Condicionado"></option> <option value="Ventilador"></option> <option value="Extintor de Incêndio"></option> <option value="Outro"></option>
-                    </datalist>
-                </div>
-                <div class="form-group"> <label for="marca">Marca</label> <input type="text" id="marca"> </div>
-                <div class="form-group"> <label for="modelo">Modelo</label> <input type="text" id="modelo"> </div>
-                <div class="form-group"> <label for="nSerie">N. Série</label> <input type="text" id="nSerie"> </div>
-                <div class="form-group"> <label for="imei1">IMEI 1</label> <input type="text" id="imei1"> </div>
-                <div class="form-group"> <label for="imei2">IMEI 2</label> <input type="text" id="imei2"> </div>
+                <div class="form-group"><label for="etiqueta">Etiqueta de Patrimônio</label><input type="text" id="etiqueta" required></div>
+                <div class="form-group"><label for="tipoItem">Tipo do Item</label><select id="tipoItem"></select></div>
+                <div class="form-group"><label for="marca">Marca</label><input type="text" id="marca"></div>
+                <div class="form-group"><label for="modelo">Modelo</label><input type="text" id="modelo"></div>
+                <div class="form-group"><label for="nSerie">N. Série</label><input type="text" id="nSerie"></div>
+                <div class="form-group"><label for="imei1">IMEI 1</label><input type="text" id="imei1"></div>
+                <div class="form-group"><label for="imei2">IMEI 2</label><input type="text" id="imei2"></div>
 
                 <div class="form-group" style="grid-column: 1 / -1;">
                     <label>Imagem do Ativo</label>
                     <div id="image-preview-container">
                         <div id="image-controls">
-                            <label for="imagem" class="btn-like-input-label">Capturar/Adicionar Imagem</label>
-                            <input type="file" id="imagem" accept="image/*" capture>
-                            <a id="download-image-link" class="btn btn-secondary" style="display: none;">Salvar Imagem</a>
+                            <button type="button" id="open-camera-btn" class="btn">Capturar Imagem</button>
+                            <label for="select-file-btn" class="btn-like-input-label">Selecionar Arquivo</label>
+                            <input type="file" id="select-file-btn" accept="image/*">
                         </div>
                         <img id="image-preview" src="" alt="Pré-visualização da Imagem">
                     </div>
                 </div>
 
-                <!-- Status e Localização -->
                 <h3 class="section-title">Status e Localização</h3>
-                 <div class="form-group"> <label for="statusLocalizacao">Status Localização</label> <select id="statusLocalizacao"> <option>Em estoque</option> <option>Em uso</option> <option>Em manutenção</option> <option>Para descarte</option> </select> </div>
-                 <div class="form-group"> <label for="status">Status Geral</label> <select id="status"> <option>Ativo</option> <option>Inativo</option> <option>Baixado</option> </select> </div>
-                 <div class="form-group"> <label for="usuario">Usuário Responsável</label> <input type="text" id="usuario" placeholder="Nome do usuário responsável"> </div>
-                 <div class="form-group"> <label for="dpto">Departamento (Dpto)</label> <input type="text" id="dpto" list="dptos-list" placeholder="Digite para pesquisar..."> <datalist id="dptos-list"> <option value="FACILITIES"></option> <option value="TI"></option> <option value="INFRA"></option> <option value="CS"></option> <option value="JURIDICO"></option> <option value="FINANCEIRO"></option> <option value="MARKETING"></option> <option value="EVENTOS"></option> <option value="ADM"></option> <option value="DIRETORIA"></option> </datalist> </div>
-                 <div class="form-group"> <label for="unidade">Unidade</label> <input type="text" id="unidade" list="unidades-list" placeholder="Digite para pesquisar..."> <datalist id="unidades-list"> <option value="PLAYOFFS"></option> <option value="TERRACINHO"></option> <option value="MATRIZ"></option> </datalist> </div>
-                 <div class="form-group"> <label for="localizacao">Localização Física</label> <input type="text" id="localizacao" placeholder="Ex: Prédio A, Sala 101"> </div>
-
-                <!-- Informações Contábeis e de Compra -->
-                 <h3 class="section-title">Informações Contábeis e de Compra</h3>
-                 <div class="form-group"> <label for="classificacaoContabil">Classificação Contábil</label> <input type="text" id="classificacaoContabil" list="classificacoes-list" placeholder="Digite para pesquisar..."> <datalist id="classificacoes-list"> <option value="Móveis e Utensílios"></option> <option value="Computadores e Periféricos"></option> <option value="Aparelhos telefônicos"></option> <option value="Bens de pequeno valor"></option> <option value="Máquinas e equipamentos"></option> <option value="Adornos"></option> </datalist> </div>
-                 <div class="form-group"> <label for="proprietario">Proprietário</label> <input type="text" id="proprietario" list="proprietarios-list" placeholder="Digite para pesquisar..."> <datalist id="proprietarios-list"> <option value="Empresa A (Matriz)"></option> <option value="Empresa B (Filial)"></option> <option value="Leasing C"></option> </datalist> </div>
-                 <div class="form-group"> <label for="notaFiscal">Nota Fiscal</label> <input type="text" id="notaFiscal"> </div>
-                 <div class="form-group"> <label for="anexoNotaFiscal">Anexo Nota Fiscal</label> <input type="text" id="anexoNotaFiscal" placeholder="Link ou caminho do arquivo"> </div>
-                 <div class="form-group"> <label for="valor">Valor (R$)</label> <input type="number" id="valor" step="0.01" placeholder="Ex: 1500.50"> </div>
-                 <div class="form-group"> <label for="dataCompra">Data da Compra</label> <input type="date" id="dataCompra"> </div>
-                 <div class="form-group"> <label for="dataInventario">Data do Inventário</label> <input type="date" id="dataInventario"> </div>
-
-                <!-- Condição e Descrição -->
-                <h3 class="section-title">Condição e Descrição</h3>
-                 <div class="form-group"> <label for="estadoBem">Estado do Bem</label> <select id="estadoBem"> <option>Novo</option> <option>Bom</option> <option>Regular</option> <option>Ruim</option> <option>Sucata</option> </select> </div>
-                 <div class="form-group"> <label for="descarte">Descarte</label> <select id="descarte"> <option>Não</option> <option>Sim</option> </select> </div>
-                 <div class="form-group" style="grid-column: 1 / -1;"> <label for="descricao">Descrição</label> <textarea id="descricao" rows="3" placeholder="Detalhes adicionais sobre o ativo..."></textarea> </div>
+                <div class="form-group"><label for="statusLocalizacao">Status Localização</label><select id="statusLocalizacao"></select></div>
+                <div class="form-group"><label for="status">Status Geral</label><select id="status"></select></div>
+                <div class="form-group"><label for="usuario">Usuário Responsável</label><input type="text" id="usuario"></div>
+                <div class="form-group"><label for="dpto">Departamento</label><select id="dpto"></select></div>
+                <div class="form-group"><label for="unidade">Unidade</label><select id="unidade"></select></div>
+                <div class="form-group"><label for="localizacao">Localização Física</label><input type="text" id="localizacao"></div>
                 
-                <!-- Campos Específicos para Notebook -->
-                <div id="notebook-fields">
-                    <h3 class="section-title" style="margin-top:0;">Detalhes do Notebook</h3>
-                    <div class="form-group"> <label for="proc">Processador</label> <input type="text" id="proc"> </div>
-                    <div class="form-group"> <label for="ram">RAM (GB)</label> <input type="text" id="ram"> </div>
-                    <div class="form-group"> <label for="rom">Armazenamento (ROM)</label> <input type="text" id="rom"> </div>
-                </div>
+                <h3 class="section-title">Informações Contábeis e de Compra</h3>
+                <div class="form-group"><label for="classificacaoContabil">Classificação Contábil</label><select id="classificacaoContabil"></select></div>
+                <div class="form-group"><label for="proprietario">Proprietário</label><input type="text" id="proprietario"></div>
+                <div class="form-group"><label for="notaFiscal">Nota Fiscal</label><input type="text" id="notaFiscal"></div>
+                <div class="form-group"><label for="valor">Valor (R$)</label><input type="number" id="valor" step="0.01"></div>
+                <div class="form-group"><label for="dataCompra">Data da Compra</label><input type="date" id="dataCompra"></div>
 
                 <div class="form-actions">
                     <button type="button" id="cancel-edit-btn" class="btn btn-secondary" style="display: none;">Cancelar Edição</button>
@@ -249,318 +123,296 @@
         <div id="tab-list" class="tab-content">
             <div class="table-container">
                 <table id="asset-table">
-                    <thead>
-                        <tr>
-                            <th>Imagem</th>
-                            <th>Etiqueta</th>
-                            <th>Status Loc.</th>
-                            <th>Tipo</th>
-                            <th>Marca</th>
-                            <th>Modelo</th>
-                            <th>N.Série</th>
-                            <th>Usuário</th>
-                            <th>Unidade</th>
-                            <th>Dpto</th>
-                            <th>Status</th>
-                            <th>Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody id="asset-table-body">
-                    </tbody>
+                    <thead><tr><th>Imagem</th><th>Etiqueta</th><th>Status Loc.</th><th>Tipo</th><th>Marca</th><th>Modelo</th><th>N.Série</th><th>Usuário</th><th>Ações</th></tr></thead>
+                    <tbody id="asset-table-body"></tbody>
                 </table>
             </div>
         </div>
+    </div>
 
-        <div id="tab-dashboard" class="tab-content">
-           <!-- Dashboard content -->
+    <!-- Modal da Câmera -->
+    <div id="camera-modal">
+        <video id="camera-feed" playsinline autoplay></video>
+        <div class="modal-buttons">
+            <button id="snap-photo-btn" class="btn">Tirar Foto</button>
+            <button id="cancel-camera-btn" class="btn btn-danger">Cancelar</button>
         </div>
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // Elementos DOM
-            const form = document.getElementById('asset-form');
-            const tableBody = document.getElementById('asset-table-body');
-            const tipoItemInput = document.getElementById('tipoItem');
-            const notebookFields = document.getElementById('notebook-fields');
-            const exportSystemBtn = document.getElementById('export-system-btn');
-            const importSystemInput = document.getElementById('import-system-input');
-            const importImagesInput = document.getElementById('import-images-input');
-            const importImagesLabel = document.getElementById('import-images-label');
-            const submitBtn = document.getElementById('submit-btn');
-            const cancelEditBtn = document.getElementById('cancel-edit-btn');
-            const formTabBtn = document.getElementById('form-tab-btn');
-            const imageInput = document.getElementById('imagem');
-            const imagePreview = document.getElementById('image-preview');
-            const downloadImageLink = document.getElementById('download-image-link');
-            const etiquetaInput = document.getElementById('etiqueta');
-            const tabs = document.querySelectorAll('.tab-button');
-            const tabContents = document.querySelectorAll('.tab-content');
+    document.addEventListener('DOMContentLoaded', () => {
+        // Elementos DOM
+        const form = document.getElementById('asset-form');
+        const tableBody = document.getElementById('asset-table-body');
+        const exportSystemBtn = document.getElementById('export-system-btn');
+        const importSystemInput = document.getElementById('import-system-input');
+        const submitBtn = document.getElementById('submit-btn');
+        const cancelEditBtn = document.getElementById('cancel-edit-btn');
+        const formTabBtn = document.getElementById('form-tab-btn');
+        const imagePreview = document.getElementById('image-preview');
+        const etiquetaInput = document.getElementById('etiqueta');
+        const tabs = document.querySelectorAll('.tab-button');
+        const tabContents = document.querySelectorAll('.tab-content');
+        const openCameraBtn = document.getElementById('open-camera-btn');
+        const selectFileBtn = document.getElementById('select-file-btn');
+        const cameraModal = document.getElementById('camera-modal');
+        const cameraFeed = document.getElementById('camera-feed');
+        const snapPhotoBtn = document.getElementById('snap-photo-btn');
+        const cancelCameraBtn = document.getElementById('cancel-camera-btn');
 
-            // Estado da aplicação
-            let ativos = [];
-            let editingIndex = null;
-            let charts = {};
-            let currentImageData = { fileName: null, dataUrl: null };
+        // Estado da Aplicação
+        let ativos = [];
+        let editingIndex = null;
+        let currentImageData = { fileName: null, dataUrl: null };
+        let cameraStream = null;
+        const choicesInstances = {};
 
-            const COLUMNS_EXPORT_KEYS = {
-                etiqueta: 'ETIQUETA DE PATRIMÔNIO (DEFINITIVA)', statusLocalizacao: 'Status.localizacao', tipoItem: 'Tipo.item', marca: 'Marca', modelo: 'Modelo', nSerie: 'N.Série', imei1: 'IMEI.1', imei2: 'IMEI.2', usuario: 'Item.Classificacao.usuario', proc: 'Notebook.Processador', ram: 'Notebook.RAM', rom: 'Notebook.ROM', descarte: 'Descarte', estadoBem: 'Estado do bem', descricao: 'Descrição', classificacaoContabil: 'Classificação Contábil', localizacao: 'Localização', unidade: 'Unidade', dpto: 'Dpto', notaFiscal: 'Nota Fiscal', anexoNotaFiscal: 'Anexo Nota Ficas', valor: 'Valor', dataCompra: 'Data da Compra', dataInventario: 'Data inventário', status: 'Status', proprietario: 'Proprietário', imageFilename: 'imageFilename'
-            };
+        // --- Opções para os Menus com Busca ---
+        const options = {
+            tipoItem: ["Notebook", "Desktop", "Monitor", "Teclado", "Mouse", "Celular", "Tablet", "Carregador", "Headset", "Webcam", "Impressora", "Scanner", "Nobreak (UPS)", "Roteador", "Switch", "Servidor", "Projetor", "TV", "Mesa", "Cadeira de Escritório", "Cadeira de Reunião", "Armário", "Gaveteiro", "Estante", "Sofá", "Poltrona", "Quadro Branco", "Lixeira", "Geladeira", "Micro-ondas", "Bebedouro", "Cafeteira", "Ar Condicionado", "Ventilador", "Extintor de Incêndio", "Outro"],
+            statusLocalizacao: ['Em estoque', 'Em uso', 'Em manutenção', 'Para descarte'],
+            status: ['Ativo', 'Inativo', 'Baixado'],
+            dpto: ["FACILITIES", "TI", "INFRA", "CS", "JURIDICO", "FINANCEIRO", "MARKETING", "EVENTOS", "ADM", "DIRETORIA"],
+            unidade: ["PLAYOFFS", "TERRACINHO", "MATRIZ"],
+            classificacaoContabil: ["Móveis e Utensílios", "Computadores e Periféricos", "Aparelhos telefônicos", "Bens de pequeno valor", "Máquinas e equipamentos", "Adornos"]
+        };
 
-            const slugify = (text) => text.toString().toLowerCase()
-                .replace(/\s+/g, '-')           // Replace spaces with -
-                .replace(/[^\w\-]+/g, '')       // Remove all non-word chars
-                .replace(/\-\-+/g, '-')         // Replace multiple - with single -
-                .replace(/^-+/, '')             // Trim - from start of text
-                .replace(/-+$/, '');            // Trim - from end of text
+        // --- Inicialização dos Menus com Busca ---
+        function initializeChoices() {
+            for (const id in options) {
+                const selectElement = document.getElementById(id);
+                if (selectElement) {
+                    const choicesOptions = options[id].map(val => ({ value: val, label: val }));
+                    choicesInstances[id] = new Choices(selectElement, {
+                        choices: choicesOptions,
+                        removeItemButton: true,
+                        searchResultLimit: 10,
+                        itemSelectText: 'Pressione para selecionar',
+                    });
+                }
+            }
+        }
 
-            const renderTable = () => {
-                tableBody.innerHTML = '';
-                ativos.forEach((ativo, index) => {
-                    const row = document.createElement('tr');
-                    const imageCell = ativo.imageDataUrl 
-                        ? `<a href="${ativo.imageDataUrl}" target="_blank"><img src="${ativo.imageDataUrl}" class="asset-image-thumbnail" alt="${ativo.imageFilename || 'imagem do ativo'}"></a>`
-                        : (ativo.imageFilename ? `<i>${ativo.imageFilename}</i>` : 'N/A');
-                    
-                    row.innerHTML = `
-                        <td>${imageCell}</td>
-                        <td>${ativo.etiqueta || ''}</td><td>${ativo.statusLocalizacao || ''}</td><td>${ativo.tipoItem || ''}</td>
-                        <td>${ativo.marca || ''}</td><td>${ativo.modelo || ''}</td><td>${ativo.nSerie || ''}</td>
-                        <td>${ativo.usuario || ''}</td><td>${ativo.unidade || ''}</td><td>${ativo.dpto || ''}</td>
-                        <td>${ativo.status || ''}</td>
-                        <td class="actions-cell">
-                            <button class="btn btn-edit edit-btn" data-index="${index}">Editar</button>
-                            <button class="btn btn-danger remove-btn" data-index="${index}">Remover</button>
-                        </td>
-                    `;
-                    tableBody.appendChild(row);
-                });
-            };
+        // --- Lógica da Câmera ---
+        async function openCamera() {
+            try {
+                cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+                cameraFeed.srcObject = cameraStream;
+                cameraModal.style.display = 'flex';
+            } catch (err) {
+                console.error("Erro ao acessar a câmera: ", err);
+                alert("Não foi possível acessar a câmera. Verifique as permissões do navegador.");
+            }
+        }
+
+        function closeCamera() {
+            if (cameraStream) {
+                cameraStream.getTracks().forEach(track => track.stop());
+            }
+            cameraModal.style.display = 'none';
+        }
+
+        function takePicture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = cameraFeed.videoWidth;
+            canvas.height = cameraFeed.videoHeight;
+            const context = canvas.getContext('2d');
+            context.drawImage(cameraFeed, 0, 0, canvas.width, canvas.height);
             
-            const getFormData = () => {
-                const data = {};
-                for (const key in COLUMNS_EXPORT_KEYS) {
-                    const element = document.getElementById(key);
-                    if (element) {
-                        data[key] = element.value;
-                    }
-                }
-                // Adiciona campos que não são inputs diretos
-                data.imageFilename = currentImageData.fileName;
-                data.imageDataUrl = currentImageData.dataUrl;
-                return data;
-            };
+            const dataUrl = canvas.toDataURL('image/jpeg');
+            const baseName = etiquetaInput.value.trim().replace(/\s+/g, '-') || 'ativo';
+            const uniqueFilename = `${baseName}-${Date.now()}.jpg`;
 
-            const setFormData = (ativo) => {
-                 for (const key in COLUMNS_EXPORT_KEYS) {
-                    const element = document.getElementById(key);
-                    if (element) {
-                        element.value = ativo[key] || '';
-                    }
-                }
-            };
-
-            const handleFormSubmit = (e) => {
-                e.preventDefault();
-                const ativoData = getFormData();
-
-                if (editingIndex !== null) {
-                    ativos[editingIndex] = ativoData;
-                    alert('Ativo atualizado com sucesso!');
-                } else {
-                    ativos.push(ativoData);
-                    alert('Ativo cadastrado com sucesso!');
-                }
-                
-                resetFormMode();
-                renderTable();
-            };
+            imagePreview.src = dataUrl;
+            imagePreview.style.display = 'block';
+            currentImageData = { fileName: uniqueFilename, dataUrl: dataUrl };
             
-            const startEditing = (index) => {
-                editingIndex = index;
-                const ativo = ativos[index];
-                setFormData(ativo);
-                
-                currentImageData.fileName = ativo.imageFilename;
-                currentImageData.dataUrl = ativo.imageDataUrl;
+            closeCamera();
+        }
 
-                if (ativo.imageDataUrl) {
-                    imagePreview.src = ativo.imageDataUrl;
-                    imagePreview.style.display = 'block';
-                } else {
-                    imagePreview.style.display = 'none';
-                    imagePreview.src = '';
+        // --- Funções Principais de Dados ---
+        const renderTable = () => {
+            tableBody.innerHTML = '';
+            ativos.forEach((ativo, index) => {
+                const row = document.createElement('tr');
+                const imageCell = ativo.imageDataUrl 
+                    ? `<a href="${ativo.imageDataUrl}" target="_blank"><img src="${ativo.imageDataUrl}" class="asset-image-thumbnail" alt="${ativo.imageFilename || ''}"></a>`
+                    : 'N/A';
+                row.innerHTML = `
+                    <td>${imageCell}</td><td>${ativo.etiqueta || ''}</td><td>${ativo.statusLocalizacao || ''}</td>
+                    <td>${ativo.tipoItem || ''}</td><td>${ativo.marca || ''}</td><td>${ativo.modelo || ''}</td>
+                    <td>${ativo.nSerie || ''}</td><td>${ativo.usuario || ''}</td>
+                    <td class="actions-cell">
+                        <button class="btn btn-edit edit-btn" data-index="${index}">Editar</button>
+                        <button class="btn btn-danger remove-btn" data-index="${index}">Remover</button>
+                    </td>`;
+                tableBody.appendChild(row);
+            });
+        };
+
+        const getFormData = () => {
+            const data = {};
+            const fields = ['etiqueta', 'tipoItem', 'marca', 'modelo', 'nSerie', 'imei1', 'imei2', 'statusLocalizacao', 'status', 'usuario', 'dpto', 'unidade', 'localizacao', 'classificacaoContabil', 'proprietario', 'notaFiscal', 'valor', 'dataCompra'];
+            fields.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    data[id] = choicesInstances[id] ? choicesInstances[id].getValue(true) : element.value;
                 }
-                downloadImageLink.style.display = 'none';
+            });
+            data.imageFilename = currentImageData.fileName;
+            data.imageDataUrl = currentImageData.dataUrl;
+            return data;
+        };
 
-                toggleNotebookFields();
-                submitBtn.textContent = 'Atualizar Ativo';
-                cancelEditBtn.style.display = 'inline-block';
-                formTabBtn.click();
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            };
+        const setFormData = (ativo) => {
+            const fields = ['etiqueta', 'marca', 'modelo', 'nSerie', 'imei1', 'imei2', 'usuario', 'localizacao', 'proprietario', 'notaFiscal', 'valor', 'dataCompra'];
+            fields.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) element.value = ativo[id] || '';
+            });
 
-            const resetFormMode = () => {
-                editingIndex = null;
-                form.reset();
+            // Set values for Choices.js instances
+            for (const id in choicesInstances) {
+                if(ativo[id]) {
+                    choicesInstances[id].setChoiceByValue(ativo[id]);
+                } else {
+                    choicesInstances[id].clearStore();
+                }
+            }
+        };
+
+        const handleFormSubmit = (e) => {
+            e.preventDefault();
+            const ativoData = getFormData();
+            if (editingIndex !== null) {
+                ativos[editingIndex] = ativoData;
+                alert('Ativo atualizado com sucesso!');
+            } else {
+                ativos.push(ativoData);
+                alert('Ativo cadastrado com sucesso!');
+            }
+            resetFormMode();
+            renderTable();
+        };
+
+        const startEditing = (index) => {
+            editingIndex = index;
+            const ativo = ativos[index];
+            setFormData(ativo);
+            
+            currentImageData = { fileName: ativo.imageFilename, dataUrl: ativo.imageDataUrl };
+            if (ativo.imageDataUrl) {
+                imagePreview.src = ativo.imageDataUrl;
+                imagePreview.style.display = 'block';
+            } else {
                 imagePreview.style.display = 'none';
-                imagePreview.src = '';
-                downloadImageLink.style.display = 'none';
-                downloadImageLink.removeAttribute('href');
-                downloadImageLink.removeAttribute('download');
-                currentImageData = { fileName: null, dataUrl: null };
-                toggleNotebookFields();
-                submitBtn.textContent = 'Salvar Ativo';
-                cancelEditBtn.style.display = 'none';
-                importImagesLabel.style.display = 'none';
-            };
+            }
             
-            imageInput.addEventListener('change', (e) => {
-                const file = e.target.files[0];
-                if (!file) return;
+            submitBtn.textContent = 'Atualizar Ativo';
+            cancelEditBtn.style.display = 'inline-block';
+            formTabBtn.click();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
 
-                if (etiquetaInput.value.trim() === '') {
-                    alert('Por favor, preencha a "Etiqueta de Patrimônio" antes de adicionar uma imagem.');
-                    e.target.value = null; // Limpa a seleção
-                    return;
+        const resetFormMode = () => {
+            editingIndex = null;
+            form.reset();
+            for (const id in choicesInstances) {
+                choicesInstances[id].clearStore();
+                choicesInstances[id].clearInput();
+            }
+            imagePreview.style.display = 'none';
+            imagePreview.src = '';
+            currentImageData = { fileName: null, dataUrl: null };
+            submitBtn.textContent = 'Salvar Ativo';
+            cancelEditBtn.style.display = 'none';
+        };
+
+        const exportToSystem = () => {
+            if (ativos.length === 0) return alert('Não há dados para exportar.');
+            const dataStr = JSON.stringify(ativos, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'backup_ativos.json';
+            a.click();
+            URL.revokeObjectURL(url);
+            alert('Arquivo JSON exportado com sucesso! As imagens estão incluídas no arquivo.');
+        };
+
+        const importFromSystem = (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                try {
+                    const importedData = JSON.parse(event.target.result);
+                    if (!Array.isArray(importedData)) throw new Error('Formato inválido.');
+                    if (confirm('Isso substituirá todos os dados atuais. Deseja continuar?')) {
+                        ativos = importedData;
+                        resetFormMode();
+                        renderTable();
+                        alert('Dados importados com sucesso!');
+                    }
+                } catch (error) {
+                    alert('Erro ao importar o arquivo: ' + error.message);
                 }
+            };
+            reader.readAsText(file);
+            e.target.value = null;
+        };
 
+        // Event Listeners
+        form.addEventListener('submit', handleFormSubmit);
+        cancelEditBtn.addEventListener('click', resetFormMode);
+        openCameraBtn.addEventListener('click', openCamera);
+        cancelCameraBtn.addEventListener('click', closeCamera);
+        snapPhotoBtn.addEventListener('click', takePicture);
+        
+        selectFileBtn.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
                 const reader = new FileReader();
                 reader.onload = (event) => {
-                    const extension = file.name.split('.').pop();
-                    const baseName = slugify(etiquetaInput.value);
-                    const uniqueFilename = `${baseName}-${Date.now()}.${extension}`;
-
+                    const baseName = etiquetaInput.value.trim().replace(/\s+/g, '-') || 'ativo';
+                    const uniqueFilename = `${baseName}-${Date.now()}.${file.name.split('.').pop()}`;
                     imagePreview.src = event.target.result;
                     imagePreview.style.display = 'block';
-                    
-                    currentImageData.dataUrl = event.target.result;
-                    currentImageData.fileName = uniqueFilename;
-
-                    downloadImageLink.href = event.target.result;
-                    downloadImageLink.download = uniqueFilename;
-                    downloadImageLink.style.display = 'inline-block';
-                    alert("Imagem carregada! NÃO SE ESQUEÇA de clicar em 'Salvar Imagem' para fazer o download do arquivo com o nome correto.");
+                    currentImageData = { fileName: uniqueFilename, dataUrl: event.target.result };
                 };
                 reader.readAsDataURL(file);
-            });
-
-            const exportToSystem = () => {
-                if (ativos.length === 0) {
-                    alert('Não há dados para exportar.');
-                    return;
-                }
-
-                const exportData = ativos.map(ativo => {
-                    const item = {};
-                    for (const key in COLUMNS_EXPORT_KEYS) {
-                        // Exclui o imageDataUrl da exportação
-                        if (key !== 'imageDataUrl') {
-                           item[COLUMNS_EXPORT_KEYS[key]] = ativo[key] || '';
-                        }
-                    }
-                    return item;
-                });
-
-                const dataStr = JSON.stringify(exportData, null, 2);
-                const blob = new Blob([dataStr], { type: 'application/json' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.setAttribute('href', url);
-                a.setAttribute('download', 'backup_ativos.json');
-                a.click();
-                alert('Arquivo JSON exportado!\n\nLembre-se: guarde este arquivo JSON e todas as imagens que você salvou na MESMA PASTA.');
-            };
-
-            const importFromSystem = (e) => {
-                const file = e.target.files[0];
-                if (!file) return;
-
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                    try {
-                        const importedData = JSON.parse(event.target.result);
-                        if (!Array.isArray(importedData)) throw new Error('Formato inválido.');
-
-                        if (confirm('Isso substituirá todos os dados atuais. Deseja continuar?')) {
-                            const reverse_keys = Object.fromEntries(Object.entries(COLUMNS_EXPORT_KEYS).map(a => a.reverse()));
-                            ativos = importedData.map(item => {
-                                const ativo = {};
-                                for(const colName in item){
-                                    const internalKey = reverse_keys[colName];
-                                    if(internalKey){
-                                        ativo[internalKey] = item[colName];
-                                    }
-                                }
-                                ativo.imageDataUrl = null; // Imagens serão vinculadas depois
-                                return ativo;
-                            });
-
-                            resetFormMode();
-                            renderTable();
-                            alert('Dados importados com sucesso!\n\nAgora, clique em "Importar Imagens" e selecione os arquivos de imagem correspondentes.');
-                            importImagesLabel.style.display = 'inline-block';
-                        }
-                    } catch (error) {
-                        alert('Erro ao importar o arquivo: ' + error.message);
-                    }
-                };
-                reader.readAsText(file);
-                e.target.value = null; 
-            };
-            
-            importImagesInput.addEventListener('change', (e) => {
-                const files = e.target.files;
-                if (!files.length) return;
-
-                const fileMap = new Map(Array.from(files).map(file => [file.name, file]));
-                let vinculados = 0;
-
-                const promises = ativos.map(ativo => {
-                    if (ativo.imageFilename && fileMap.has(ativo.imageFilename)) {
-                        return new Promise(resolve => {
-                            const file = fileMap.get(ativo.imageFilename);
-                            const reader = new FileReader();
-                            reader.onload = (event) => {
-                                ativo.imageDataUrl = event.target.result;
-                                vinculados++;
-                                resolve();
-                            };
-                            reader.readAsDataURL(file);
-                        });
-                    }
-                    return Promise.resolve();
-                });
-                
-                Promise.all(promises).then(() => {
-                    renderTable();
-                    alert(`${vinculados} imagens foram vinculadas com sucesso!`);
-                    importImagesLabel.style.display = 'none';
-                });
-                
-                e.target.value = null;
-            });
-
-            // Funções de UI (sem alterações)
-            const removeAtivo = (index) => { if (confirm('Tem certeza?')) { ativos.splice(index, 1); if (editingIndex === index) resetFormMode(); renderTable(); } };
-            const toggleNotebookFields = () => { notebookFields.classList.toggle('visible', tipoItemInput.value === 'Notebook'); };
-            const switchTab = (e) => { tabs.forEach(t => t.classList.remove('active')); tabContents.forEach(c => c.classList.remove('active')); e.currentTarget.classList.add('active'); document.getElementById(e.currentTarget.dataset.tab).classList.add('active'); };
-
-            // Listeners
-            form.addEventListener('submit', handleFormSubmit);
-            tipoItemInput.addEventListener('input', toggleNotebookFields);
-            tabs.forEach(tab => tab.addEventListener('click', switchTab));
-            cancelEditBtn.addEventListener('click', resetFormMode);
-            tableBody.addEventListener('click', (e) => {
-                if (e.target.classList.contains('remove-btn')) removeAtivo(parseInt(e.target.dataset.index, 10));
-                if (e.target.classList.contains('edit-btn')) startEditing(parseInt(e.target.dataset.index, 10));
-            });
-            exportSystemBtn.addEventListener('click', exportToSystem);
-            importSystemInput.addEventListener('change', importFromSystem);
-            
-            // Inicialização
-            renderTable();
+            }
         });
+
+        tableBody.addEventListener('click', (e) => {
+            if (e.target.classList.contains('remove-btn')) {
+                if (confirm('Tem certeza?')) {
+                    const index = parseInt(e.target.dataset.index, 10);
+                    ativos.splice(index, 1);
+                    if (editingIndex === index) resetFormMode();
+                    renderTable();
+                }
+            }
+            if (e.target.classList.contains('edit-btn')) {
+                startEditing(parseInt(e.target.dataset.index, 10));
+            }
+        });
+
+        tabs.forEach(tab => tab.addEventListener('click', (e) => {
+            tabs.forEach(t => t.classList.remove('active'));
+            tabContents.forEach(c => c.classList.remove('active'));
+            e.currentTarget.classList.add('active');
+            document.getElementById(e.currentTarget.dataset.tab).classList.add('active');
+        }));
+        
+        exportSystemBtn.addEventListener('click', exportToSystem);
+        importSystemInput.addEventListener('change', importFromSystem);
+
+        // Inicialização
+        initializeChoices();
+        renderTable();
+    });
     </script>
 </body>
 </html>
