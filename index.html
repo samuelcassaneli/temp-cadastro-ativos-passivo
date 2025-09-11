@@ -84,11 +84,12 @@
             <form id="asset-form">
                 <h3 class="section-title">Informações do Ativo</h3>
                 <div class="form-group"><label for="etiqueta">Etiqueta de Patrimônio</label><input type="text" id="etiqueta" required></div>
-                <div class="form-group"><label for="empresa">Empresa</label><select id="empresa"></select></div>
                 <div class="form-group"><label for="tipoItem">Tipo do Item</label><select id="tipoItem"></select></div>
                 <div class="form-group"><label for="marca">Marca</label><input type="text" id="marca"></div>
                 <div class="form-group"><label for="modelo">Modelo</label><input type="text" id="modelo"></div>
                 <div class="form-group"><label for="nSerie">N. Série</label><input type="text" id="nSerie"></div>
+                <div class="form-group"><label for="imei1">IMEI 1</label><input type="text" id="imei1"></div>
+                <div class="form-group"><label for="imei2">IMEI 2</label><input type="text" id="imei2"></div>
                 <div class="form-group" style="grid-column: 1 / -1;">
                     <label>Imagem do Ativo</label>
                     <div id="image-preview-container">
@@ -100,19 +101,27 @@
                         <img id="image-preview" src="" alt="Pré-visualização da Imagem">
                     </div>
                 </div>
+
                 <h3 class="section-title">Status e Localização</h3>
                 <div class="form-group"><label for="statusLocalizacao">Status Localização</label><select id="statusLocalizacao"></select></div>
-                <div class="form-group"><label for="status">Status Geral</label><select id="status"></select></div>
-                <div class="form-group"><label for="usuario">Usuário Responsável</label><input type="text" id="usuario"></div>
+                <div class="form-group"><label for="usuario">Usuário</label><input type="text" id="usuario"></div>
+                <div class="form-group"><label for="empresa">Empresa</label><select id="empresa"></select></div>
                 <div class="form-group"><label for="dpto">Departamento</label><select id="dpto"></select></div>
                 <div class="form-group"><label for="unidade">Unidade</label><select id="unidade"></select></div>
                 <div class="form-group"><label for="localizacao">Localização Física</label><input type="text" id="localizacao"></div>
+                
+                <h3 class="section-title">Condição e Descrição</h3>
+                <div class="form-group"><label for="estadoBem">Estado do Bem</label><select id="estadoBem"></select></div>
+                <div class="form-group"><label for="descarte">Descarte</label><select id="descarte"></select></div>
+                <div class="form-group" style="grid-column: 1 / -1;"><label for="descricao">Descrição</label><textarea id="descricao" rows="3"></textarea></div>
+
                 <h3 class="section-title">Informações Contábeis e de Compra</h3>
                 <div class="form-group"><label for="classificacaoContabil">Classificação Contábil</label><select id="classificacaoContabil"></select></div>
                 <div class="form-group"><label for="proprietario">Proprietário</label><input type="text" id="proprietario"></div>
                 <div class="form-group"><label for="notaFiscal">Nota Fiscal</label><input type="text" id="notaFiscal"></div>
                 <div class="form-group"><label for="valor">Valor (R$)</label><input type="number" id="valor" step="0.01"></div>
                 <div class="form-group"><label for="dataCompra">Data da Compra</label><input type="date" id="dataCompra"></div>
+
                 <div class="form-actions">
                     <button type="button" id="cancel-edit-btn" class="btn btn-secondary" style="display: none;">Cancelar Edição</button>
                     <button type="submit" id="submit-btn" class="btn">Salvar Ativo</button>
@@ -122,7 +131,7 @@
         <div id="tab-list" class="tab-content">
             <div class="table-container">
                 <table id="asset-table">
-                    <thead><tr><th>Imagem</th><th>Etiqueta</th><th>Empresa</th><th>Status Loc.</th><th>Tipo</th><th>Marca</th><th>Modelo</th><th>N.Série</th><th>Usuário</th><th>Ações</th></tr></thead>
+                    <thead><tr><th>Imagem</th><th>Etiqueta</th><th>Empresa</th><th>Tipo</th><th>Status Loc.</th><th>Unidade</th><th>Usuário</th><th>Localização</th><th>Ações</th></tr></thead>
                     <tbody id="asset-table-body"></tbody>
                 </table>
             </div>
@@ -138,7 +147,6 @@
 
     <script>
     document.addEventListener('DOMContentLoaded', () => {
-        // --- Elementos DOM ---
         const form = document.getElementById('asset-form');
         const tableBody = document.getElementById('asset-table-body');
         const exportSystemBtn = document.getElementById('export-system-btn');
@@ -158,24 +166,23 @@
         const snapPhotoBtn = document.getElementById('snap-photo-btn');
         const cancelCameraBtn = document.getElementById('cancel-camera-btn');
 
-        // --- Estado da Aplicação ---
         let ativos = [];
         let editingIndex = null;
         let currentImageData = { fileName: null, dataUrl: null };
         let cameraStream = null;
         const choicesInstances = {};
 
-        // --- Definições e Opções ---
         const options = {
-            empresa: ['PPay', 'MNTZZ', 'MFVP'],
-            tipoItem: ["Notebook", "Desktop", "Monitor", "Teclado", "Mouse", "Celular", "Tablet", "Carregador", "Headset", "Webcam", "Impressora", "Scanner", "Nobreak (UPS)", "Roteador", "Switch", "Servidor", "Projetor", "TV", "Mesa", "Cadeira de Escritório", "Cadeira de Reunião", "Armário", "Gaveteiro", "Estante", "Sofá", "Poltrona", "Quadro Branco", "Lixeira", "Geladeira", "Micro-ondas", "Bebedouro", "Cafeteira", "Ar Condicionado", "Ventilador", "Extintor de Incêndio", "Outro"],
+            empresa: ['PPay', 'MNTZZ', 'VG'],
+            tipoItem: ["Notebook", "Desktop", "Fonte Notebook", "Radio Comunicador", "Monitor", "Teclado", "Mouse", "Celular", "Tablet", "Carregador", "Headset", "Webcam", "Impressora", "Scanner", "Nobreak (UPS)", "Roteador", "Switch", "Servidor", "Projetor", "TV", "Mesa", "Cadeira de Escritório", "Cadeira de Reunião", "Armário", "Gaveteiro", "Estante", "Sofá", "Poltrona", "Quadro Branco", "Lixeira", "Geladeira", "Micro-ondas", "Bebedouro", "Cafeteira", "Ar Condicionado", "Ventilador", "Extintor de Incêndio", "Outro"],
             statusLocalizacao: ['Em estoque', 'Em uso', 'Em manutenção', 'Para descarte'],
-            status: ['Ativo', 'Inativo', 'Baixado'],
             dpto: ["FACILITIES", "TI", "INFRA", "CS", "JURIDICO", "FINANCEIRO", "MARKETING", "EVENTOS", "ADM", "DIRETORIA"],
-            unidade: ["PLAYOFFS", "TERRACINHO", "MATRIZ"],
-            classificacaoContabil: ["Móveis e Utensílios", "Computadores e Periféricos", "Aparelhos telefônicos", "Bens de pequeno valor", "Máquinas e equipamentos", "Adornos"]
+            unidade: ['TERRACINHO', 'MATRIZ', 'PO'],
+            classificacaoContabil: ["Móveis e Utensílios", "Computadores e Periféricos", "Aparelhos telefônicos", "Bens de pequeno valor", "Máquinas e equipamentos", "Adornos"],
+            estadoBem: ['Novo', 'Bom', 'Regular', 'Ruim', 'Sucata'],
+            descarte: ['Não', 'Sim']
         };
-        const formFields = ['etiqueta', 'empresa', 'tipoItem', 'marca', 'modelo', 'nSerie', 'statusLocalizacao', 'status', 'usuario', 'dpto', 'unidade', 'localizacao', 'classificacaoContabil', 'proprietario', 'notaFiscal', 'valor', 'dataCompra'];
+        const formFields = ['etiqueta', 'statusLocalizacao', 'tipoItem', 'marca', 'modelo', 'nSerie', 'imei1', 'imei2', 'descricao', 'classificacaoContabil', 'localizacao', 'usuario', 'empresa', 'dpto', 'unidade', 'notaFiscal', 'valor', 'dataCompra', 'estadoBem', 'descarte', 'proprietario'];
 
         function initializeChoices() {
             for (const id in options) {
@@ -201,8 +208,8 @@
                 const imageCell = ativo.imageDataUrl ? `<a href="${ativo.imageDataUrl}" target="_blank"><img src="${ativo.imageDataUrl}" class="asset-image-thumbnail" alt="${ativo.imageFilename || ''}"></a>` : 'N/A';
                 row.innerHTML = `
                     <td>${imageCell}</td><td>${ativo.etiqueta || ''}</td><td>${ativo.empresa || ''}</td>
-                    <td>${ativo.statusLocalizacao || ''}</td><td>${ativo.tipoItem || ''}</td><td>${ativo.marca || ''}</td>
-                    <td>${ativo.modelo || ''}</td><td>${ativo.nSerie || ''}</td><td>${ativo.usuario || ''}</td>
+                    <td>${ativo.tipoItem || ''}</td><td>${ativo.statusLocalizacao || ''}</td><td>${ativo.unidade || ''}</td>
+                    <td>${ativo.usuario || ''}</td><td>${ativo.localizacao || ''}</td>
                     <td class="actions-cell">
                         <button class="btn btn-edit edit-btn" data-index="${index}">Editar</button>
                         <button class="btn btn-danger remove-btn" data-index="${index}">Remover</button>
@@ -308,14 +315,15 @@
         function exportToCsv() {
             if (ativos.length === 0) return alert('Não há dados para exportar.');
             alert('Gerando CSV com os nomes dos arquivos de imagem...');
-            const headers = ['Etiqueta', 'Empresa', 'Tipo', 'Marca', 'Modelo', 'N. Série', 'Status Loc.', 'Status Geral', 'Usuário', 'Dpto', 'Unidade', 'Localização', 'Class. Contábil', 'Proprietário', 'Nota Fiscal', 'Valor', 'Data Compra', 'Nome Arquivo Imagem'];
+            const headers = ['ETIQUETA DE PATRIMÔNIO', 'Status.localizacao', 'Tipo.item', 'Marca', 'Modelo', 'N.Série', 'IMEI.1', 'IMEI.2', 'Descrição', 'Classificação Contábil', 'Localização', 'Usuário', 'Empresa', 'Dpto', 'Unidade', 'Nota Fiscal', 'Valor', 'Data da Compra', 'Estado do bem', 'Descarte', 'Proprietário', 'Nome Arquivo Imagem'];
             const rows = ativos.map(ativo => {
                 const imageName = ativo.imageFilename || ''; 
                 return [
-                    ativo.etiqueta, ativo.empresa, ativo.tipoItem, ativo.marca, ativo.modelo,
-                    ativo.nSerie, ativo.statusLocalizacao, ativo.status, ativo.usuario, ativo.dpto,
-                    ativo.unidade, ativo.localizacao, ativo.classificacaoContabil, ativo.proprietario,
-                    ativo.notaFiscal, ativo.valor, ativo.dataCompra, imageName
+                    ativo.etiqueta, ativo.statusLocalizacao, ativo.tipoItem, ativo.marca, ativo.modelo,
+                    ativo.nSerie, ativo.imei1, ativo.imei2, ativo.descricao, ativo.classificacaoContabil,
+                    ativo.localizacao, ativo.usuario, ativo.empresa, ativo.dpto, ativo.unidade, ativo.notaFiscal,
+                    ativo.valor, ativo.dataCompra, ativo.estadoBem, ativo.descarte, ativo.proprietario,
+                    imageName
                 ].map(val => `"${(val || '').toString().replace(/"/g, '""')}"`).join(';');
             });
             const csvContent = "\uFEFF" + headers.join(';') + '\n' + rows.join('\n');
