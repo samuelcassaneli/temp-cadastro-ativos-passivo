@@ -2,11 +2,13 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale-1.0">
     <title>Gerenciador de Ativos</title>
     <!-- Biblioteca para menus suspensos com busca -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css"/>
     <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+    <!-- Biblioteca para manipulação de arquivos ZIP -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
         :root {
             --black: #000000; --tiffany-blue: #96D1D3; --midnight-green: #005C73; --teal: #01848C; --white: #f0f8ff; --shadow: rgba(0, 0, 0, 0.2);
@@ -50,12 +52,63 @@
         #camera-feed { max-width: 80%; max-height: 70%; border-radius: 10px; }
         .modal-buttons { display: flex; gap: 20px; }
 
-        /* Estilos para Choices.js */
+        /* ========= INÍCIO: ESTILOS CORRIGIDOS PARA CHOICES.JS ========= */
         .choices { width: 100%; }
-        .choices__inner { background-color: rgba(0, 92, 115, 0.5); border: 1px solid var(--teal); border-radius: 5px; padding: 7px; font-size: 1rem; color: var(--white); }
-        .choices__list--dropdown { background-color: var(--midnight-green); border-color: var(--teal); }
-        .choices__item--choice { color: var(--white); }
-        .choices__item--choice.is-highlighted { background-color: var(--teal); }
+        /* A caixa principal que parece um input */
+        .choices__inner {
+            background-color: rgba(0, 92, 115, 0.5);
+            border: 1px solid var(--teal);
+            border-radius: 5px;
+            padding: 7px;
+            font-size: 1rem;
+            color: var(--white);
+            min-height: 44px; /* Garante alinhamento de altura com outros inputs */
+        }
+        /* A lista que abre para baixo (dropdown) */
+        .choices__list--dropdown {
+            background-color: var(--midnight-green);
+            border-color: var(--teal);
+        }
+        .choices__list[aria-expanded] {
+            border-color: var(--teal);
+        }
+        /* Cada opção individual na lista dropdown */
+        .choices__item--choice {
+            color: var(--white);
+        }
+        /* A opção destacada quando você passa o mouse por cima */
+        .choices__item--choice.is-highlighted {
+            background-color: var(--teal);
+            color: var(--white);
+        }
+        /* O item que já foi selecionado (dentro da caixa principal) */
+        .choices__item--selectable {
+             background-color: var(--teal);
+             border: 1px solid var(--tiffany-blue);
+        }
+        /* O 'x' para remover um item selecionado */
+        .choices__button {
+             border-left: 1px solid rgba(255, 255, 255, 0.5);
+             filter: invert(1);
+             opacity: 0.75;
+        }
+        .choices__button:hover {
+            opacity: 1;
+        }
+        /* O texto do placeholder */
+        .choices__placeholder {
+            color: var(--tiffany-blue);
+            opacity: 0.8;
+        }
+        /* A seta do dropdown */
+        .choices[data-type*="select-one"]::after {
+            border-color: var(--white) transparent transparent;
+        }
+        .choices.is-open[data-type*="select-one"]::after {
+            border-color: transparent transparent var(--white);
+            margin-top: -2.5px;
+        }
+        /* ========= FIM: ESTILOS CORRIGIDOS PARA CHOICES.JS ========= */
     </style>
 </head>
 <body>
@@ -65,9 +118,9 @@
 
         <div class="actions-bar">
             <button id="export-csv-btn" class="btn">Exportar para CSV</button>
-            <button id="export-system-btn" class="btn">Exportar Sistema (JSON)</button>
-            <label for="import-system-input" class="btn-like-input-label">Importar Sistema (JSON)</label>
-            <input type="file" id="import-system-input" accept=".json">
+            <button id="export-system-btn" class="btn">Exportar Sistema (ZIP)</button>
+            <label for="import-system-input" class="btn-like-input-label">Importar Sistema (ZIP)</label>
+            <input type="file" id="import-system-input" accept=".zip">
         </div>
 
         <div class="tabs">
@@ -141,7 +194,7 @@
 
     <script>
     document.addEventListener('DOMContentLoaded', () => {
-        // Elementos DOM
+        // --- Elementos DOM ---
         const form = document.getElementById('asset-form');
         const tableBody = document.getElementById('asset-table-body');
         const exportSystemBtn = document.getElementById('export-system-btn');
@@ -160,14 +213,14 @@
         const snapPhotoBtn = document.getElementById('snap-photo-btn');
         const cancelCameraBtn = document.getElementById('cancel-camera-btn');
 
-        // Estado da Aplicação
+        // --- Estado da Aplicação ---
         let ativos = [];
         let editingIndex = null;
         let currentImageData = { fileName: null, dataUrl: null };
         let cameraStream = null;
         const choicesInstances = {};
 
-        // --- Opções para os Menus com Busca ---
+        // --- Opções para os Menus ---
         const options = {
             tipoItem: ["Notebook", "Desktop", "Monitor", "Teclado", "Mouse", "Celular", "Tablet", "Carregador", "Headset", "Webcam", "Impressora", "Scanner", "Nobreak (UPS)", "Roteador", "Switch", "Servidor", "Projetor", "TV", "Mesa", "Cadeira de Escritório", "Cadeira de Reunião", "Armário", "Gaveteiro", "Estante", "Sofá", "Poltrona", "Quadro Branco", "Lixeira", "Geladeira", "Micro-ondas", "Bebedouro", "Cafeteira", "Ar Condicionado", "Ventilador", "Extintor de Incêndio", "Outro"],
             statusLocalizacao: ['Em estoque', 'Em uso', 'Em manutenção', 'Para descarte'],
@@ -177,17 +230,12 @@
             classificacaoContabil: ["Móveis e Utensílios", "Computadores e Periféricos", "Aparelhos telefônicos", "Bens de pequeno valor", "Máquinas e equipamentos", "Adornos"]
         };
 
-        // --- Inicialização dos Menus com Busca ---
         function initializeChoices() {
             for (const id in options) {
                 const selectElement = document.getElementById(id);
                 if (selectElement) {
-                    const choicesOptions = options[id].map(val => ({ value: val, label: val }));
                     choicesInstances[id] = new Choices(selectElement, {
-                        choices: choicesOptions,
-                        removeItemButton: true,
-                        searchResultLimit: 10,
-                        itemSelectText: 'Pressione para selecionar',
+                        choices: options[id].map(val => ({ value: val, label: val })), removeItemButton: true, searchResultLimit: 10, itemSelectText: 'Pressione para selecionar', placeholder: true, placeholderValue: 'Selecione uma opção'
                     });
                 }
             }
@@ -197,41 +245,28 @@
         async function openCamera() {
             try {
                 cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-                cameraFeed.srcObject = cameraStream;
-                cameraModal.style.display = 'flex';
-            } catch (err) {
-                console.error("Erro ao acessar a câmera: ", err);
-                alert("Não foi possível acessar a câmera. Verifique as permissões do navegador.");
-            }
+                cameraFeed.srcObject = cameraStream; cameraModal.style.display = 'flex';
+            } catch (err) { alert("Não foi possível acessar a câmera. Verifique as permissões."); }
         }
-
-        function closeCamera() {
-            if (cameraStream) {
-                cameraStream.getTracks().forEach(track => track.stop());
-            }
-            cameraModal.style.display = 'none';
-        }
-
+        function closeCamera() { if (cameraStream) { cameraStream.getTracks().forEach(track => track.stop()); } cameraModal.style.display = 'none'; }
         function takePicture() {
-            const canvas = document.createElement('canvas');
-            canvas.width = cameraFeed.videoWidth;
-            canvas.height = cameraFeed.videoHeight;
-            const context = canvas.getContext('2d');
-            context.drawImage(cameraFeed, 0, 0, canvas.width, canvas.height);
-            
-            const dataUrl = canvas.toDataURL('image/jpeg');
+            const canvas = document.createElement('canvas'); canvas.width = cameraFeed.videoWidth; canvas.height = cameraFeed.videoHeight;
+            canvas.getContext('2d').drawImage(cameraFeed, 0, 0, canvas.width, canvas.height);
+            const dataUrl = canvas.toDataURL('image/jpeg', 0.9); // Compressão para JPEG
             const baseName = etiquetaInput.value.trim().replace(/\s+/g, '-') || 'ativo';
-            const uniqueFilename = `${baseName}-${Date.now()}.jpg`;
-
-            imagePreview.src = dataUrl;
-            imagePreview.style.display = 'block';
-            currentImageData = { fileName: uniqueFilename, dataUrl: dataUrl };
-            
-            closeCamera();
+            currentImageData = { fileName: `${baseName}-${Date.now()}.jpg`, dataUrl: dataUrl };
+            imagePreview.src = dataUrl; imagePreview.style.display = 'block'; closeCamera();
         }
 
+        // --- Funções Auxiliares ---
+        function dataURLtoBlob(dataurl) {
+            let arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1],
+                bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
+            while(n--){ u8arr[n] = bstr.charCodeAt(n); } return new Blob([u8arr], {type:mime});
+        }
+        
         // --- Funções Principais de Dados ---
-        const renderTable = () => {
+        function renderTable() {
             tableBody.innerHTML = '';
             ativos.forEach((ativo, index) => {
                 const row = document.createElement('tr');
@@ -250,7 +285,7 @@
             });
         };
 
-        const getFormData = () => {
+        function getFormData() {
             const data = {};
             const fields = ['etiqueta', 'tipoItem', 'marca', 'modelo', 'nSerie', 'imei1', 'imei2', 'statusLocalizacao', 'status', 'usuario', 'dpto', 'unidade', 'localizacao', 'classificacaoContabil', 'proprietario', 'notaFiscal', 'valor', 'dataCompra'];
             fields.forEach(id => {
@@ -259,111 +294,123 @@
                     data[id] = choicesInstances[id] ? choicesInstances[id].getValue(true) : element.value;
                 }
             });
-            data.imageFilename = currentImageData.fileName;
-            data.imageDataUrl = currentImageData.dataUrl;
+            data.imageFilename = currentImageData.fileName; data.imageDataUrl = currentImageData.dataUrl;
             return data;
         };
 
-        const setFormData = (ativo) => {
+        function setFormData(ativo) {
             const fields = ['etiqueta', 'marca', 'modelo', 'nSerie', 'imei1', 'imei2', 'usuario', 'localizacao', 'proprietario', 'notaFiscal', 'valor', 'dataCompra'];
             fields.forEach(id => {
                 const element = document.getElementById(id);
                 if (element) element.value = ativo[id] || '';
             });
-
-            // Set values for Choices.js instances
             for (const id in choicesInstances) {
+                choicesInstances[id].clearInput();
                 if(ativo[id]) {
-                    choicesInstances[id].setChoiceByValue(ativo[id]);
+                    choicesInstances[id].setValue([ativo[id]]);
                 } else {
-                    choicesInstances[id].clearStore();
+                    choicesInstances[id].setValue([]); 
                 }
             }
         };
-
-        const handleFormSubmit = (e) => {
-            e.preventDefault();
-            const ativoData = getFormData();
-            if (editingIndex !== null) {
-                ativos[editingIndex] = ativoData;
-                alert('Ativo atualizado com sucesso!');
-            } else {
-                ativos.push(ativoData);
-                alert('Ativo cadastrado com sucesso!');
-            }
-            resetFormMode();
-            renderTable();
+        
+        function handleFormSubmit(e) {
+            e.preventDefault(); const ativoData = getFormData();
+            if (editingIndex !== null) { ativos[editingIndex] = ativoData; alert('Ativo atualizado!'); }
+            else { ativos.push(ativoData); alert('Ativo cadastrado!'); }
+            resetFormMode(); renderTable();
         };
 
-        const startEditing = (index) => {
-            editingIndex = index;
-            const ativo = ativos[index];
-            setFormData(ativo);
-            
+        function startEditing(index) {
+            editingIndex = index; const ativo = ativos[index]; setFormData(ativo);
             currentImageData = { fileName: ativo.imageFilename, dataUrl: ativo.imageDataUrl };
-            if (ativo.imageDataUrl) {
-                imagePreview.src = ativo.imageDataUrl;
-                imagePreview.style.display = 'block';
-            } else {
-                imagePreview.style.display = 'none';
-            }
-            
-            submitBtn.textContent = 'Atualizar Ativo';
-            cancelEditBtn.style.display = 'inline-block';
-            formTabBtn.click();
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            if (ativo.imageDataUrl) { imagePreview.src = ativo.imageDataUrl; imagePreview.style.display = 'block'; }
+            else { imagePreview.style.display = 'none'; }
+            submitBtn.textContent = 'Atualizar Ativo'; cancelEditBtn.style.display = 'inline-block';
+            formTabBtn.click(); window.scrollTo({ top: 0, behavior: 'smooth' });
         };
-
-        const resetFormMode = () => {
-            editingIndex = null;
-            form.reset();
+        
+        function resetFormMode() {
+            editingIndex = null; form.reset();
             for (const id in choicesInstances) {
-                choicesInstances[id].clearStore();
-                choicesInstances[id].clearInput();
+                choicesInstances[id].setValue([]);
             }
-            imagePreview.style.display = 'none';
-            imagePreview.src = '';
+            imagePreview.style.display = 'none'; imagePreview.src = '';
             currentImageData = { fileName: null, dataUrl: null };
-            submitBtn.textContent = 'Salvar Ativo';
-            cancelEditBtn.style.display = 'none';
+            submitBtn.textContent = 'Salvar Ativo'; cancelEditBtn.style.display = 'none';
         };
-
-        const exportToSystem = () => {
+        
+        // --- LÓGICA DE EXPORTAÇÃO E IMPORTAÇÃO (ATUALIZADA) ---
+        async function exportToSystem() {
             if (ativos.length === 0) return alert('Não há dados para exportar.');
-            const dataStr = JSON.stringify(ativos, null, 2);
-            const blob = new Blob([dataStr], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'backup_ativos.json';
-            a.click();
-            URL.revokeObjectURL(url);
-            alert('Arquivo JSON exportado com sucesso! As imagens estão incluídas no arquivo.');
+            
+            alert('Gerando arquivo ZIP, por favor aguarde...');
+            const zip = new JSZip();
+            zip.file("backup_ativos.json", JSON.stringify(ativos, null, 2));
+            const imgFolder = zip.folder("images");
+            ativos.forEach(ativo => {
+                if (ativo.imageDataUrl && ativo.imageFilename) {
+                    const blob = dataURLtoBlob(ativo.imageDataUrl);
+                    imgFolder.file(ativo.imageFilename, blob);
+                }
+            });
+
+            try {
+                const content = await zip.generateAsync({ type: "blob" });
+                const a = document.createElement("a");
+                a.href = URL.createObjectURL(content);
+                a.download = `backup_completo_${new Date().toISOString().slice(0,10)}.zip`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(a.href);
+            } catch(e) { console.error(e); alert("Ocorreu um erro ao gerar o arquivo ZIP."); }
         };
 
-        const importFromSystem = (e) => {
+        async function importFromSystem(e) {
             const file = e.target.files[0];
             if (!file) return;
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                try {
-                    const importedData = JSON.parse(event.target.result);
-                    if (!Array.isArray(importedData)) throw new Error('Formato inválido.');
-                    if (confirm('Isso substituirá todos os dados atuais. Deseja continuar?')) {
-                        ativos = importedData;
-                        resetFormMode();
-                        renderTable();
-                        alert('Dados importados com sucesso!');
-                    }
-                } catch (error) {
-                    alert('Erro ao importar o arquivo: ' + error.message);
+
+            alert('Lendo arquivo ZIP, por favor aguarde...');
+            try {
+                const zip = await JSZip.loadAsync(file);
+                const jsonFile = zip.file("backup_ativos.json");
+                if (!jsonFile) throw new Error("Arquivo 'backup_ativos.json' não encontrado no ZIP.");
+                const jsonContent = await jsonFile.async("string");
+                let importedAtivos = JSON.parse(jsonContent);
+
+                const imageMap = new Map();
+                const imageFolder = zip.folder("images");
+                const imagePromises = [];
+                if(imageFolder) {
+                    imageFolder.forEach((relativePath, zipEntry) => {
+                        const promise = zipEntry.async("base64").then(base64 => {
+                            const mimeType = zipEntry.name.endsWith('png') ? 'image/png' : 'image/jpeg';
+                            imageMap.set(zipEntry.name, `data:${mimeType};base64,${base64}`);
+                        });
+                        imagePromises.push(promise);
+                    });
                 }
-            };
-            reader.readAsText(file);
+                await Promise.all(imagePromises);
+
+                importedAtivos.forEach(ativo => {
+                    if (ativo.imageFilename && imageMap.has(ativo.imageFilename)) {
+                        ativo.imageDataUrl = imageMap.get(ativo.imageFilename);
+                    }
+                });
+                
+                if (confirm('Dados e imagens lidos com sucesso. Deseja substituir os dados atuais?')) {
+                    ativos = importedAtivos;
+                    resetFormMode();
+                    renderTable();
+                    alert('Sistema restaurado com sucesso!');
+                }
+
+            } catch(e) { console.error(e); alert("Erro ao importar o arquivo ZIP: " + e.message); }
             e.target.value = null;
         };
 
-        // Event Listeners
+        // --- Eventos ---
         form.addEventListener('submit', handleFormSubmit);
         cancelEditBtn.addEventListener('click', resetFormMode);
         openCameraBtn.addEventListener('click', openCamera);
@@ -377,8 +424,7 @@
                 reader.onload = (event) => {
                     const baseName = etiquetaInput.value.trim().replace(/\s+/g, '-') || 'ativo';
                     const uniqueFilename = `${baseName}-${Date.now()}.${file.name.split('.').pop()}`;
-                    imagePreview.src = event.target.result;
-                    imagePreview.style.display = 'block';
+                    imagePreview.src = event.target.result; imagePreview.style.display = 'block';
                     currentImageData = { fileName: uniqueFilename, dataUrl: event.target.result };
                 };
                 reader.readAsDataURL(file);
@@ -394,9 +440,7 @@
                     renderTable();
                 }
             }
-            if (e.target.classList.contains('edit-btn')) {
-                startEditing(parseInt(e.target.dataset.index, 10));
-            }
+            if (e.target.classList.contains('edit-btn')) startEditing(parseInt(e.target.dataset.index, 10));
         });
 
         tabs.forEach(tab => tab.addEventListener('click', (e) => {
@@ -409,7 +453,7 @@
         exportSystemBtn.addEventListener('click', exportToSystem);
         importSystemInput.addEventListener('change', importFromSystem);
 
-        // Inicialização
+        // --- Inicialização ---
         initializeChoices();
         renderTable();
     });
