@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale-1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gerenciador de Ativos</title>
     <!-- Biblioteca para menus suspensos com busca -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css"/>
@@ -47,98 +47,48 @@
         .asset-image-thumbnail { max-width: 60px; max-height: 60px; border-radius: 5px; cursor: pointer; transition: transform 0.2s; }
         .asset-image-thumbnail:hover { transform: scale(1.1); }
         
-        /* Estilos do Modal da Câmera */
         #camera-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.8); z-index: 1000; display: none; justify-content: center; align-items: center; flex-direction: column; gap: 20px; }
         #camera-feed { max-width: 80%; max-height: 70%; border-radius: 10px; }
         .modal-buttons { display: flex; gap: 20px; }
 
-        /* ========= INÍCIO: ESTILOS CORRIGIDOS PARA CHOICES.JS ========= */
+        /* Estilos com melhor contraste para Choices.js */
         .choices { width: 100%; }
-        /* A caixa principal que parece um input */
-        .choices__inner {
-            background-color: rgba(0, 92, 115, 0.5);
-            border: 1px solid var(--teal);
-            border-radius: 5px;
-            padding: 7px;
-            font-size: 1rem;
-            color: var(--white);
-            min-height: 44px; /* Garante alinhamento de altura com outros inputs */
-        }
-        /* A lista que abre para baixo (dropdown) */
-        .choices__list--dropdown {
-            background-color: var(--midnight-green);
-            border-color: var(--teal);
-        }
-        .choices__list[aria-expanded] {
-            border-color: var(--teal);
-        }
-        /* Cada opção individual na lista dropdown */
-        .choices__item--choice {
-            color: var(--white);
-        }
-        /* A opção destacada quando você passa o mouse por cima */
-        .choices__item--choice.is-highlighted {
-            background-color: var(--teal);
-            color: var(--white);
-        }
-        /* O item que já foi selecionado (dentro da caixa principal) */
-        .choices__item--selectable {
-             background-color: var(--teal);
-             border: 1px solid var(--tiffany-blue);
-        }
-        /* O 'x' para remover um item selecionado */
-        .choices__button {
-             border-left: 1px solid rgba(255, 255, 255, 0.5);
-             filter: invert(1);
-             opacity: 0.75;
-        }
-        .choices__button:hover {
-            opacity: 1;
-        }
-        /* O texto do placeholder */
-        .choices__placeholder {
-            color: var(--tiffany-blue);
-            opacity: 0.8;
-        }
-        /* A seta do dropdown */
-        .choices[data-type*="select-one"]::after {
-            border-color: var(--white) transparent transparent;
-        }
-        .choices.is-open[data-type*="select-one"]::after {
-            border-color: transparent transparent var(--white);
-            margin-top: -2.5px;
-        }
-        /* ========= FIM: ESTILOS CORRIGIDOS PARA CHOICES.JS ========= */
+        .choices__inner { background-color: rgba(0, 92, 115, 0.5); border: 1px solid var(--teal); border-radius: 5px; padding: 7px; font-size: 1rem; color: var(--white); min-height: 44px; }
+        .choices.is-open .choices__inner { border-color: var(--tiffany-blue); }
+        .choices__list--dropdown { background-color: var(--midnight-green); border-color: var(--teal); }
+        .choices__list[aria-expanded] { border-color: var(--teal); }
+        .choices__item--choice { color: var(--white); }
+        .choices__item--choice.is-highlighted { background-color: var(--tiffany-blue); color: var(--midnight-green); }
+        .choices__item--selectable { background-color: var(--teal); border: 1px solid var(--tiffany-blue); }
+        .choices__button { border-left: 1px solid rgba(255, 255, 255, 0.5); filter: invert(1); opacity: 0.75; }
+        .choices__button:hover { opacity: 1; }
+        .choices__placeholder { color: var(--tiffany-blue); opacity: 0.8; }
+        .choices[data-type*="select-one"]::after { border-color: var(--white) transparent transparent; }
+        .choices.is-open[data-type*="select-one"]::after { border-color: transparent transparent var(--white); margin-top: -2.5px; }
     </style>
 </head>
 <body>
-
     <div class="container">
         <header><h1>Gerenciador de Ativos</h1></header>
-
         <div class="actions-bar">
-            <button id="export-csv-btn" class="btn">Exportar para CSV</button>
+            <button id="export-csv-btn" class="btn">Exportar CSV (Nomes)</button>
             <button id="export-system-btn" class="btn">Exportar Sistema (ZIP)</button>
             <label for="import-system-input" class="btn-like-input-label">Importar Sistema (ZIP)</label>
             <input type="file" id="import-system-input" accept=".zip">
         </div>
-
         <div class="tabs">
             <button id="form-tab-btn" class="tab-button active" data-tab="tab-form">Cadastrar Ativo</button>
             <button class="tab-button" data-tab="tab-list">Lista de Ativos</button>
         </div>
-
         <div id="tab-form" class="tab-content active">
             <form id="asset-form">
                 <h3 class="section-title">Informações do Ativo</h3>
                 <div class="form-group"><label for="etiqueta">Etiqueta de Patrimônio</label><input type="text" id="etiqueta" required></div>
+                <div class="form-group"><label for="empresa">Empresa</label><select id="empresa"></select></div>
                 <div class="form-group"><label for="tipoItem">Tipo do Item</label><select id="tipoItem"></select></div>
                 <div class="form-group"><label for="marca">Marca</label><input type="text" id="marca"></div>
                 <div class="form-group"><label for="modelo">Modelo</label><input type="text" id="modelo"></div>
                 <div class="form-group"><label for="nSerie">N. Série</label><input type="text" id="nSerie"></div>
-                <div class="form-group"><label for="imei1">IMEI 1</label><input type="text" id="imei1"></div>
-                <div class="form-group"><label for="imei2">IMEI 2</label><input type="text" id="imei2"></div>
-
                 <div class="form-group" style="grid-column: 1 / -1;">
                     <label>Imagem do Ativo</label>
                     <div id="image-preview-container">
@@ -150,7 +100,6 @@
                         <img id="image-preview" src="" alt="Pré-visualização da Imagem">
                     </div>
                 </div>
-
                 <h3 class="section-title">Status e Localização</h3>
                 <div class="form-group"><label for="statusLocalizacao">Status Localização</label><select id="statusLocalizacao"></select></div>
                 <div class="form-group"><label for="status">Status Geral</label><select id="status"></select></div>
@@ -158,32 +107,27 @@
                 <div class="form-group"><label for="dpto">Departamento</label><select id="dpto"></select></div>
                 <div class="form-group"><label for="unidade">Unidade</label><select id="unidade"></select></div>
                 <div class="form-group"><label for="localizacao">Localização Física</label><input type="text" id="localizacao"></div>
-                
                 <h3 class="section-title">Informações Contábeis e de Compra</h3>
                 <div class="form-group"><label for="classificacaoContabil">Classificação Contábil</label><select id="classificacaoContabil"></select></div>
                 <div class="form-group"><label for="proprietario">Proprietário</label><input type="text" id="proprietario"></div>
                 <div class="form-group"><label for="notaFiscal">Nota Fiscal</label><input type="text" id="notaFiscal"></div>
                 <div class="form-group"><label for="valor">Valor (R$)</label><input type="number" id="valor" step="0.01"></div>
                 <div class="form-group"><label for="dataCompra">Data da Compra</label><input type="date" id="dataCompra"></div>
-
                 <div class="form-actions">
                     <button type="button" id="cancel-edit-btn" class="btn btn-secondary" style="display: none;">Cancelar Edição</button>
                     <button type="submit" id="submit-btn" class="btn">Salvar Ativo</button>
                 </div>
             </form>
         </div>
-
         <div id="tab-list" class="tab-content">
             <div class="table-container">
                 <table id="asset-table">
-                    <thead><tr><th>Imagem</th><th>Etiqueta</th><th>Status Loc.</th><th>Tipo</th><th>Marca</th><th>Modelo</th><th>N.Série</th><th>Usuário</th><th>Ações</th></tr></thead>
+                    <thead><tr><th>Imagem</th><th>Etiqueta</th><th>Empresa</th><th>Status Loc.</th><th>Tipo</th><th>Marca</th><th>Modelo</th><th>N.Série</th><th>Usuário</th><th>Ações</th></tr></thead>
                     <tbody id="asset-table-body"></tbody>
                 </table>
             </div>
         </div>
     </div>
-
-    <!-- Modal da Câmera -->
     <div id="camera-modal">
         <video id="camera-feed" playsinline autoplay></video>
         <div class="modal-buttons">
@@ -198,6 +142,7 @@
         const form = document.getElementById('asset-form');
         const tableBody = document.getElementById('asset-table-body');
         const exportSystemBtn = document.getElementById('export-system-btn');
+        const exportCsvBtn = document.getElementById('export-csv-btn');
         const importSystemInput = document.getElementById('import-system-input');
         const submitBtn = document.getElementById('submit-btn');
         const cancelEditBtn = document.getElementById('cancel-edit-btn');
@@ -220,8 +165,9 @@
         let cameraStream = null;
         const choicesInstances = {};
 
-        // --- Opções para os Menus ---
+        // --- Definições e Opções ---
         const options = {
+            empresa: ['PPay', 'MNTZZ', 'MFVP'],
             tipoItem: ["Notebook", "Desktop", "Monitor", "Teclado", "Mouse", "Celular", "Tablet", "Carregador", "Headset", "Webcam", "Impressora", "Scanner", "Nobreak (UPS)", "Roteador", "Switch", "Servidor", "Projetor", "TV", "Mesa", "Cadeira de Escritório", "Cadeira de Reunião", "Armário", "Gaveteiro", "Estante", "Sofá", "Poltrona", "Quadro Branco", "Lixeira", "Geladeira", "Micro-ondas", "Bebedouro", "Cafeteira", "Ar Condicionado", "Ventilador", "Extintor de Incêndio", "Outro"],
             statusLocalizacao: ['Em estoque', 'Em uso', 'Em manutenção', 'Para descarte'],
             status: ['Ativo', 'Inativo', 'Baixado'],
@@ -229,6 +175,7 @@
             unidade: ["PLAYOFFS", "TERRACINHO", "MATRIZ"],
             classificacaoContabil: ["Móveis e Utensílios", "Computadores e Periféricos", "Aparelhos telefônicos", "Bens de pequeno valor", "Máquinas e equipamentos", "Adornos"]
         };
+        const formFields = ['etiqueta', 'empresa', 'tipoItem', 'marca', 'modelo', 'nSerie', 'statusLocalizacao', 'status', 'usuario', 'dpto', 'unidade', 'localizacao', 'classificacaoContabil', 'proprietario', 'notaFiscal', 'valor', 'dataCompra'];
 
         function initializeChoices() {
             for (const id in options) {
@@ -240,43 +187,22 @@
                 }
             }
         }
-
-        // --- Lógica da Câmera ---
-        async function openCamera() {
-            try {
-                cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-                cameraFeed.srcObject = cameraStream; cameraModal.style.display = 'flex';
-            } catch (err) { alert("Não foi possível acessar a câmera. Verifique as permissões."); }
-        }
-        function closeCamera() { if (cameraStream) { cameraStream.getTracks().forEach(track => track.stop()); } cameraModal.style.display = 'none'; }
-        function takePicture() {
-            const canvas = document.createElement('canvas'); canvas.width = cameraFeed.videoWidth; canvas.height = cameraFeed.videoHeight;
-            canvas.getContext('2d').drawImage(cameraFeed, 0, 0, canvas.width, canvas.height);
-            const dataUrl = canvas.toDataURL('image/jpeg', 0.9); // Compressão para JPEG
-            const baseName = etiquetaInput.value.trim().replace(/\s+/g, '-') || 'ativo';
-            currentImageData = { fileName: `${baseName}-${Date.now()}.jpg`, dataUrl: dataUrl };
-            imagePreview.src = dataUrl; imagePreview.style.display = 'block'; closeCamera();
-        }
-
-        // --- Funções Auxiliares ---
-        function dataURLtoBlob(dataurl) {
-            let arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1],
-                bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
-            while(n--){ u8arr[n] = bstr.charCodeAt(n); } return new Blob([u8arr], {type:mime});
-        }
         
-        // --- Funções Principais de Dados ---
+        async function openCamera() { try { cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } }); cameraFeed.srcObject = cameraStream; cameraModal.style.display = 'flex'; } catch (err) { alert("Não foi possível acessar a câmera. Verifique as permissões."); } }
+        function closeCamera() { if (cameraStream) { cameraStream.getTracks().forEach(track => track.stop()); } cameraModal.style.display = 'none'; }
+        function takePicture() { const canvas = document.createElement('canvas'); canvas.width = cameraFeed.videoWidth; canvas.height = cameraFeed.videoHeight; canvas.getContext('2d').drawImage(cameraFeed, 0, 0, canvas.width, canvas.height); const dataUrl = canvas.toDataURL('image/jpeg', 0.9); const baseName = etiquetaInput.value.trim().replace(/\s+/g, '-') || 'ativo'; currentImageData = { fileName: `${baseName}-${Date.now()}.jpg`, dataUrl: dataUrl }; imagePreview.src = dataUrl; imagePreview.style.display = 'block'; closeCamera(); }
+
+        function dataURLtoBlob(dataurl) { let arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1], bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n); while(n--){ u8arr[n] = bstr.charCodeAt(n); } return new Blob([u8arr], {type:mime}); }
+        
         function renderTable() {
             tableBody.innerHTML = '';
             ativos.forEach((ativo, index) => {
                 const row = document.createElement('tr');
-                const imageCell = ativo.imageDataUrl 
-                    ? `<a href="${ativo.imageDataUrl}" target="_blank"><img src="${ativo.imageDataUrl}" class="asset-image-thumbnail" alt="${ativo.imageFilename || ''}"></a>`
-                    : 'N/A';
+                const imageCell = ativo.imageDataUrl ? `<a href="${ativo.imageDataUrl}" target="_blank"><img src="${ativo.imageDataUrl}" class="asset-image-thumbnail" alt="${ativo.imageFilename || ''}"></a>` : 'N/A';
                 row.innerHTML = `
-                    <td>${imageCell}</td><td>${ativo.etiqueta || ''}</td><td>${ativo.statusLocalizacao || ''}</td>
-                    <td>${ativo.tipoItem || ''}</td><td>${ativo.marca || ''}</td><td>${ativo.modelo || ''}</td>
-                    <td>${ativo.nSerie || ''}</td><td>${ativo.usuario || ''}</td>
+                    <td>${imageCell}</td><td>${ativo.etiqueta || ''}</td><td>${ativo.empresa || ''}</td>
+                    <td>${ativo.statusLocalizacao || ''}</td><td>${ativo.tipoItem || ''}</td><td>${ativo.marca || ''}</td>
+                    <td>${ativo.modelo || ''}</td><td>${ativo.nSerie || ''}</td><td>${ativo.usuario || ''}</td>
                     <td class="actions-cell">
                         <button class="btn btn-edit edit-btn" data-index="${index}">Editar</button>
                         <button class="btn btn-danger remove-btn" data-index="${index}">Remover</button>
@@ -287,31 +213,25 @@
 
         function getFormData() {
             const data = {};
-            const fields = ['etiqueta', 'tipoItem', 'marca', 'modelo', 'nSerie', 'imei1', 'imei2', 'statusLocalizacao', 'status', 'usuario', 'dpto', 'unidade', 'localizacao', 'classificacaoContabil', 'proprietario', 'notaFiscal', 'valor', 'dataCompra'];
-            fields.forEach(id => {
+            formFields.forEach(id => {
                 const element = document.getElementById(id);
-                if (element) {
-                    data[id] = choicesInstances[id] ? choicesInstances[id].getValue(true) : element.value;
-                }
+                if (element) data[id] = choicesInstances[id] ? choicesInstances[id].getValue(true) : element.value;
             });
             data.imageFilename = currentImageData.fileName; data.imageDataUrl = currentImageData.dataUrl;
             return data;
         };
 
         function setFormData(ativo) {
-            const fields = ['etiqueta', 'marca', 'modelo', 'nSerie', 'imei1', 'imei2', 'usuario', 'localizacao', 'proprietario', 'notaFiscal', 'valor', 'dataCompra'];
-            fields.forEach(id => {
+            formFields.forEach(id => {
                 const element = document.getElementById(id);
-                if (element) element.value = ativo[id] || '';
-            });
-            for (const id in choicesInstances) {
-                choicesInstances[id].clearInput();
-                if(ativo[id]) {
-                    choicesInstances[id].setValue([ativo[id]]);
-                } else {
-                    choicesInstances[id].setValue([]); 
+                if (choicesInstances[id]) {
+                    choicesInstances[id].clearInput();
+                    if(ativo[id]) choicesInstances[id].setValue([ativo[id]]);
+                    else choicesInstances[id].setValue([]);
+                } else if (element) {
+                    element.value = ativo[id] || '';
                 }
-            }
+            });
         };
         
         function handleFormSubmit(e) {
@@ -332,53 +252,36 @@
         
         function resetFormMode() {
             editingIndex = null; form.reset();
-            for (const id in choicesInstances) {
-                choicesInstances[id].setValue([]);
-            }
+            for (const id in choicesInstances) { choicesInstances[id].setValue([]); }
             imagePreview.style.display = 'none'; imagePreview.src = '';
             currentImageData = { fileName: null, dataUrl: null };
             submitBtn.textContent = 'Salvar Ativo'; cancelEditBtn.style.display = 'none';
         };
         
-        // --- LÓGICA DE EXPORTAÇÃO E IMPORTAÇÃO (ATUALIZADA) ---
         async function exportToSystem() {
             if (ativos.length === 0) return alert('Não há dados para exportar.');
-            
             alert('Gerando arquivo ZIP, por favor aguarde...');
-            const zip = new JSZip();
-            zip.file("backup_ativos.json", JSON.stringify(ativos, null, 2));
+            const zip = new JSZip(); zip.file("backup_ativos.json", JSON.stringify(ativos, null, 2));
             const imgFolder = zip.folder("images");
-            ativos.forEach(ativo => {
-                if (ativo.imageDataUrl && ativo.imageFilename) {
-                    const blob = dataURLtoBlob(ativo.imageDataUrl);
-                    imgFolder.file(ativo.imageFilename, blob);
-                }
-            });
-
+            ativos.forEach(ativo => { if (ativo.imageDataUrl && ativo.imageFilename) { const blob = dataURLtoBlob(ativo.imageDataUrl); imgFolder.file(ativo.imageFilename, blob); } });
             try {
                 const content = await zip.generateAsync({ type: "blob" });
                 const a = document.createElement("a");
                 a.href = URL.createObjectURL(content);
                 a.download = `backup_completo_${new Date().toISOString().slice(0,10)}.zip`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(a.href);
+                document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(a.href);
             } catch(e) { console.error(e); alert("Ocorreu um erro ao gerar o arquivo ZIP."); }
         };
 
         async function importFromSystem(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            alert('Lendo arquivo ZIP, por favor aguarde...');
+            const file = e.target.files[0]; if (!file) return;
+            alert('Lendo arquivo ZIP...');
             try {
                 const zip = await JSZip.loadAsync(file);
                 const jsonFile = zip.file("backup_ativos.json");
-                if (!jsonFile) throw new Error("Arquivo 'backup_ativos.json' não encontrado no ZIP.");
+                if (!jsonFile) throw new Error("'backup_ativos.json' não encontrado.");
                 const jsonContent = await jsonFile.async("string");
                 let importedAtivos = JSON.parse(jsonContent);
-
                 const imageMap = new Map();
                 const imageFolder = zip.folder("images");
                 const imagePromises = [];
@@ -392,23 +295,36 @@
                     });
                 }
                 await Promise.all(imagePromises);
-
-                importedAtivos.forEach(ativo => {
-                    if (ativo.imageFilename && imageMap.has(ativo.imageFilename)) {
-                        ativo.imageDataUrl = imageMap.get(ativo.imageFilename);
-                    }
-                });
-                
-                if (confirm('Dados e imagens lidos com sucesso. Deseja substituir os dados atuais?')) {
+                importedAtivos.forEach(ativo => { if (ativo.imageFilename && imageMap.has(ativo.imageFilename)) { ativo.imageDataUrl = imageMap.get(ativo.imageFilename); } });
+                if (confirm('Dados lidos. Deseja substituir os dados atuais?')) {
                     ativos = importedAtivos;
-                    resetFormMode();
-                    renderTable();
+                    resetFormMode(); renderTable();
                     alert('Sistema restaurado com sucesso!');
                 }
-
-            } catch(e) { console.error(e); alert("Erro ao importar o arquivo ZIP: " + e.message); }
+            } catch(e) { console.error(e); alert("Erro ao importar ZIP: " + e.message); }
             e.target.value = null;
         };
+
+        function exportToCsv() {
+            if (ativos.length === 0) return alert('Não há dados para exportar.');
+            alert('Gerando CSV com os nomes dos arquivos de imagem...');
+            const headers = ['Etiqueta', 'Empresa', 'Tipo', 'Marca', 'Modelo', 'N. Série', 'Status Loc.', 'Status Geral', 'Usuário', 'Dpto', 'Unidade', 'Localização', 'Class. Contábil', 'Proprietário', 'Nota Fiscal', 'Valor', 'Data Compra', 'Nome Arquivo Imagem'];
+            const rows = ativos.map(ativo => {
+                const imageName = ativo.imageFilename || ''; 
+                return [
+                    ativo.etiqueta, ativo.empresa, ativo.tipoItem, ativo.marca, ativo.modelo,
+                    ativo.nSerie, ativo.statusLocalizacao, ativo.status, ativo.usuario, ativo.dpto,
+                    ativo.unidade, ativo.localizacao, ativo.classificacaoContabil, ativo.proprietario,
+                    ativo.notaFiscal, ativo.valor, ativo.dataCompra, imageName
+                ].map(val => `"${(val || '').toString().replace(/"/g, '""')}"`).join(';');
+            });
+            const csvContent = "\uFEFF" + headers.join(';') + '\n' + rows.join('\n');
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const a = document.createElement("a");
+            a.href = URL.createObjectURL(blob);
+            a.download = `export_ativos_${new Date().toISOString().slice(0,10)}.csv`;
+            document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        }
 
         // --- Eventos ---
         form.addEventListener('submit', handleFormSubmit);
@@ -416,6 +332,9 @@
         openCameraBtn.addEventListener('click', openCamera);
         cancelCameraBtn.addEventListener('click', closeCamera);
         snapPhotoBtn.addEventListener('click', takePicture);
+        exportSystemBtn.addEventListener('click', exportToSystem);
+        exportCsvBtn.addEventListener('click', exportToCsv);
+        importSystemInput.addEventListener('change', importFromSystem);
         
         selectFileBtn.addEventListener('change', (e) => {
             const file = e.target.files[0];
@@ -450,9 +369,6 @@
             document.getElementById(e.currentTarget.dataset.tab).classList.add('active');
         }));
         
-        exportSystemBtn.addEventListener('click', exportToSystem);
-        importSystemInput.addEventListener('change', importFromSystem);
-
         // --- Inicialização ---
         initializeChoices();
         renderTable();
