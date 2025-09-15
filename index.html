@@ -2,8 +2,14 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Gerenciador de Ativos</title>
+    
+    <!-- PWA Manifest & Theme -->
+    <!-- CAMINHO CORRIGIDO para GitHub Pages -->
+    <link rel="manifest" href="./manifest.json">
+    <meta name="theme-color" content="#005C73">
+    
     <!-- Biblioteca para menus suspensos com busca -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css"/>
     <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
@@ -68,13 +74,22 @@
         .choices__placeholder { color: var(--tiffany-blue); opacity: 0.8; }
         .choices[data-type*="select-one"]::after { border-color: var(--white) transparent transparent; }
         .choices.is-open[data-type*="select-one"]::after { border-color: transparent transparent var(--white); margin-top: -2.5px; }
+
+        /* Estilo para o aviso de "Sair do App" */
+        #exit-toast {
+            position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%);
+            background-color: var(--black); color: var(--white); padding: 12px 25px;
+            border-radius: 25px; font-size: 0.9rem; z-index: 2000;
+            transition: bottom 0.4s ease-in-out; box-shadow: 0 5px 15px var(--shadow);
+        }
+        #exit-toast.show { bottom: 30px; }
     </style>
 </head>
 <body>
     <div class="container">
         <header><h1>Gerenciador de Ativos</h1></header>
         <div class="actions-bar">
-            <button id="export-csv-btn" class="btn">Exportar CSV (Nomes)</button>
+            <button id="export-csv-btn" class="btn">Exportar CSV</button>
             <button id="export-system-btn" class="btn">Exportar Sistema (ZIP)</button>
             <label for="import-system-input" class="btn-like-input-label">Importar Sistema (ZIP)</label>
             <input type="file" id="import-system-input" accept=".zip">
@@ -85,6 +100,7 @@
         </div>
         <div id="tab-form" class="tab-content active">
             <form id="asset-form">
+                <!-- O restante do seu formulário HTML aqui... igual ao anterior -->
                 <h3 class="section-title">Informações do Ativo</h3>
                 <div class="form-group"><label for="etiqueta">Etiqueta de Patrimônio</label><input type="text" id="etiqueta" required></div>
                 <div class="form-group"><label for="tipoItem">Tipo do Item</label><select id="tipoItem"></select></div>
@@ -163,200 +179,259 @@
         </div>
     </div>
 
+    <!-- Elemento para o aviso "toast" -->
+    <div id="exit-toast">Pressione voltar novamente para sair</div>
+
     <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const form = document.getElementById('asset-form');
-        const tableBody = document.getElementById('asset-table-body');
-        const exportSystemBtn = document.getElementById('export-system-btn');
-        const exportCsvBtn = document.getElementById('export-csv-btn');
-        const importSystemInput = document.getElementById('import-system-input');
-        const submitBtn = document.getElementById('submit-btn');
-        const cancelEditBtn = document.getElementById('cancel-edit-btn');
-        const formTabBtn = document.getElementById('form-tab-btn');
-        const imagePreview = document.getElementById('image-preview');
-        const etiquetaInput = document.getElementById('etiqueta');
-        const tabs = document.querySelectorAll('.tab-button');
-        const tabContents = document.querySelectorAll('.tab-content');
-        const openCameraBtn = document.getElementById('open-camera-btn');
-        const selectFileBtn = document.getElementById('select-file-btn');
-        const cameraModal = document.getElementById('camera-modal');
-        const cameraFeed = document.getElementById('camera-feed');
-        const snapPhotoBtn = document.getElementById('snap-photo-btn');
-        const cancelCameraBtn = document.getElementById('cancel-camera-btn');
-        const notebookFields = document.getElementById('notebook-fields');
-        const celularFields = document.getElementById('celular-fields');
+        // Todo o seu JavaScript anterior aqui... é exatamente o mesmo
+        document.addEventListener('DOMContentLoaded', () => {
+            const STORAGE_KEY = 'gerenciadorDeAtivosData'; // Chave para o localStorage
+            const form = document.getElementById('asset-form');
+            const tableBody = document.getElementById('asset-table-body');
+            const exportSystemBtn = document.getElementById('export-system-btn');
+            const exportCsvBtn = document.getElementById('export-csv-btn');
+            const importSystemInput = document.getElementById('import-system-input');
+            const submitBtn = document.getElementById('submit-btn');
+            const cancelEditBtn = document.getElementById('cancel-edit-btn');
+            const formTabBtn = document.getElementById('form-tab-btn');
+            const imagePreview = document.getElementById('image-preview');
+            const etiquetaInput = document.getElementById('etiqueta');
+            const tabs = document.querySelectorAll('.tab-button');
+            const tabContents = document.querySelectorAll('.tab-content');
+            const openCameraBtn = document.getElementById('open-camera-btn');
+            const selectFileBtn = document.getElementById('select-file-btn');
+            const cameraModal = document.getElementById('camera-modal');
+            const cameraFeed = document.getElementById('camera-feed');
+            const snapPhotoBtn = document.getElementById('snap-photo-btn');
+            const cancelCameraBtn = document.getElementById('cancel-camera-btn');
+            const notebookFields = document.getElementById('notebook-fields');
+            const celularFields = document.getElementById('celular-fields');
 
-        let ativos = [];
-        let editingIndex = null;
-        let currentImageData = { fileName: null, dataUrl: null };
-        let cameraStream = null;
-        const choicesInstances = {};
+            let editingIndex = null;
+            let currentImageData = { fileName: null, dataUrl: null };
+            let cameraStream = null;
+            const choicesInstances = {};
 
-        const options = {
-            empresa: ['PPay', 'MNTZZ', 'VG'],
-            tipoItem: ["Notebook", "Celular", "Desktop", "Fonte Notebook", "Radio Comunicador", "Monitor", "Teclado", "Mouse", "Tablet", "Carregador", "Câmera de Segurança", "Headset","Suporte Papel Higiênico", "Suporte Sabão Líquido", "Suporte Papel Toalha", "Espelho", "Proteção de Ar Condicionado", "Webcam", "Impressora", "Scanner", "Nobreak (UPS)", "Roteador", "Switch", "Servidor", "Projetor", "TV", "Mesa", "Cadeira", "Cadeira de Escritório", "Cadeira de Reunião", "Armário", "Gaveteiro", "Estante", "Sofá", "Poltrona", "Quadro Branco", "Lixeira", "Geladeira", "Micro-ondas", "Bebedouro", "Cafeteira", "Ar Condicionado", "Ventilador", "Extintor de Incêndio", "Outro"],
-            statusLocalizacao: ['Em estoque', 'Em uso', 'Em manutenção', 'Para descarte'],
-            dpto: ["FACILITIES", "TI", "INFRA", "CS", "JURIDICO", "FINANCEIRO", "MARKETING", "EVENTOS", "ADM", "DIRETORIA"],
-            unidade: ['TERRACINHO', 'MATRIZ', 'PO'],
-            classificacaoContabil: ["Móveis e Utensílios", "Computadores e Periféricos", "Aparelhos telefônicos", "Bens de pequeno valor", "Máquinas e equipamentos", "Adornos"],
-            estadoBem: ['Novo', 'Bom', 'Regular', 'Ruim', 'Sucata'],
-            descarte: ['Não', 'Sim'],
-            processador: ['i3', 'i5', 'i7'],
-            memoriaRam: ['4GB', '8GB', '16GB', '32GB'],
-            memoriaRom: ['120GB', '240GB', '500GB', '1TB'],
-            placaDeVideo: ['Não', 'Sim']
-        };
-        
-        const formFields = ['etiqueta', 'statusLocalizacao', 'tipoItem', 'marca', 'modelo', 'nSerie', 'imei1', 'imei2', 'descricao', 'classificacaoContabil', 'localizacao', 'usuario', 'empresa', 'dpto', 'unidade', 'notaFiscal', 'valor', 'dataCompra', 'estadoBem', 'descarte', 'proprietario', 'numeroTelefone', 'processador', 'memoriaRam', 'memoriaRom', 'placaDeVideo'];
+            // --- INÍCIO: LÓGICA DE PERSISTÊNCIA DE DADOS ---
+            const loadAtivos = () => {
+                const data = localStorage.getItem(STORAGE_KEY);
+                try {
+                    return data ? JSON.parse(data) : [];
+                } catch (e) {
+                    console.error("Erro ao carregar dados do localStorage:", e);
+                    return [];
+                }
+            };
 
-        function initializeChoices() {
-            for (const id in options) {
-                const selectElement = document.getElementById(id);
-                if (selectElement) {
-                    choicesInstances[id] = new Choices(selectElement, {
-                        choices: options[id].map(val => ({ value: val, label: val })), removeItemButton: true, searchResultLimit: 15, itemSelectText: 'Pressione para selecionar', placeholder: true, placeholderValue: 'Selecione uma opção'
+            const saveAtivos = () => {
+                try {
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(ativos));
+                } catch (e) {
+                    console.error("Erro ao salvar dados no localStorage:", e);
+                    alert("Não foi possível salvar os dados. O armazenamento pode estar cheio.");
+                }
+            };
+            
+            let ativos = loadAtivos();
+            // --- FIM: LÓGICA DE PERSISTÊNCIA DE DADOS ---
+
+            const options = {
+                empresa: ['PPay', 'MNTZZ', 'VG'],
+                tipoItem: ["Notebook", "Celular", "Desktop", "Fonte Notebook", "Radio Comunicador", "Monitor", "Teclado", "Mouse", "Tablet", "Carregador", "Câmera de Segurança", "Headset","Suporte Papel Higiênico", "Suporte Sabão Líquido", "Suporte Papel Toalha", "Espelho", "Proteção de Ar Condicionado", "Webcam", "Impressora", "Scanner", "Nobreak (UPS)", "Roteador", "Switch", "Servidor", "Projetor", "TV", "Mesa", "Cadeira", "Cadeira de Escritório", "Cadeira de Reunião", "Armário", "Gaveteiro", "Estante", "Sofá", "Poltrona", "Quadro Branco", "Lixeira", "Geladeira", "Micro-ondas", "Bebedouro", "Cafeteira", "Ar Condicionado", "Ventilador", "Extintor de Incêndio", "Outro"],
+                statusLocalizacao: ['Em estoque', 'Em uso', 'Em manutenção', 'Para descarte'],
+                dpto: ["FACILITIES", "TI", "INFRA", "CS", "JURIDICO", "FINANCEIRO", "MARKETING", "EVENTOS", "ADM", "DIRETORIA"],
+                unidade: ['TERRACINHO', 'MATRIZ', 'PO'],
+                classificacaoContabil: ["Móveis e Utensílios", "Computadores e Periféricos", "Aparelhos telefônicos", "Bens de pequeno valor", "Máquinas e equipamentos", "Adornos"],
+                estadoBem: ['Novo', 'Bom', 'Regular', 'Ruim', 'Sucata'],
+                descarte: ['Não', 'Sim'],
+                processador: ['i3', 'i5', 'i7', 'Ryzen 3', 'Ryzen 5', 'Ryzen 7'],
+                memoriaRam: ['4GB', '8GB', '12GB', '16GB', '32GB'],
+                memoriaRom: ['128GB SSD', '256GB SSD', '512GB SSD', '1TB SSD', '500GB HDD', '1TB HDD'],
+                placaDeVideo: ['Não', 'Sim']
+            };
+            
+            const formFields = ['etiqueta', 'statusLocalizacao', 'tipoItem', 'marca', 'modelo', 'nSerie', 'imei1', 'imei2', 'descricao', 'classificacaoContabil', 'localizacao', 'usuario', 'empresa', 'dpto', 'unidade', 'notaFiscal', 'valor', 'dataCompra', 'estadoBem', 'descarte', 'proprietario', 'numeroTelefone', 'processador', 'memoriaRam', 'memoriaRom', 'placaDeVideo'];
+
+            function initializeChoices() {
+                for (const id in options) {
+                    const selectElement = document.getElementById(id);
+                    if (selectElement) {
+                        choicesInstances[id] = new Choices(selectElement, {
+                            choices: options[id].map(val => ({ value: val, label: val })), removeItemButton: true, searchResultLimit: 15, itemSelectText: 'Pressione para selecionar', placeholder: true, placeholderValue: 'Selecione uma opção'
+                        });
+                    }
+                }
+                const tipoItemElement = document.getElementById('tipoItem');
+                if (tipoItemElement) {
+                    tipoItemElement.addEventListener('change', toggleConditionalFields);
+                }
+            }
+            
+            function toggleConditionalFields() {
+                const tipo = choicesInstances['tipoItem'] ? choicesInstances['tipoItem'].getValue(true) : '';
+                notebookFields.classList.toggle('visible', tipo === 'Notebook');
+                celularFields.classList.toggle('visible', tipo === 'Celular');
+
+                if (tipo !== 'Notebook') {
+                    ['processador', 'memoriaRam', 'memoriaRom', 'placaDeVideo'].forEach(id => choicesInstances[id]?.setValue([]));
+                }
+                if (tipo !== 'Celular') {
+                    ['imei1', 'imei2', 'numeroTelefone'].forEach(id => {
+                        const el = document.getElementById(id); if (el) el.value = '';
                     });
                 }
             }
-            const tipoItemElement = document.getElementById('tipoItem');
-            if (tipoItemElement) {
-                tipoItemElement.addEventListener('change', toggleConditionalFields);
-            }
-        }
-        
-        function toggleConditionalFields() {
-            const tipo = choicesInstances['tipoItem'] ? choicesInstances['tipoItem'].getValue(true) : '';
 
-            notebookFields.classList.toggle('visible', tipo === 'Notebook');
-            celularFields.classList.toggle('visible', tipo === 'Celular');
+            async function openCamera() { try { cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } }); cameraFeed.srcObject = cameraStream; cameraModal.style.display = 'flex'; } catch (err) { alert("Não foi possível acessar a câmera. Verifique as permissões."); } }
+            function closeCamera() { if (cameraStream) { cameraStream.getTracks().forEach(track => track.stop()); } cameraModal.style.display = 'none'; }
+            function takePicture() { const canvas = document.createElement('canvas'); canvas.width = cameraFeed.videoWidth; canvas.height = cameraFeed.videoHeight; canvas.getContext('2d').drawImage(cameraFeed, 0, 0, canvas.width, canvas.height); const dataUrl = canvas.toDataURL('image/jpeg', 0.9); const baseName = etiquetaInput.value.trim().replace(/\s+/g, '-') || 'ativo'; currentImageData = { fileName: `${baseName}-${Date.now()}.jpg`, dataUrl: dataUrl }; imagePreview.src = dataUrl; imagePreview.style.display = 'block'; closeCamera(); }
 
-            if (tipo !== 'Notebook') {
-                ['processador', 'memoriaRam', 'memoriaRom', 'placaDeVideo'].forEach(id => choicesInstances[id]?.setValue([]));
-            }
-            if (tipo !== 'Celular') {
-                ['imei1', 'imei2', 'numeroTelefone'].forEach(id => {
-                    const el = document.getElementById(id);
-                    if (el) el.value = '';
+            function dataURLtoBlob(dataurl) { let arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1], bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n); while(n--){ u8arr[n] = bstr.charCodeAt(n); } return new Blob([u8arr], {type:mime}); }
+            
+            function renderTable() {
+                tableBody.innerHTML = '';
+                ativos.forEach((ativo, index) => {
+                    const row = document.createElement('tr');
+                    const imageCell = ativo.imageDataUrl ? `<a href="${ativo.imageDataUrl}" target="_blank"><img src="${ativo.imageDataUrl}" class="asset-image-thumbnail" alt="${ativo.imageFilename || ''}"></a>` : 'N/A';
+                    row.innerHTML = `
+                        <td>${imageCell}</td><td>${ativo.etiqueta || ''}</td><td>${ativo.empresa || ''}</td>
+                        <td>${ativo.tipoItem || ''}</td><td>${ativo.statusLocalizacao || ''}</td><td>${ativo.unidade || ''}</td>
+                        <td>${ativo.usuario || ''}</td><td>${ativo.localizacao || ''}</td>
+                        <td class="actions-cell">
+                            <button class="btn btn-edit edit-btn" data-index="${index}">Editar</button>
+                            <button class="btn btn-danger remove-btn" data-index="${index}">Remover</button>
+                        </td>`;
+                    tableBody.appendChild(row);
                 });
+            };
+
+            function getFormData() {
+                const data = {};
+                formFields.forEach(id => {
+                    const element = document.getElementById(id);
+                    if (element) data[id] = choicesInstances[id] ? choicesInstances[id].getValue(true) : element.value;
+                });
+                data.imageFilename = currentImageData.fileName; data.imageDataUrl = currentImageData.dataUrl;
+                return data;
+            };
+
+            function setFormData(ativo) {
+                formFields.forEach(id => {
+                    const element = document.getElementById(id);
+                    if (choicesInstances[id]) {
+                        choicesInstances[id].clearStore();
+                        if(ativo[id]) choicesInstances[id].setValue([ativo[id]]);
+                        else choicesInstances[id].setChoiceByValue('');
+                    } else if (element) {
+                        element.value = ativo[id] || '';
+                    }
+                });
+            };
+            
+            function handleFormSubmit(e) {
+                e.preventDefault(); const ativoData = getFormData();
+                if (editingIndex !== null) { ativos[editingIndex] = ativoData; alert('Ativo atualizado!'); }
+                else { ativos.push(ativoData); alert('Ativo cadastrado!'); }
+                saveAtivos(); // Salva os dados no localStorage
+                resetFormMode(); renderTable();
+            };
+
+            function startEditing(index) {
+                editingIndex = index; const ativo = ativos[index]; setFormData(ativo);
+                currentImageData = { fileName: ativo.imageFilename, dataUrl: ativo.imageDataUrl };
+                if (ativo.imageDataUrl) { imagePreview.src = ativo.imageDataUrl; imagePreview.style.display = 'block'; }
+                else { imagePreview.style.display = 'none'; }
+                submitBtn.textContent = 'Atualizar Ativo'; cancelEditBtn.style.display = 'inline-block';
+                formTabBtn.click(); window.scrollTo({ top: 0, behavior: 'smooth' });
+                toggleConditionalFields();
+            };
+            
+            function resetFormMode() {
+                editingIndex = null; form.reset();
+                for (const id in choicesInstances) { choicesInstances[id].setChoiceByValue(''); }
+                imagePreview.style.display = 'none'; imagePreview.src = '';
+                currentImageData = { fileName: null, dataUrl: null };
+                submitBtn.textContent = 'Salvar Ativo'; cancelEditBtn.style.display = 'none';
+                toggleConditionalFields();
+            };
+            
+            async function exportToSystem() { if (ativos.length === 0) return alert('Não há dados para exportar.'); alert('Gerando arquivo ZIP, por favor aguarde...'); const zip = new JSZip(); zip.file("backup_ativos.json", JSON.stringify(ativos, null, 2)); const imgFolder = zip.folder("images"); ativos.forEach(ativo => { if (ativo.imageDataUrl && ativo.imageFilename) { const blob = dataURLtoBlob(ativo.imageDataUrl); imgFolder.file(ativo.imageFilename, blob); } }); try { const content = await zip.generateAsync({ type: "blob" }); const a = document.createElement("a"); a.href = URL.createObjectURL(content); a.download = `backup_completo_${new Date().toISOString().slice(0,10)}.zip`; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(a.href); } catch(e) { console.error(e); alert("Ocorreu um erro ao gerar o arquivo ZIP."); } };
+            async function importFromSystem(e) { const file = e.target.files[0]; if (!file) return; alert('Lendo arquivo ZIP...'); try { const zip = await JSZip.loadAsync(file); const jsonFile = zip.file("backup_ativos.json"); if (!jsonFile) throw new Error("'backup_ativos.json' não encontrado."); const jsonContent = await jsonFile.async("string"); let importedAtivos = JSON.parse(jsonContent); const imageMap = new Map(); const imageFolder = zip.folder("images"); const imagePromises = []; if(imageFolder) { imageFolder.forEach((relativePath, zipEntry) => { const promise = zipEntry.async("base64").then(base64 => { const mimeType = zipEntry.name.endsWith('png') ? 'image/png' : 'image/jpeg'; imageMap.set(zipEntry.name, `data:${mimeType};base64,${base64}`); }); imagePromises.push(promise); }); } await Promise.all(imagePromises); importedAtivos.forEach(ativo => { if (ativo.imageFilename && imageMap.has(ativo.imageFilename)) { ativo.imageDataUrl = imageMap.get(ativo.imageFilename); } }); if (confirm('Dados lidos. Deseja substituir os dados atuais?')) { ativos = importedAtivos; saveAtivos(); resetFormMode(); renderTable(); alert('Sistema restaurado com sucesso!'); } } catch(e) { console.error(e); alert("Erro ao importar ZIP: " + e.message); } e.target.value = null; };
+
+            function exportToCsv() {
+                if (ativos.length === 0) return alert('Não há dados para exportar.');
+                alert('Gerando CSV...');
+                const headers = ['ETIQUETA DE PATRIMÔNIO', 'Status.localizacao', 'Tipo.item', 'Marca', 'Modelo', 'N.Série', 'IMEI.1', 'IMEI.2', 'Descrição', 'Classificação Contábil', 'Localização', 'Usuário', 'Empresa', 'Dpto', 'Unidade', 'Nota Fiscal', 'Valor', 'Data da Compra', 'Estado do bem', 'Descarte', 'Proprietário', 'Processador', 'Memória RAM', 'Memória ROM', 'Placa de Video', 'Número de Telefone', 'Nome Arquivo Imagem'];
+                const rows = ativos.map(ativo => {
+                    return [
+                        ativo.etiqueta, ativo.statusLocalizacao, ativo.tipoItem, ativo.marca, ativo.modelo,
+                        ativo.nSerie, ativo.imei1, ativo.imei2, ativo.descricao, ativo.classificacaoContabil,
+                        ativo.localizacao, ativo.usuario, ativo.empresa, ativo.dpto, ativo.unidade, ativo.notaFiscal,
+                        ativo.valor, ativo.dataCompra, ativo.estadoBem, ativo.descarte, ativo.proprietario,
+                        ativo.processador, ativo.memoriaRam, ativo.memoriaRom, ativo.placaDeVideo,
+                        ativo.numeroTelefone, ativo.imageFilename || ''
+                    ].map(val => `"${(val || '').toString().replace(/"/g, '""')}"`).join(';');
+                });
+                const csvContent = "\uFEFF" + headers.join(';') + '\n' + rows.join('\n');
+                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                const a = document.createElement("a");
+                a.href = URL.createObjectURL(blob);
+                a.download = `export_ativos_${new Date().toISOString().slice(0,10)}.csv`;
+                document.body.appendChild(a); a.click(); document.body.removeChild(a);
             }
-        }
 
-        async function openCamera() { try { cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } }); cameraFeed.srcObject = cameraStream; cameraModal.style.display = 'flex'; } catch (err) { alert("Não foi possível acessar a câmera. Verifique as permissões."); } }
-        function closeCamera() { if (cameraStream) { cameraStream.getTracks().forEach(track => track.stop()); } cameraModal.style.display = 'none'; }
-        function takePicture() { const canvas = document.createElement('canvas'); canvas.width = cameraFeed.videoWidth; canvas.height = cameraFeed.videoHeight; canvas.getContext('2d').drawImage(cameraFeed, 0, 0, canvas.width, canvas.height); const dataUrl = canvas.toDataURL('image/jpeg', 0.9); const baseName = etiquetaInput.value.trim().replace(/\s+/g, '-') || 'ativo'; currentImageData = { fileName: `${baseName}-${Date.now()}.jpg`, dataUrl: dataUrl }; imagePreview.src = dataUrl; imagePreview.style.display = 'block'; closeCamera(); }
-
-        function dataURLtoBlob(dataurl) { let arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1], bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n); while(n--){ u8arr[n] = bstr.charCodeAt(n); } return new Blob([u8arr], {type:mime}); }
-        
-        function renderTable() {
-            tableBody.innerHTML = '';
-            ativos.forEach((ativo, index) => {
-                const row = document.createElement('tr');
-                const imageCell = ativo.imageDataUrl ? `<a href="${ativo.imageDataUrl}" target="_blank"><img src="${ativo.imageDataUrl}" class="asset-image-thumbnail" alt="${ativo.imageFilename || ''}"></a>` : 'N/A';
-                row.innerHTML = `
-                    <td>${imageCell}</td><td>${ativo.etiqueta || ''}</td><td>${ativo.empresa || ''}</td>
-                    <td>${ativo.tipoItem || ''}</td><td>${ativo.statusLocalizacao || ''}</td><td>${ativo.unidade || ''}</td>
-                    <td>${ativo.usuario || ''}</td><td>${ativo.localizacao || ''}</td>
-                    <td class="actions-cell">
-                        <button class="btn btn-edit edit-btn" data-index="${index}">Editar</button>
-                        <button class="btn btn-danger remove-btn" data-index="${index}">Remover</button>
-                    </td>`;
-                tableBody.appendChild(row);
-            });
-        };
-
-        function getFormData() {
-            const data = {};
-            formFields.forEach(id => {
-                const element = document.getElementById(id);
-                if (element) data[id] = choicesInstances[id] ? choicesInstances[id].getValue(true) : element.value;
-            });
-            data.imageFilename = currentImageData.fileName; data.imageDataUrl = currentImageData.dataUrl;
-            return data;
-        };
-
-        function setFormData(ativo) {
-            formFields.forEach(id => {
-                const element = document.getElementById(id);
-                if (choicesInstances[id]) {
-                    choicesInstances[id].clearInput();
-                    if(ativo[id]) choicesInstances[id].setValue([ativo[id]]);
-                    else choicesInstances[id].setValue([]);
-                } else if (element) {
-                    element.value = ativo[id] || '';
+            // --- INÍCIO: LÓGICA "PRESSIONE VOLTAR DUAS VEZES PARA SAIR" ---
+            let backButtonPressedOnce = false;
+            window.addEventListener('popstate', (e) => {
+                if (window.matchMedia('(display-mode: fullscreen)').matches) {
+                    if (backButtonPressedOnce) {
+                        history.back(); 
+                        return;
+                    }
+                    e.preventDefault();
+                    history.pushState(null, '', location.href); 
+                    backButtonPressedOnce = true;
+                    const toast = document.getElementById('exit-toast');
+                    toast.classList.add('show');
+                    setTimeout(() => {
+                        backButtonPressedOnce = false;
+                        toast.classList.remove('show');
+                    }, 2000);
                 }
             });
-        };
-        
-        function handleFormSubmit(e) {
-            e.preventDefault(); const ativoData = getFormData();
-            if (editingIndex !== null) { ativos[editingIndex] = ativoData; alert('Ativo atualizado!'); }
-            else { ativos.push(ativoData); alert('Ativo cadastrado!'); }
-            resetFormMode(); renderTable();
-        };
+            history.pushState(null, '', location.href);
+            // --- FIM: LÓGICA "PRESSIONE VOLTAR DUAS VEZES PARA SAIR" ---
 
-        function startEditing(index) {
-            editingIndex = index; const ativo = ativos[index]; setFormData(ativo);
-            currentImageData = { fileName: ativo.imageFilename, dataUrl: ativo.imageDataUrl };
-            if (ativo.imageDataUrl) { imagePreview.src = ativo.imageDataUrl; imagePreview.style.display = 'block'; }
-            else { imagePreview.style.display = 'none'; }
-            submitBtn.textContent = 'Atualizar Ativo'; cancelEditBtn.style.display = 'inline-block';
-            formTabBtn.click(); window.scrollTo({ top: 0, behavior: 'smooth' });
+            // --- Eventos ---
+            form.addEventListener('submit', handleFormSubmit);
+            cancelEditBtn.addEventListener('click', resetFormMode);
+            openCameraBtn.addEventListener('click', openCamera);
+            cancelCameraBtn.addEventListener('click', closeCamera);
+            snapPhotoBtn.addEventListener('click', takePicture);
+            exportSystemBtn.addEventListener('click', exportToSystem);
+            exportCsvBtn.addEventListener('click', exportToCsv);
+            importSystemInput.addEventListener('change', importFromSystem);
+            
+            selectFileBtn.addEventListener('change', (e) => { const file = e.target.files[0]; if (file) { const reader = new FileReader(); reader.onload = (event) => { const baseName = etiquetaInput.value.trim().replace(/\s+/g, '-') || 'ativo'; const uniqueFilename = `${baseName}-${Date.now()}.${file.name.split('.').pop()}`; imagePreview.src = event.target.result; imagePreview.style.display = 'block'; currentImageData = { fileName: uniqueFilename, dataUrl: event.target.result }; }; reader.readAsDataURL(file); } });
+            tableBody.addEventListener('click', (e) => { if (e.target.classList.contains('remove-btn')) { if (confirm('Tem certeza?')) { const index = parseInt(e.target.dataset.index, 10); ativos.splice(index, 1); if (editingIndex === index) resetFormMode(); saveAtivos(); renderTable(); } } if (e.target.classList.contains('edit-btn')) startEditing(parseInt(e.target.dataset.index, 10)); });
+            tabs.forEach(tab => tab.addEventListener('click', (e) => { tabs.forEach(t => t.classList.remove('active')); tabContents.forEach(c => c.classList.remove('active')); e.currentTarget.classList.add('active'); document.getElementById(e.currentTarget.dataset.tab).classList.add('active'); }));
+            
+            initializeChoices();
+            renderTable();
             toggleConditionalFields();
-        };
-        
-        function resetFormMode() {
-            editingIndex = null; form.reset();
-            for (const id in choicesInstances) { choicesInstances[id].setValue([]); }
-            imagePreview.style.display = 'none'; imagePreview.src = '';
-            currentImageData = { fileName: null, dataUrl: null };
-            submitBtn.textContent = 'Salvar Ativo'; cancelEditBtn.style.display = 'none';
-            toggleConditionalFields();
-        };
-        
-        async function exportToSystem() { if (ativos.length === 0) return alert('Não há dados para exportar.'); alert('Gerando arquivo ZIP, por favor aguarde...'); const zip = new JSZip(); zip.file("backup_ativos.json", JSON.stringify(ativos, null, 2)); const imgFolder = zip.folder("images"); ativos.forEach(ativo => { if (ativo.imageDataUrl && ativo.imageFilename) { const blob = dataURLtoBlob(ativo.imageDataUrl); imgFolder.file(ativo.imageFilename, blob); } }); try { const content = await zip.generateAsync({ type: "blob" }); const a = document.createElement("a"); a.href = URL.createObjectURL(content); a.download = `backup_completo_${new Date().toISOString().slice(0,10)}.zip`; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(a.href); } catch(e) { console.error(e); alert("Ocorreu um erro ao gerar o arquivo ZIP."); } };
-        async function importFromSystem(e) { const file = e.target.files[0]; if (!file) return; alert('Lendo arquivo ZIP...'); try { const zip = await JSZip.loadAsync(file); const jsonFile = zip.file("backup_ativos.json"); if (!jsonFile) throw new Error("'backup_ativos.json' não encontrado."); const jsonContent = await jsonFile.async("string"); let importedAtivos = JSON.parse(jsonContent); const imageMap = new Map(); const imageFolder = zip.folder("images"); const imagePromises = []; if(imageFolder) { imageFolder.forEach((relativePath, zipEntry) => { const promise = zipEntry.async("base64").then(base64 => { const mimeType = zipEntry.name.endsWith('png') ? 'image/png' : 'image/jpeg'; imageMap.set(zipEntry.name, `data:${mimeType};base64,${base64}`); }); imagePromises.push(promise); }); } await Promise.all(imagePromises); importedAtivos.forEach(ativo => { if (ativo.imageFilename && imageMap.has(ativo.imageFilename)) { ativo.imageDataUrl = imageMap.get(ativo.imageFilename); } }); if (confirm('Dados lidos. Deseja substituir os dados atuais?')) { ativos = importedAtivos; resetFormMode(); renderTable(); alert('Sistema restaurado com sucesso!'); } } catch(e) { console.error(e); alert("Erro ao importar ZIP: " + e.message); } e.target.value = null; };
+        });
 
-        function exportToCsv() {
-            if (ativos.length === 0) return alert('Não há dados para exportar.');
-            alert('Gerando CSV...');
-            const headers = ['ETIQUETA DE PATRIMÔNIO', 'Status.localizacao', 'Tipo.item', 'Marca', 'Modelo', 'N.Série', 'IMEI.1', 'IMEI.2', 'Descrição', 'Classificação Contábil', 'Localização', 'Usuário', 'Empresa', 'Dpto', 'Unidade', 'Nota Fiscal', 'Valor', 'Data da Compra', 'Estado do bem', 'Descarte', 'Proprietário', 'Processador', 'Memória RAM', 'Memória ROM', 'Placa de Video', 'Número de Telefone', 'Nome Arquivo Imagem'];
-            const rows = ativos.map(ativo => {
-                return [
-                    ativo.etiqueta, ativo.statusLocalizacao, ativo.tipoItem, ativo.marca, ativo.modelo,
-                    ativo.nSerie, ativo.imei1, ativo.imei2, ativo.descricao, ativo.classificacaoContabil,
-                    ativo.localizacao, ativo.usuario, ativo.empresa, ativo.dpto, ativo.unidade, ativo.notaFiscal,
-                    ativo.valor, ativo.dataCompra, ativo.estadoBem, ativo.descarte, ativo.proprietario,
-                    ativo.processador, ativo.memoriaRam, ativo.memoriaRom, ativo.placaDeVideo,
-                    ativo.numeroTelefone, ativo.imageFilename || ''
-                ].map(val => `"${(val || '').toString().replace(/"/g, '""')}"`).join(';');
+        // --- REGISTRO DO SERVICE WORKER ---
+        if ('serviceWorker' in navigator) {
+          window.addEventListener('load', () => {
+            // CAMINHO CORRIGIDO para GitHub Pages
+            navigator.serviceWorker.register('./sw.js').then(registration => {
+              console.log('ServiceWorker registrado com sucesso: ', registration.scope);
+            }, err => {
+              console.log('Falha no registro do ServiceWorker: ', err);
             });
-            const csvContent = "\uFEFF" + headers.join(';') + '\n' + rows.join('\n');
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const a = document.createElement("a");
-            a.href = URL.createObjectURL(blob);
-            a.download = `export_ativos_${new Date().toISOString().slice(0,10)}.csv`;
-            document.body.appendChild(a); a.click(); document.body.removeChild(a);
+          });
         }
-
-        // --- Eventos ---
-        form.addEventListener('submit', handleFormSubmit);
-        cancelEditBtn.addEventListener('click', resetFormMode);
-        openCameraBtn.addEventListener('click', openCamera);
-        cancelCameraBtn.addEventListener('click', closeCamera);
-        snapPhotoBtn.addEventListener('click', takePicture);
-        exportSystemBtn.addEventListener('click', exportToSystem);
-        exportCsvBtn.addEventListener('click', exportToCsv);
-        importSystemInput.addEventListener('change', importFromSystem);
-        
-        selectFileBtn.addEventListener('change', (e) => { const file = e.target.files[0]; if (file) { const reader = new FileReader(); reader.onload = (event) => { const baseName = etiquetaInput.value.trim().replace(/\s+/g, '-') || 'ativo'; const uniqueFilename = `${baseName}-${Date.now()}.${file.name.split('.').pop()}`; imagePreview.src = event.target.result; imagePreview.style.display = 'block'; currentImageData = { fileName: uniqueFilename, dataUrl: event.target.result }; }; reader.readAsDataURL(file); } });
-        tableBody.addEventListener('click', (e) => { if (e.target.classList.contains('remove-btn')) { if (confirm('Tem certeza?')) { const index = parseInt(e.target.dataset.index, 10); ativos.splice(index, 1); if (editingIndex === index) resetFormMode(); renderTable(); } } if (e.target.classList.contains('edit-btn')) startEditing(parseInt(e.target.dataset.index, 10)); });
-        tabs.forEach(tab => tab.addEventListener('click', (e) => { tabs.forEach(t => t.classList.remove('active')); tabContents.forEach(c => c.classList.remove('active')); e.currentTarget.classList.add('active'); document.getElementById(e.currentTarget.dataset.tab).classList.add('active'); }));
-        
-        initializeChoices();
-        renderTable();
-        toggleConditionalFields();
-    });
     </script>
 </body>
 </html>
-
