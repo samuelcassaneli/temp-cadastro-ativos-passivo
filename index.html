@@ -35,7 +35,7 @@
         .tab-button.active { color: var(--white); border-bottom-color: var(--tiffany-blue); }
         .tab-content { display: none; animation: fadeIn 0.5s; } .tab-content.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        #asset-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        #asset-form, #bulk-edit-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
         .form-group { display: flex; flex-direction: column; }
         .form-group label { margin-bottom: 5px; color: var(--tiffany-blue); font-weight: bold; }
         .form-group input, .form-group select, .form-group textarea, .search-input { width: 100%; padding: 10px; border: 1px solid var(--teal); background-color: rgba(0, 92, 115, 0.5); color: var(--white); border-radius: 5px; font-size: 1rem; }
@@ -43,7 +43,7 @@
         #image-preview-container { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; }
         #image-controls { display: flex; align-items: center; gap: 15px; flex-wrap: wrap; }
         #image-preview { max-width: 150px; max-height: 150px; border-radius: 5px; border: 1px dashed var(--teal); display: none; }
-        .form-actions { grid-column: 1 / -1; text-align: right; display: flex; gap: 10px; justify-content: flex-end; }
+        .form-actions { grid-column: 1 / -1; text-align: right; display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
         .section-title { grid-column: 1 / -1; color: var(--tiffany-blue); border-bottom: 1px solid var(--teal); padding-bottom: 5px; margin-top: 20px; font-size: 1.2rem; }
         .table-container { overflow-x: auto; }
         #asset-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
@@ -56,7 +56,6 @@
         .modal-buttons { display: flex; gap: 20px; }
         .conditional-fields { display: none; grid-column: 1 / -1; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; border: 1px dashed var(--teal); padding: 15px; border-radius: 8px; margin-top: 10px; }
         .conditional-fields.visible { display: grid; }
-        /* Estilos com melhor contraste para Choices.js */
         .choices { width: 100%; }
         .choices__inner { background-color: rgba(0, 92, 115, 0.5); border: 1px solid var(--teal); border-radius: 5px; padding: 7px; font-size: 1rem; color: var(--white); min-height: 44px; }
         .choices.is-open .choices__inner { border-color: var(--tiffany-blue); }
@@ -70,25 +69,17 @@
         .choices__placeholder { color: var(--tiffany-blue); opacity: 0.8; }
         .choices[data-type*="select-one"]::after { border-color: var(--white) transparent transparent; }
         .choices.is-open[data-type*="select-one"]::after { border-color: transparent transparent var(--white); margin-top: -2.5px; }
-        /* Estilo para o aviso de "Sair do App" */
-        #exit-toast {
-            position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%);
-            background-color: var(--black); color: var(--white); padding: 12px 25px;
-            border-radius: 25px; font-size: 0.9rem; z-index: 2000;
-            transition: bottom 0.4s ease-in-out; box-shadow: 0 5px 15px var(--shadow);
-        }
+        #exit-toast { position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%); background-color: var(--black); color: var(--white); padding: 12px 25px; border-radius: 25px; font-size: 0.9rem; z-index: 2000; transition: bottom 0.4s ease-in-out; box-shadow: 0 5px 15px var(--shadow); }
         #exit-toast.show { bottom: 30px; }
-
-        /* NOVOS ESTILOS para Pesquisa e Ações em Massa */
-        .list-controls {
-            display: flex;
-            gap: 20px;
-            align-items: center;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
+        .list-controls { display: flex; gap: 20px; align-items: center; margin-bottom: 20px; flex-wrap: wrap; }
         .search-container { flex-grow: 1; min-width: 250px; }
-        #bulk-delete-btn { display: none; } /* Escondido por padrão */
+        #bulk-delete-btn, #bulk-edit-btn { display: none; }
+        .modal { display: none; position: fixed; z-index: 1001; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.6); }
+        .modal-content { background-color: var(--midnight-green); margin: 5% auto; padding: 30px; border: 1px solid var(--teal); border-radius: 15px; width: 90%; max-width: 900px; box-shadow: 0 10px 30px var(--shadow); position: relative; animation: fadeIn 0.5s; }
+        .modal-content h2 { color: var(--tiffany-blue); margin-bottom: 15px; }
+        .modal-content p { margin-bottom: 20px; }
+        .close-btn { color: var(--white); position: absolute; top: 15px; right: 25px; font-size: 28px; font-weight: bold; cursor: pointer; }
+        .close-btn:hover, .close-btn:focus { color: var(--tiffany-blue); }
     </style>
 </head>
 <body>
@@ -108,7 +99,6 @@
         <!-- ABA DE CADASTRO -->
         <div id="tab-form" class="tab-content active">
             <form id="asset-form">
-                <!-- Conteúdo do formulário (sem alterações) -->
                 <h3 class="section-title">Informações do Ativo</h3>
                 <div class="form-group"><label for="etiqueta">Etiqueta de Patrimônio</label><input type="text" id="etiqueta" required></div>
                 <div class="form-group"><label for="tipoItem">Tipo do Item</label><select id="tipoItem"></select></div>
@@ -128,13 +118,13 @@
             </form>
         </div>
 
-        <!-- ABA DE LISTA DE ATIVOS (COM AS NOVIDADES) -->
+        <!-- ABA DE LISTA DE ATIVOS -->
         <div id="tab-list" class="tab-content">
-            <!-- NOVOS CONTROLES: PESQUISA E BOTÃO DE EXCLUSÃO -->
             <div class="list-controls">
                 <div class="search-container">
                     <input type="search" id="search-input" class="search-input" placeholder="Pesquisar ativos...">
                 </div>
+                <button id="bulk-edit-btn" class="btn">Ação em Massa</button>
                 <button id="bulk-delete-btn" class="btn btn-danger">Excluir Selecionados</button>
             </div>
 
@@ -152,13 +142,42 @@
         </div>
     </div>
 
-    <!-- MODAIS E TOAST (Sem alterações) -->
+    <!-- MODAL DE AÇÃO EM MASSA -->
+    <div id="bulk-edit-modal" class="modal">
+        <div class="modal-content">
+            <span id="close-bulk-modal-btn" class="close-btn">&times;</span>
+            <h2>Ação em Massa</h2>
+            <p>Alterar os campos para <strong id="bulk-edit-count">0</strong> itens selecionados. Deixe um campo em branco para não alterá-lo.</p>
+            <form id="bulk-edit-form">
+                <div class="form-group"><label for="bulk-tipoItem">Tipo do Item</label><select id="bulk-tipoItem"></select></div>
+                <div class="form-group"><label for="bulk-marca">Marca</label><input type="text" id="bulk-marca" placeholder="Não alterar"></div>
+                <div class="form-group"><label for="bulk-modelo">Modelo</label><input type="text" id="bulk-modelo" placeholder="Não alterar"></div>
+                <div class="form-group"><label for="bulk-statusLocalizacao">Status Localização</label><select id="bulk-statusLocalizacao"></select></div>
+                <div class="form-group"><label for="bulk-usuario">Usuário</label><input type="text" id="bulk-usuario" placeholder="Não alterar"></div>
+                <div class="form-group"><label for="bulk-empresa">Empresa</label><select id="bulk-empresa"></select></div>
+                <div class="form-group"><label for="bulk-dpto">Departamento</label><select id="bulk-dpto"></select></div>
+                <div class="form-group"><label for="bulk-unidade">Unidade</label><select id="bulk-unidade"></select></div>
+                <div class="form-group"><label for="bulk-localizacao">Localização Física</label><input type="text" id="bulk-localizacao" placeholder="Não alterar"></div>
+                <div class="form-group"><label for="bulk-estadoBem">Estado do Bem</label><select id="bulk-estadoBem"></select></div>
+                <div class="form-group"><label for="bulk-descarte">Descarte</label><select id="bulk-descarte"></select></div>
+                <div class="form-group" style="grid-column: 1 / -1;"><label for="bulk-descricao">Descrição</label><textarea id="bulk-descricao" rows="3" placeholder="Não alterar"></textarea></div>
+                <div class="form-group"><label for="bulk-classificacaoContabil">Classificação Contábil</label><select id="bulk-classificacaoContabil"></select></div>
+                <div class="form-group"><label for="bulk-proprietario">Proprietário</label><input type="text" id="bulk-proprietario" placeholder="Não alterar"></div>
+                <div class="form-group"><label for="bulk-notaFiscal">Nota Fiscal</label><input type="text" id="bulk-notaFiscal" placeholder="Não alterar"></div>
+                <div class="form-group"><label for="bulk-valor">Valor (R$)</label><input type="number" id="bulk-valor" step="0.01" placeholder="Não alterar"></div>
+                <div class="form-group"><label for="bulk-dataCompra">Data da Compra</label><input type="date" id="bulk-dataCompra"></div>
+            </form>
+            <div class="form-actions">
+                <button type="button" id="save-bulk-edit-btn" class="btn">Salvar Alterações</button>
+            </div>
+        </div>
+    </div>
+
     <div id="camera-modal"><video id="camera-feed" playsinline autoplay></video><div class="modal-buttons"><button id="snap-photo-btn" class="btn">Tirar Foto</button><button id="cancel-camera-btn" class="btn btn-danger">Cancelar</button></div></div>
     <div id="exit-toast">Pressione voltar novamente para sair</div>
 
     <script>
     document.addEventListener('DOMContentLoaded', () => {
-        // --- SELETORES DE ELEMENTOS ---
         const STORAGE_KEY = 'gerenciadorDeAtivosData';
         const form = document.getElementById('asset-form');
         const tableBody = document.getElementById('asset-table-body');
@@ -180,22 +199,27 @@
         const cancelCameraBtn = document.getElementById('cancel-camera-btn');
         const notebookFields = document.getElementById('notebook-fields');
         const celularFields = document.getElementById('celular-fields');
-        // NOVOS SELETORES
         const searchInput = document.getElementById('search-input');
         const selectAllCheckbox = document.getElementById('select-all-checkbox');
         const bulkDeleteBtn = document.getElementById('bulk-delete-btn');
+        const bulkEditBtn = document.getElementById('bulk-edit-btn');
+        const bulkEditModal = document.getElementById('bulk-edit-modal');
+        const closeBulkModalBtn = document.getElementById('close-bulk-modal-btn');
+        const bulkEditCount = document.getElementById('bulk-edit-count');
+        const saveBulkEditBtn = document.getElementById('save-bulk-edit-btn');
+        const bulkEditForm = document.getElementById('bulk-edit-form');
 
         let editingIndex = null;
         let currentImageData = { fileName: null, dataUrl: null };
         let cameraStream = null;
         const choicesInstances = {};
+        const bulkChoicesInstances = {};
+        let lastCheckedCheckbox = null; 
 
-        // --- LÓGICA DE PERSISTÊNCIA DE DADOS (Sem alterações) ---
         const loadAtivos = () => { try { const data = localStorage.getItem(STORAGE_KEY); return data ? JSON.parse(data) : []; } catch (e) { console.error("Erro ao carregar dados:", e); return []; } };
         const saveAtivos = () => { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(ativos)); } catch (e) { console.error("Erro ao salvar dados:", e); alert("Não foi possível salvar os dados. Armazenamento cheio?"); } };
         let ativos = loadAtivos();
 
-        // --- OPÇÕES DOS MENUS (Adicionei "Apoio de Pé") ---
         const options = {
             empresa: ['PPay', 'MNTZZ', 'VG'],
             tipoItem: ["Notebook", "Celular", "Desktop", "Fonte Notebook", "Radio Comunicador", "Monitor", "Apoio de Pé", "Teclado", "Mouse", "Tablet", "Carregador", "Câmera de Segurança", "Headset", "Suporte Papel Higiênico", "Suporte Sabão Líquido", "Suporte Papel Toalha", "Espelho", "Proteção de Ar Condicionado", "Webcam", "Impressora", "Scanner", "Nobreak (UPS)", "Roteador", "Switch", "Servidor", "Projetor", "TV", "Mesa", "Cadeira", "Cadeira de Escritório", "Cadeira de Reunião", "Armário", "Gaveteiro", "Estante", "Sofá", "Poltrona", "Quadro Branco", "Lixeira", "Geladeira", "Micro-ondas", "Bebedouro", "Cafeteira", "Ar Condicionado", "Ventilador", "Extintor de Incêndio", "Outro"],
@@ -211,18 +235,14 @@
             placaDeVideo: ['Não', 'Sim']
         };
         const formFields = ['etiqueta', 'statusLocalizacao', 'tipoItem', 'marca', 'modelo', 'nSerie', 'imei1', 'imei2', 'descricao', 'classificacaoContabil', 'localizacao', 'usuario', 'empresa', 'dpto', 'unidade', 'notaFiscal', 'valor', 'dataCompra', 'estadoBem', 'descarte', 'proprietario', 'numeroTelefone', 'processador', 'memoriaRam', 'memoriaRom', 'placaDeVideo'];
+        const bulkEditFields = ['tipoItem', 'marca', 'modelo', 'statusLocalizacao', 'usuario', 'empresa', 'dpto', 'unidade', 'localizacao', 'estadoBem', 'descarte', 'descricao', 'classificacaoContabil', 'proprietario', 'notaFiscal', 'valor', 'dataCompra'];
 
-        // --- FUNÇÃO DE RENDERIZAÇÃO DA TABELA (MODIFICADA) ---
         function renderTable() {
             tableBody.innerHTML = '';
             const searchTerm = searchInput.value.toLowerCase().trim();
-
             const filteredAtivos = ativos.filter(ativo => {
-                if (!searchTerm) return true; // Mostra todos se a busca estiver vazia
-                const searchableString = [
-                    ativo.etiqueta, ativo.tipoItem, ativo.marca,
-                    ativo.modelo, ativo.nSerie, ativo.usuario, ativo.localizacao
-                ].join(' ').toLowerCase();
+                if (!searchTerm) return true;
+                const searchableString = Object.values(ativo).join(' ').toLowerCase();
                 return searchableString.includes(searchTerm);
             });
 
@@ -230,8 +250,9 @@
                  tableBody.innerHTML = `<tr><td colspan="10" style="text-align:center; padding: 20px;">Nenhum ativo encontrado.</td></tr>`;
             } else {
                 filteredAtivos.forEach(ativo => {
-                    const originalIndex = ativos.indexOf(ativo); // Pega o índice original para edição/exclusão
+                    const originalIndex = ativos.indexOf(ativo);
                     const row = document.createElement('tr');
+                    row.dataset.index = originalIndex;
                     const imageCell = ativo.imageDataUrl ? `<a href="${ativo.imageDataUrl}" target="_blank"><img src="${ativo.imageDataUrl}" class="asset-image-thumbnail" alt="${ativo.imageFilename || ''}"></a>` : 'N/A';
                     
                     row.innerHTML = `
@@ -251,26 +272,27 @@
                     tableBody.appendChild(row);
                 });
             }
-            updateBulkActionUI(); // Garante que a UI de ações em massa esteja correta
+            updateBulkActionUI();
+            lastCheckedCheckbox = null;
         };
 
-        // --- NOVAS FUNÇÕES: AÇÕES EM MASSA E UI ---
         function updateBulkActionUI() {
             const selectedCheckboxes = document.querySelectorAll('.row-checkbox:checked');
-            const allVisibleCheckboxes = document.querySelectorAll('.row-checkbox');
+            const anySelected = selectedCheckboxes.length > 0;
             
-            if (selectedCheckboxes.length > 0) {
-                bulkDeleteBtn.style.display = 'inline-block';
-                bulkDeleteBtn.textContent = `Excluir ${selectedCheckboxes.length} Selecionados`;
-            } else {
-                bulkDeleteBtn.style.display = 'none';
+            bulkDeleteBtn.style.display = anySelected ? 'inline-block' : 'none';
+            bulkEditBtn.style.display = anySelected ? 'inline-block' : 'none';
+
+            if (anySelected) {
+                bulkDeleteBtn.textContent = `Excluir ${selectedCheckboxes.length}`;
+                bulkEditBtn.textContent = `Ação em Massa (${selectedCheckboxes.length})`;
             }
 
-            // Atualiza o checkbox "Selecionar Todos"
+            const allVisibleCheckboxes = document.querySelectorAll('.row-checkbox');
             if (allVisibleCheckboxes.length > 0 && selectedCheckboxes.length === allVisibleCheckboxes.length) {
                 selectAllCheckbox.checked = true;
                 selectAllCheckbox.indeterminate = false;
-            } else if (selectedCheckboxes.length > 0) {
+            } else if (anySelected) {
                 selectAllCheckbox.checked = false;
                 selectAllCheckbox.indeterminate = true;
             } else {
@@ -285,34 +307,305 @@
             
             if (confirm(`Tem certeza que deseja excluir os ${selectedCheckboxes.length} ativos selecionados? Esta ação não pode ser desfeita.`)) {
                 const indicesToDelete = Array.from(selectedCheckboxes).map(cb => parseInt(cb.dataset.index, 10));
-                
-                // Filtra o array, mantendo apenas os itens cujo índice NÃO está na lista de exclusão
                 ativos = ativos.filter((_, index) => !indicesToDelete.includes(index));
-
                 saveAtivos();
-                renderTable(); // Re-renderiza a tabela com os dados atualizados
+                renderTable();
             }
         }
-        
-        // --- RESTANTE DO SCRIPT (com pequenas modificações para chamar saveAtivos e renderTable) ---
-        function initializeChoices() { /* ...código sem alterações... */ for (const id in options) { const selectElement = document.getElementById(id); if (selectElement) { choicesInstances[id] = new Choices(selectElement, { choices: options[id].map(val => ({ value: val, label: val })), removeItemButton: true, searchResultLimit: 15, itemSelectText: 'Pressione para selecionar', placeholder: true, placeholderValue: 'Selecione uma opção' }); } } const tipoItemElement = document.getElementById('tipoItem'); if (tipoItemElement) { tipoItemElement.addEventListener('change', toggleConditionalFields); } }
-        function toggleConditionalFields() { /* ...código sem alterações... */ const tipo = choicesInstances['tipoItem'] ? choicesInstances['tipoItem'].getValue(true) : ''; notebookFields.classList.toggle('visible', tipo === 'Notebook'); celularFields.classList.toggle('visible', tipo === 'Celular'); if (tipo !== 'Notebook') { ['processador', 'memoriaRam', 'memoriaRom', 'placaDeVideo'].forEach(id => choicesInstances[id]?.setValue([])); } if (tipo !== 'Celular') { ['imei1', 'imei2', 'numeroTelefone'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; }); } }
-        async function openCamera() { /* ...código sem alterações... */ try { cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } }); cameraFeed.srcObject = cameraStream; cameraModal.style.display = 'flex'; } catch (err) { alert("Não foi possível acessar a câmera. Verifique as permissões."); } }
-        function closeCamera() { /* ...código sem alterações... */ if (cameraStream) { cameraStream.getTracks().forEach(track => track.stop()); } cameraModal.style.display = 'none'; }
-        function takePicture() { /* ...código sem alterações... */ const canvas = document.createElement('canvas'); canvas.width = cameraFeed.videoWidth; canvas.height = cameraFeed.videoHeight; canvas.getContext('2d').drawImage(cameraFeed, 0, 0, canvas.width, canvas.height); const dataUrl = canvas.toDataURL('image/jpeg', 0.9); const baseName = etiquetaInput.value.trim().replace(/\s+/g, '-') || 'ativo'; currentImageData = { fileName: `${baseName}-${Date.now()}.jpg`, dataUrl: dataUrl }; imagePreview.src = dataUrl; imagePreview.style.display = 'block'; closeCamera(); }
-        function dataURLtoBlob(dataurl) { /* ...código sem alterações... */ let arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1], bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n); while(n--){ u8arr[n] = bstr.charCodeAt(n); } return new Blob([u8arr], {type:mime}); }
-        function getFormData() { /* ...código sem alterações... */ const data = {}; formFields.forEach(id => { const element = document.getElementById(id); if (element) data[id] = choicesInstances[id] ? choicesInstances[id].getValue(true) : element.value; }); data.imageFilename = currentImageData.fileName; data.imageDataUrl = currentImageData.dataUrl; return data; };
-        function setFormData(ativo) { /* ...código sem alterações... */ formFields.forEach(id => { const element = document.getElementById(id); if (choicesInstances[id]) { choicesInstances[id].clearStore(); if(ativo[id]) choicesInstances[id].setValue([ativo[id]]); else choicesInstances[id].setChoiceByValue(''); } else if (element) { element.value = ativo[id] || ''; } }); };
-        function handleFormSubmit(e) { e.preventDefault(); const ativoData = getFormData(); if (editingIndex !== null) { ativos[editingIndex] = ativoData; alert('Ativo atualizado!'); } else { ativos.push(ativoData); alert('Ativo cadastrado!'); } saveAtivos(); resetFormMode(); renderTable(); };
-        function startEditing(index) { editingIndex = index; const ativo = ativos[index]; setFormData(ativo); currentImageData = { fileName: ativo.imageFilename, dataUrl: ativo.imageDataUrl }; if (ativo.imageDataUrl) { imagePreview.src = ativo.imageDataUrl; imagePreview.style.display = 'block'; } else { imagePreview.style.display = 'none'; } submitBtn.textContent = 'Atualizar Ativo'; cancelEditBtn.style.display = 'inline-block'; formTabBtn.click(); window.scrollTo({ top: 0, behavior: 'smooth' }); toggleConditionalFields(); };
-        function resetFormMode() { editingIndex = null; form.reset(); for (const id in choicesInstances) { choicesInstances[id].setChoiceByValue(''); } imagePreview.style.display = 'none'; imagePreview.src = ''; currentImageData = { fileName: null, dataUrl: null }; submitBtn.textContent = 'Salvar Ativo'; cancelEditBtn.style.display = 'none'; toggleConditionalFields(); };
-        async function exportToSystem() { /* ...código sem alterações... */ if (ativos.length === 0) return alert('Não há dados para exportar.'); alert('Gerando arquivo ZIP...'); const zip = new JSZip(); zip.file("backup_ativos.json", JSON.stringify(ativos, null, 2)); const imgFolder = zip.folder("images"); ativos.forEach(ativo => { if (ativo.imageDataUrl && ativo.imageFilename) { const blob = dataURLtoBlob(ativo.imageDataUrl); imgFolder.file(ativo.imageFilename, blob); } }); try { const content = await zip.generateAsync({ type: "blob" }); const a = document.createElement("a"); a.href = URL.createObjectURL(content); a.download = `backup_completo_${new Date().toISOString().slice(0,10)}.zip`; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(a.href); } catch(e) { console.error(e); alert("Ocorreu um erro ao gerar o arquivo ZIP."); } };
-        async function importFromSystem(e) { /* ...código sem alterações... */ const file = e.target.files[0]; if (!file) return; alert('Lendo arquivo ZIP...'); try { const zip = await JSZip.loadAsync(file); const jsonFile = zip.file("backup_ativos.json"); if (!jsonFile) throw new Error("'backup_ativos.json' não encontrado."); const jsonContent = await jsonFile.async("string"); let importedAtivos = JSON.parse(jsonContent); const imageMap = new Map(); const imageFolder = zip.folder("images"); const imagePromises = []; if(imageFolder) { imageFolder.forEach((relativePath, zipEntry) => { const promise = zipEntry.async("base64").then(base64 => { const mimeType = zipEntry.name.endsWith('png') ? 'image/png' : 'image/jpeg'; imageMap.set(zipEntry.name, `data:${mimeType};base64,${base64}`); }); imagePromises.push(promise); }); } await Promise.all(imagePromises); importedAtivos.forEach(ativo => { if (ativo.imageFilename && imageMap.has(ativo.imageFilename)) { ativo.imageDataUrl = imageMap.get(ativo.imageFilename); } }); if (confirm('Dados lidos. Deseja substituir os dados atuais?')) { ativos = importedAtivos; saveAtivos(); resetFormMode(); renderTable(); alert('Sistema restaurado com sucesso!'); } } catch(e) { console.error(e); alert("Erro ao importar ZIP: " + e.message); } e.target.value = null; };
-        function exportToCsv() { /* ...código sem alterações... */ if (ativos.length === 0) return alert('Não há dados para exportar.'); alert('Gerando CSV...'); const headers = ['ETIQUETA DE PATRIMÔNIO', 'Status.localizacao', 'Tipo.item', 'Marca', 'Modelo', 'N.Série', 'IMEI.1', 'IMEI.2', 'Descrição', 'Classificação Contábil', 'Localização', 'Usuário', 'Empresa', 'Dpto', 'Unidade', 'Nota Fiscal', 'Valor', 'Data da Compra', 'Estado do bem', 'Descarte', 'Proprietário', 'Processador', 'Memória RAM', 'Memória ROM', 'Placa de Video', 'Número de Telefone', 'Nome Arquivo Imagem']; const rows = ativos.map(ativo => { return [ ativo.etiqueta, ativo.statusLocalizacao, ativo.tipoItem, ativo.marca, ativo.modelo, ativo.nSerie, ativo.imei1, ativo.imei2, ativo.descricao, ativo.classificacaoContabil, ativo.localizacao, ativo.usuario, ativo.empresa, ativo.dpto, ativo.unidade, ativo.notaFiscal, ativo.valor, ativo.dataCompra, ativo.estadoBem, ativo.descarte, ativo.proprietario, ativo.processador, ativo.memoriaRam, ativo.memoriaRom, ativo.placaDeVideo, ativo.numeroTelefone, ativo.imageFilename || '' ].map(val => `"${(val || '').toString().replace(/"/g, '""')}"`).join(';'); }); const csvContent = "\uFEFF" + headers.join(';') + '\n' + rows.join('\n'); const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' }); const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `export_ativos_${new Date().toISOString().slice(0,10)}.csv`; document.body.appendChild(a); a.click(); document.body.removeChild(a); }
-        // --- LÓGICA DE SAÍDA DO APP (Sem alterações) ---
-        let backButtonPressedOnce = false; window.addEventListener('popstate', (e) => { if (window.matchMedia('(display-mode: fullscreen)').matches) { if (backButtonPressedOnce) { history.back(); return; } e.preventDefault(); history.pushState(null, '', location.href); backButtonPressedOnce = true; const toast = document.getElementById('exit-toast'); toast.classList.add('show'); setTimeout(() => { backButtonPressedOnce = false; toast.classList.remove('show'); }, 2000); } }); history.pushState(null, '', location.href);
 
-        // --- EVENT LISTENERS (Com as novas adições) ---
+        function openBulkEditModal() {
+            const selectedCheckboxes = document.querySelectorAll('.row-checkbox:checked');
+            if (selectedCheckboxes.length === 0) return;
+            
+            bulkEditCount.textContent = selectedCheckboxes.length;
+            bulkEditModal.style.display = 'block';
+        }
+
+        function closeBulkEditModal() {
+            bulkEditModal.style.display = 'none';
+            bulkEditForm.reset();
+            for (const id in bulkChoicesInstances) {
+                bulkChoicesInstances[id].setChoiceByValue('');
+            }
+        }
+
+        function handleBulkEditSave() {
+            const selectedIndices = Array.from(document.querySelectorAll('.row-checkbox:checked')).map(cb => parseInt(cb.dataset.index, 10));
+            if (selectedIndices.length === 0) return;
+
+            let changesMade = false;
+            selectedIndices.forEach(index => {
+                const ativo = ativos[index];
+                bulkEditFields.forEach(field => {
+                    const bulkElement = document.getElementById(`bulk-${field}`);
+                    if (!bulkElement) return;
+
+                    let value;
+                    if (bulkChoicesInstances[`bulk-${field}`]) {
+                        value = bulkChoicesInstances[`bulk-${field}`].getValue(true);
+                    } else {
+                        value = bulkElement.value;
+                    }
+
+                    if (value !== null && value !== undefined && value !== '') {
+                        if (ativo[field] !== value) {
+                            ativo[field] = value;
+                            changesMade = true;
+                        }
+                    }
+                });
+            });
+
+            if (changesMade) {
+                saveAtivos();
+                renderTable();
+                alert(`${selectedIndices.length} ativos foram atualizados com sucesso!`);
+            } else {
+                alert("Nenhuma alteração foi feita. Os campos estavam vazios ou os valores eram os mesmos.");
+            }
+            closeBulkEditModal();
+        }
+        
+        function initializeChoices(prefix = '', instanceObject = choicesInstances) {
+            for (const id in options) {
+                const selectElement = document.getElementById(`${prefix}${id}`);
+                if (selectElement) {
+                    instanceObject[`${prefix}${id}`] = new Choices(selectElement, {
+                        choices: options[id].map(val => ({ value: val, label: val })),
+                        removeItemButton: true,
+                        searchResultLimit: 15,
+                        itemSelectText: 'Pressione para selecionar',
+                        placeholder: true,
+                        placeholderValue: 'Selecione uma opção'
+                    });
+                }
+            }
+            const tipoItemElement = document.getElementById('tipoItem');
+            if (tipoItemElement) {
+                tipoItemElement.addEventListener('change', toggleConditionalFields);
+            }
+        }
+
+        function toggleConditionalFields() {
+            const tipo = choicesInstances['tipoItem'] ? choicesInstances['tipoItem'].getValue(true) : '';
+            notebookFields.classList.toggle('visible', tipo === 'Notebook');
+            celularFields.classList.toggle('visible', tipo === 'Celular');
+            if (tipo !== 'Notebook') {
+                ['processador', 'memoriaRam', 'memoriaRom', 'placaDeVideo'].forEach(id => choicesInstances[id]?.setValue([]));
+            }
+            if (tipo !== 'Celular') {
+                ['imei1', 'imei2', 'numeroTelefone'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.value = '';
+                });
+            }
+        }
+        async function openCamera() {
+            try {
+                cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+                cameraFeed.srcObject = cameraStream;
+                cameraModal.style.display = 'flex';
+            } catch (err) {
+                alert("Não foi possível acessar a câmera. Verifique as permissões.");
+            }
+        }
+        function closeCamera() {
+            if (cameraStream) {
+                cameraStream.getTracks().forEach(track => track.stop());
+            }
+            cameraModal.style.display = 'none';
+        }
+        function takePicture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = cameraFeed.videoWidth;
+            canvas.height = cameraFeed.videoHeight;
+            canvas.getContext('2d').drawImage(cameraFeed, 0, 0, canvas.width, canvas.height);
+            const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+            const baseName = etiquetaInput.value.trim().replace(/\s+/g, '-') || 'ativo';
+            currentImageData = { fileName: `${baseName}-${Date.now()}.jpg`, dataUrl: dataUrl };
+            imagePreview.src = dataUrl;
+            imagePreview.style.display = 'block';
+            closeCamera();
+        }
+        function dataURLtoBlob(dataurl) {
+            let arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1], bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
+            while(n--){
+                u8arr[n] = bstr.charCodeAt(n);
+            }
+            return new Blob([u8arr], {type:mime});
+        }
+        function getFormData() {
+            const data = {};
+            formFields.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) data[id] = choicesInstances[id] ? choicesInstances[id].getValue(true) : element.value;
+            });
+            data.imageFilename = currentImageData.fileName;
+            data.imageDataUrl = currentImageData.dataUrl;
+            return data;
+        };
+        function setFormData(ativo) {
+            formFields.forEach(id => {
+                const element = document.getElementById(id);
+                if (choicesInstances[id]) {
+                    choicesInstances[id].clearStore();
+                    if(ativo[id]) choicesInstances[id].setValue([ativo[id]]);
+                    else choicesInstances[id].setChoiceByValue('');
+                } else if (element) {
+                    element.value = ativo[id] || '';
+                }
+            });
+        };
+        function handleFormSubmit(e) {
+            e.preventDefault();
+            const ativoData = getFormData();
+            if (editingIndex !== null) {
+                ativos[editingIndex] = ativoData;
+                alert('Ativo atualizado!');
+            } else {
+                ativos.push(ativoData);
+                alert('Ativo cadastrado!');
+            }
+            saveAtivos();
+            resetFormMode();
+            renderTable();
+        };
+        function startEditing(index) {
+            editingIndex = index;
+            const ativo = ativos[index];
+            setFormData(ativo);
+            currentImageData = { fileName: ativo.imageFilename, dataUrl: ativo.imageDataUrl };
+            if (ativo.imageDataUrl) {
+                imagePreview.src = ativo.imageDataUrl;
+                imagePreview.style.display = 'block';
+            } else {
+                imagePreview.style.display = 'none';
+            }
+            submitBtn.textContent = 'Atualizar Ativo';
+            cancelEditBtn.style.display = 'inline-block';
+            formTabBtn.click();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            toggleConditionalFields();
+        };
+        function resetFormMode() {
+            editingIndex = null;
+            form.reset();
+            for (const id in choicesInstances) {
+                choicesInstances[id].setChoiceByValue('');
+            }
+            imagePreview.style.display = 'none';
+            imagePreview.src = '';
+            currentImageData = { fileName: null, dataUrl: null };
+            submitBtn.textContent = 'Salvar Ativo';
+            cancelEditBtn.style.display = 'none';
+            toggleConditionalFields();
+        };
+        async function exportToSystem() {
+            if (ativos.length === 0) return alert('Não há dados para exportar.');
+            alert('Gerando arquivo ZIP...');
+            const zip = new JSZip();
+            zip.file("backup_ativos.json", JSON.stringify(ativos, null, 2));
+            const imgFolder = zip.folder("images");
+            ativos.forEach(ativo => {
+                if (ativo.imageDataUrl && ativo.imageFilename) {
+                    const blob = dataURLtoBlob(ativo.imageDataUrl);
+                    imgFolder.file(ativo.imageFilename, blob);
+                }
+            });
+            try {
+                const content = await zip.generateAsync({ type: "blob" });
+                const a = document.createElement("a");
+                a.href = URL.createObjectURL(content);
+                a.download = `backup_completo_${new Date().toISOString().slice(0,10)}.zip`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(a.href);
+            } catch(e) {
+                console.error(e);
+                alert("Ocorreu um erro ao gerar o arquivo ZIP.");
+            }
+        };
+        async function importFromSystem(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            alert('Lendo arquivo ZIP...');
+            try {
+                const zip = await JSZip.loadAsync(file);
+                const jsonFile = zip.file("backup_ativos.json");
+                if (!jsonFile) throw new Error("'backup_ativos.json' não encontrado.");
+                const jsonContent = await jsonFile.async("string");
+                let importedAtivos = JSON.parse(jsonContent);
+                const imageMap = new Map();
+                const imageFolder = zip.folder("images");
+                const imagePromises = [];
+                if(imageFolder) {
+                    imageFolder.forEach((relativePath, zipEntry) => {
+                        const promise = zipEntry.async("base64").then(base64 => {
+                            const mimeType = zipEntry.name.endsWith('png') ? 'image/png' : 'image/jpeg';
+                            imageMap.set(zipEntry.name, `data:${mimeType};base64,${base64}`);
+                        });
+                        imagePromises.push(promise);
+                    });
+                }
+                await Promise.all(imagePromises);
+                importedAtivos.forEach(ativo => {
+                    if (ativo.imageFilename && imageMap.has(ativo.imageFilename)) {
+                        ativo.imageDataUrl = imageMap.get(ativo.imageFilename);
+                    }
+                });
+                if (confirm('Dados lidos. Deseja substituir os dados atuais?')) {
+                    ativos = importedAtivos;
+                    saveAtivos();
+                    resetFormMode();
+                    renderTable();
+                    alert('Sistema restaurado com sucesso!');
+                }
+            } catch(e) {
+                console.error(e);
+                alert("Erro ao importar ZIP: " + e.message);
+            }
+            e.target.value = null;
+        };
+        function exportToCsv() {
+            if (ativos.length === 0) return alert('Não há dados para exportar.');
+            alert('Gerando CSV...');
+            const headers = ['ETIQUETA DE PATRIMÔNIO', 'Status.localizacao', 'Tipo.item', 'Marca', 'Modelo', 'N.Série', 'IMEI.1', 'IMEI.2', 'Descrição', 'Classificação Contábil', 'Localização', 'Usuário', 'Empresa', 'Dpto', 'Unidade', 'Nota Fiscal', 'Valor', 'Data da Compra', 'Estado do bem', 'Descarte', 'Proprietário', 'Processador', 'Memória RAM', 'Memória ROM', 'Placa de Video', 'Número de Telefone', 'Nome Arquivo Imagem'];
+            const rows = ativos.map(ativo => {
+                return [ 
+                    ativo.etiqueta, ativo.statusLocalizacao, ativo.tipoItem, ativo.marca, ativo.modelo, ativo.nSerie, ativo.imei1, ativo.imei2, ativo.descricao, ativo.classificacaoContabil, ativo.localizacao, ativo.usuario, ativo.empresa, ativo.dpto, ativo.unidade, ativo.notaFiscal, ativo.valor, ativo.dataCompra, ativo.estadoBem, ativo.descarte, ativo.proprietario, ativo.processador, ativo.memoriaRam, ativo.memoriaRom, ativo.placaDeVideo, ativo.numeroTelefone, ativo.imageFilename || '' 
+                ].map(val => `"${(val || '').toString().replace(/"/g, '""')}"`).join(';');
+            });
+            const csvContent = "\uFEFF" + headers.join(';') + '\n' + rows.join('\n');
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const a = document.createElement("a");
+            a.href = URL.createObjectURL(blob);
+            a.download = `export_ativos_${new Date().toISOString().slice(0,10)}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+        let backButtonPressedOnce = false;
+        window.addEventListener('popstate', (e) => {
+            if (window.matchMedia('(display-mode: fullscreen)').matches) {
+                if (backButtonPressedOnce) {
+                    history.back();
+                    return;
+                }
+                e.preventDefault();
+                history.pushState(null, '', location.href);
+                backButtonPressedOnce = true;
+                const toast = document.getElementById('exit-toast');
+                toast.classList.add('show');
+                setTimeout(() => {
+                    backButtonPressedOnce = false;
+                    toast.classList.remove('show');
+                }, 2000);
+            }
+        });
+        history.pushState(null, '', location.href);
+
+        // --- EVENT LISTENERS ---
         form.addEventListener('submit', handleFormSubmit);
         cancelEditBtn.addEventListener('click', resetFormMode);
         openCameraBtn.addEventListener('click', openCamera);
@@ -321,35 +614,81 @@
         exportSystemBtn.addEventListener('click', exportToSystem);
         exportCsvBtn.addEventListener('click', exportToCsv);
         importSystemInput.addEventListener('change', importFromSystem);
-        selectFileBtn.addEventListener('change', (e) => { const file = e.target.files[0]; if (file) { const reader = new FileReader(); reader.onload = (event) => { const baseName = etiquetaInput.value.trim().replace(/\s+/g, '-') || 'ativo'; const uniqueFilename = `${baseName}-${Date.now()}.${file.name.split('.').pop()}`; imagePreview.src = event.target.result; imagePreview.style.display = 'block'; currentImageData = { fileName: uniqueFilename, dataUrl: event.target.result }; }; reader.readAsDataURL(file); } });
-        tabs.forEach(tab => tab.addEventListener('click', (e) => { tabs.forEach(t => t.classList.remove('active')); tabContents.forEach(c => c.classList.remove('active')); e.currentTarget.classList.add('active'); document.getElementById(e.currentTarget.dataset.tab).classList.add('active'); }));
+        selectFileBtn.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const baseName = etiquetaInput.value.trim().replace(/\s+/g, '-') || 'ativo';
+                    const uniqueFilename = `${baseName}-${Date.now()}.${file.name.split('.').pop()}`;
+                    imagePreview.src = event.target.result;
+                    imagePreview.style.display = 'block';
+                    currentImageData = { fileName: uniqueFilename, dataUrl: event.target.result };
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+        tabs.forEach(tab => tab.addEventListener('click', (e) => {
+            tabs.forEach(t => t.classList.remove('active'));
+            tabContents.forEach(c => c.classList.remove('active'));
+            e.currentTarget.classList.add('active');
+            document.getElementById(e.currentTarget.dataset.tab).classList.add('active');
+            if(e.currentTarget.dataset.tab === 'tab-list') renderTable();
+        }));
         
         tableBody.addEventListener('click', (e) => {
-            // Exclusão/Edição individual
             if (e.target.classList.contains('remove-btn')) { if (confirm('Tem certeza?')) { const index = parseInt(e.target.dataset.index, 10); ativos.splice(index, 1); if (editingIndex === index) resetFormMode(); saveAtivos(); renderTable(); } }
             if (e.target.classList.contains('edit-btn')) { startEditing(parseInt(e.target.dataset.index, 10)); }
-            // Atualiza UI de ações em massa se um checkbox foi clicado
-            if (e.target.classList.contains('row-checkbox')) { updateBulkActionUI(); }
+            
+            if (e.target.classList.contains('row-checkbox')) {
+                if (e.shiftKey && lastCheckedCheckbox) {
+                    const checkboxes = Array.from(tableBody.querySelectorAll('.row-checkbox'));
+                    const start = checkboxes.indexOf(lastCheckedCheckbox);
+                    const end = checkboxes.indexOf(e.target);
+                    const range = (start < end) ? checkboxes.slice(start, end + 1) : checkboxes.slice(end, start + 1);
+                    const shouldBeChecked = lastCheckedCheckbox.checked;
+                    range.forEach(checkbox => checkbox.checked = shouldBeChecked);
+                }
+                lastCheckedCheckbox = e.target;
+                updateBulkActionUI();
+            }
         });
         
-        // NOVOS EVENT LISTENERS
-        searchInput.addEventListener('input', renderTable); // Filtra a tabela ao digitar
+        searchInput.addEventListener('input', renderTable);
         bulkDeleteBtn.addEventListener('click', handleBulkDelete);
         selectAllCheckbox.addEventListener('click', (e) => {
-            document.querySelectorAll('.row-checkbox').forEach(checkbox => {
+            document.querySelectorAll('#asset-table-body .row-checkbox').forEach(checkbox => {
                 checkbox.checked = e.target.checked;
             });
             updateBulkActionUI();
         });
 
+        bulkEditBtn.addEventListener('click', openBulkEditModal);
+        closeBulkModalBtn.addEventListener('click', closeBulkEditModal);
+        saveBulkEditBtn.addEventListener('click', handleBulkEditSave);
+        window.addEventListener('click', (e) => {
+            if (e.target == bulkEditModal) {
+                closeBulkEditModal();
+            }
+        });
+
         // --- INICIALIZAÇÃO ---
-        initializeChoices();
+        initializeChoices('', choicesInstances);
+        initializeChoices('bulk-', bulkChoicesInstances);
         renderTable();
         toggleConditionalFields();
+        updateBulkActionUI();
     });
 
-    // --- REGISTRO DO SERVICE WORKER (Sem alterações) ---
-    if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').then(registration => { console.log('SW registrado:', registration.scope); }, err => { console.log('SW falhou:', err); }); }); }
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('./sw.js').then(registration => {
+                console.log('SW registrado:', registration.scope);
+            }, err => {
+                console.log('SW falhou:', err);
+            });
+        });
+    }
     </script>
 </body>
 </html>
