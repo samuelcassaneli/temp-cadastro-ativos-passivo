@@ -448,9 +448,19 @@
             formFields.forEach(id => {
                 const element = document.getElementById(id);
                 if (choicesInstances[id]) {
-                    choicesInstances[id].clearStore();
-                    if(ativo[id]) choicesInstances[id].setValue([ativo[id]]);
-                    else choicesInstances[id].setChoiceByValue('');
+                    // Recarrega as opções e depois define o valor para corrigir o bug
+                    choicesInstances[id].setChoices(
+                        options[id].map(val => ({ value: val, label: val })),
+                        'value',
+                        'label',
+                        true // Limpa as opções existentes antes de adicionar as novas
+                    );
+
+                    if (ativo[id]) {
+                        choicesInstances[id].setChoiceByValue(String(ativo[id]));
+                    } else {
+                        choicesInstances[id].setChoiceByValue(''); // Garante que a seleção seja limpa se não houver valor
+                    }
                 } else if (element) {
                     element.value = ativo[id] || '';
                 }
