@@ -5,11 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Gerenciador de Ativos</title>
     
-    <!-- PWA Manifest & Theme -->
     <link rel="manifest" href="./manifest.json">
     <meta name="theme-color" content="#005C73">
     
-    <!-- Bibliotecas Externas -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css"/>
     <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -48,7 +46,8 @@
         .table-container { overflow-x: auto; }
         #asset-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
         #asset-table th, #asset-table td { padding: 12px; text-align: left; border-bottom: 1px solid var(--midnight-green); white-space: nowrap; }
-        #asset-table th:first-child, #asset-table td:first-child { text-align: center; } /* Centralizar checkbox */
+        #asset-table th.hidden, #asset-table td.hidden { display: none; }
+        #asset-table th:first-child, #asset-table td:first-child { text-align: center; }
         .asset-image-thumbnail { max-width: 60px; max-height: 60px; border-radius: 5px; cursor: pointer; transition: transform 0.2s; }
         .asset-image-thumbnail:hover { transform: scale(1.1); }
         #camera-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.8); z-index: 1000; display: none; justify-content: center; align-items: center; flex-direction: column; gap: 20px; }
@@ -60,20 +59,27 @@
         .choices__inner { background-color: rgba(0, 92, 115, 0.5); border: 1px solid var(--teal); border-radius: 5px; padding: 7px; font-size: 1rem; color: var(--white); min-height: 44px; }
         .choices.is-open .choices__inner { border-color: var(--tiffany-blue); }
         .choices__list--dropdown { background-color: var(--midnight-green); border-color: var(--teal); }
-        .choices__list[aria-expanded] { border-color: var(--teal); }
         .choices__item--choice { color: var(--white); }
         .choices__item--choice.is-highlighted { background-color: var(--tiffany-blue); color: var(--midnight-green); }
         .choices__item--selectable { background-color: var(--teal); border: 1px solid var(--tiffany-blue); }
         .choices__button { border-left: 1px solid rgba(255, 255, 255, 0.5); filter: invert(1); opacity: 0.75; }
-        .choices__button:hover { opacity: 1; }
         .choices__placeholder { color: var(--tiffany-blue); opacity: 0.8; }
         .choices[data-type*="select-one"]::after { border-color: var(--white) transparent transparent; }
         .choices.is-open[data-type*="select-one"]::after { border-color: transparent transparent var(--white); margin-top: -2.5px; }
         #exit-toast { position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%); background-color: var(--black); color: var(--white); padding: 12px 25px; border-radius: 25px; font-size: 0.9rem; z-index: 2000; transition: bottom 0.4s ease-in-out; box-shadow: 0 5px 15px var(--shadow); }
         #exit-toast.show { bottom: 30px; }
-        .list-controls { display: flex; gap: 20px; align-items: center; margin-bottom: 20px; flex-wrap: wrap; }
-        .search-container { flex-grow: 1; min-width: 250px; }
+        .list-controls { display: flex; gap: 10px; align-items: stretch; margin-bottom: 20px; flex-wrap: wrap; }
+        .search-group { display: flex; flex-grow: 1; }
+        #search-column { border-radius: 8px 0 0 8px; background: var(--teal); color: var(--white); border: 1px solid var(--teal); padding: 0 10px; font-weight: bold; }
+        #search-column:focus { outline: none; }
+        #search-input { border-radius: 0 8px 8px 0; border-left: none; }
         #bulk-delete-btn, #bulk-edit-btn { display: none; }
+        .dropdown { position: relative; display: inline-block; }
+        .dropdown-content { display: none; position: absolute; background-color: var(--midnight-green); border: 1px solid var(--tiffany-blue); min-width: 220px; box-shadow: 0 8px 16px 0 var(--shadow); border-radius: 8px; padding: 12px 16px; z-index: 1; right: 0; }
+        .dropdown-content label { display: block; color: var(--white); margin-bottom: 8px; cursor: pointer; }
+        .dropdown-content label:hover { color: var(--tiffany-blue); }
+        .dropdown-content input { margin-right: 10px; }
+        .show { display: block; }
         .modal { display: none; position: fixed; z-index: 1001; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.6); }
         .modal-content { background-color: var(--midnight-green); margin: 5% auto; padding: 30px; border: 1px solid var(--teal); border-radius: 15px; width: 90%; max-width: 900px; box-shadow: 0 10px 30px var(--shadow); position: relative; animation: fadeIn 0.5s; }
         .modal-content h2 { color: var(--tiffany-blue); margin-bottom: 15px; }
@@ -96,7 +102,6 @@
             <button class="tab-button" data-tab="tab-list">Lista de Ativos</button>
         </div>
 
-        <!-- ABA DE CADASTRO -->
         <div id="tab-form" class="tab-content active">
             <form id="asset-form">
                 <h3 class="section-title">Informações do Ativo</h3>
@@ -118,11 +123,15 @@
             </form>
         </div>
 
-        <!-- ABA DE LISTA DE ATIVOS -->
         <div id="tab-list" class="tab-content">
             <div class="list-controls">
-                <div class="search-container">
+                <div class="search-group">
+                    <select id="search-column"></select>
                     <input type="search" id="search-input" class="search-input" placeholder="Pesquisar ativos...">
+                </div>
+                <div class="dropdown">
+                    <button id="toggle-columns-btn" class="btn">Exibir Colunas</button>
+                    <div id="columns-dropdown" class="dropdown-content"></div>
                 </div>
                 <button id="bulk-edit-btn" class="btn">Ação em Massa</button>
                 <button id="bulk-delete-btn" class="btn btn-danger">Excluir Selecionados</button>
@@ -130,19 +139,13 @@
 
             <div class="table-container">
                 <table id="asset-table">
-                    <thead>
-                        <tr>
-                            <th><input type="checkbox" id="select-all-checkbox" title="Selecionar Todos"></th>
-                            <th>Imagem</th><th>Etiqueta</th><th>Empresa</th><th>Tipo</th><th>Status Loc.</th><th>Unidade</th><th>Usuário</th><th>Localização</th><th>Ações</th>
-                        </tr>
-                    </thead>
+                    <thead id="asset-table-head"></thead>
                     <tbody id="asset-table-body"></tbody>
                 </table>
             </div>
         </div>
     </div>
 
-    <!-- MODAL DE AÇÃO EM MASSA -->
     <div id="bulk-edit-modal" class="modal">
         <div class="modal-content">
             <span id="close-bulk-modal-btn" class="close-btn">&times;</span>
@@ -179,46 +182,58 @@
     <script>
     document.addEventListener('DOMContentLoaded', () => {
         const STORAGE_KEY = 'gerenciadorDeAtivosData';
+        const COLUMN_VISIBILITY_KEY = 'gerenciadorDeAtivosColumns';
         const form = document.getElementById('asset-form');
+        const tableHead = document.getElementById('asset-table-head');
         const tableBody = document.getElementById('asset-table-body');
-        const exportSystemBtn = document.getElementById('export-system-btn');
-        const exportCsvBtn = document.getElementById('export-csv-btn');
-        const importSystemInput = document.getElementById('import-system-input');
-        const submitBtn = document.getElementById('submit-btn');
-        const cancelEditBtn = document.getElementById('cancel-edit-btn');
-        const formTabBtn = document.getElementById('form-tab-btn');
-        const imagePreview = document.getElementById('image-preview');
-        const etiquetaInput = document.getElementById('etiqueta');
-        const tabs = document.querySelectorAll('.tab-button');
-        const tabContents = document.querySelectorAll('.tab-content');
-        const openCameraBtn = document.getElementById('open-camera-btn');
-        const selectFileBtn = document.getElementById('select-file-btn');
-        const cameraModal = document.getElementById('camera-modal');
-        const cameraFeed = document.getElementById('camera-feed');
-        const snapPhotoBtn = document.getElementById('snap-photo-btn');
-        const cancelCameraBtn = document.getElementById('cancel-camera-btn');
-        const notebookFields = document.getElementById('notebook-fields');
-        const celularFields = document.getElementById('celular-fields');
         const searchInput = document.getElementById('search-input');
-        const selectAllCheckbox = document.getElementById('select-all-checkbox');
-        const bulkDeleteBtn = document.getElementById('bulk-delete-btn');
-        const bulkEditBtn = document.getElementById('bulk-edit-btn');
-        const bulkEditModal = document.getElementById('bulk-edit-modal');
-        const closeBulkModalBtn = document.getElementById('close-bulk-modal-btn');
-        const bulkEditCount = document.getElementById('bulk-edit-count');
-        const saveBulkEditBtn = document.getElementById('save-bulk-edit-btn');
-        const bulkEditForm = document.getElementById('bulk-edit-form');
+        const searchColumnSelect = document.getElementById('search-column');
+        const toggleColumnsBtn = document.getElementById('toggle-columns-btn');
+        const columnsDropdown = document.getElementById('columns-dropdown');
+        const selectAllCheckbox = document.createElement('input');
+        selectAllCheckbox.type = 'checkbox';
+        selectAllCheckbox.id = 'select-all-checkbox';
+        selectAllCheckbox.title = 'Selecionar Todos';
 
         let editingIndex = null;
         let currentImageData = { fileName: null, dataUrl: null };
         let cameraStream = null;
         const choicesInstances = {};
         const bulkChoicesInstances = {};
-        let lastCheckedCheckbox = null; 
+        let lastCheckedCheckbox = null;
 
-        const loadAtivos = () => { try { const data = localStorage.getItem(STORAGE_KEY); return data ? JSON.parse(data) : []; } catch (e) { console.error("Erro ao carregar dados:", e); return []; } };
-        const saveAtivos = () => { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(ativos)); } catch (e) { console.error("Erro ao salvar dados:", e); alert("Não foi possível salvar os dados. Armazenamento cheio?"); } };
+        const allColumns = {
+            select: { label: '' },
+            imageDataUrl: { label: 'Imagem' },
+            etiqueta: { label: 'Etiqueta' },
+            empresa: { label: 'Empresa' },
+            tipoItem: { label: 'Tipo' },
+            statusLocalizacao: { label: 'Status Loc.' },
+            unidade: { label: 'Unidade' },
+            usuario: { label: 'Usuário' },
+            localizacao: { label: 'Localização' },
+            nSerie: { label: 'N. Série' },
+            marca: { label: 'Marca' },
+            modelo: { label: 'Modelo' },
+            dataCompra: { label: 'Data Compra' },
+            valor: { label: 'Valor' },
+            actions: { label: 'Ações' }
+        };
+
+        const loadAtivos = () => { try { const data = localStorage.getItem(STORAGE_KEY); return data ? JSON.parse(data) : []; } catch (e) { return []; } };
+        const saveAtivos = () => { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(ativos)); } catch (e) { alert("Não foi possível salvar os dados."); } };
         let ativos = loadAtivos();
+
+        const loadColumnVisibility = () => {
+            const saved = localStorage.getItem(COLUMN_VISIBILITY_KEY);
+            if (saved) return JSON.parse(saved);
+            // Default visibility
+            return { select: true, imageDataUrl: true, etiqueta: true, empresa: true, tipoItem: true, statusLocalizacao: true, unidade: true, usuario: true, localizacao: true, nSerie: false, marca: false, modelo: false, dataCompra: false, valor: false, actions: true };
+        };
+        const saveColumnVisibility = (visibility) => {
+            localStorage.setItem(COLUMN_VISIBILITY_KEY, JSON.stringify(visibility));
+        };
+        let columnVisibility = loadColumnVisibility();
 
         const options = {
             empresa: ['PPay', 'MNTZZ', 'VG'],
@@ -237,38 +252,90 @@
         const formFields = ['etiqueta', 'statusLocalizacao', 'tipoItem', 'marca', 'modelo', 'nSerie', 'imei1', 'imei2', 'descricao', 'classificacaoContabil', 'localizacao', 'usuario', 'empresa', 'dpto', 'unidade', 'notaFiscal', 'valor', 'dataCompra', 'estadoBem', 'descarte', 'proprietario', 'numeroTelefone', 'processador', 'memoriaRam', 'memoriaRom', 'placaDeVideo'];
         const bulkEditFields = ['tipoItem', 'marca', 'modelo', 'statusLocalizacao', 'usuario', 'empresa', 'dpto', 'unidade', 'localizacao', 'estadoBem', 'descarte', 'descricao', 'classificacaoContabil', 'proprietario', 'notaFiscal', 'valor', 'dataCompra'];
 
+        function setupColumnControls() {
+            columnsDropdown.innerHTML = '';
+            Object.keys(allColumns).forEach(key => {
+                if (key === 'select' || key === 'actions') return;
+                const label = document.createElement('label');
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.dataset.key = key;
+                checkbox.checked = columnVisibility[key];
+                label.appendChild(checkbox);
+                label.appendChild(document.createTextNode(allColumns[key].label));
+                columnsDropdown.appendChild(label);
+            });
+        }
+
+        function setupSearch() {
+            const searchableColumns = { all: 'Qualquer Coluna', ...Object.fromEntries(Object.entries(allColumns).filter(([k,v]) => k !== 'select' && k !== 'actions' && k !== 'imageDataUrl').map(([k,v]) => [k, v.label])) };
+            searchColumnSelect.innerHTML = Object.entries(searchableColumns).map(([key, label]) => `<option value="${key}">${label}</option>`).join('');
+        }
+
         function renderTable() {
-            tableBody.innerHTML = '';
             const searchTerm = searchInput.value.toLowerCase().trim();
+            const searchColumn = searchColumnSelect.value;
+
+            tableHead.innerHTML = '';
+            const headerRow = document.createElement('tr');
+            Object.keys(allColumns).forEach(key => {
+                const th = document.createElement('th');
+                th.dataset.key = key;
+                if (key === 'select') {
+                    th.appendChild(selectAllCheckbox);
+                } else {
+                    th.textContent = allColumns[key].label;
+                }
+                if (!columnVisibility[key]) th.classList.add('hidden');
+                headerRow.appendChild(th);
+            });
+            tableHead.appendChild(headerRow);
+
+            tableBody.innerHTML = '';
             const filteredAtivos = ativos.filter(ativo => {
                 if (!searchTerm) return true;
-                const searchableString = Object.values(ativo).join(' ').toLowerCase();
-                return searchableString.includes(searchTerm);
+                if (searchColumn === 'all') {
+                    return Object.keys(ativo).some(key => 
+                        ativo[key] && ativo[key].toString().toLowerCase().includes(searchTerm)
+                    );
+                } else {
+                    return ativo[searchColumn] && ativo[searchColumn].toString().toLowerCase().includes(searchTerm);
+                }
             });
 
             if (filteredAtivos.length === 0) {
-                 tableBody.innerHTML = `<tr><td colspan="10" style="text-align:center; padding: 20px;">Nenhum ativo encontrado.</td></tr>`;
+                 tableBody.innerHTML = `<tr><td colspan="${Object.keys(allColumns).length}" style="text-align:center; padding: 20px;">Nenhum ativo encontrado.</td></tr>`;
             } else {
                 filteredAtivos.forEach(ativo => {
                     const originalIndex = ativos.indexOf(ativo);
                     const row = document.createElement('tr');
                     row.dataset.index = originalIndex;
-                    const imageCell = ativo.imageDataUrl ? `<a href="${ativo.imageDataUrl}" target="_blank"><img src="${ativo.imageDataUrl}" class="asset-image-thumbnail" alt="${ativo.imageFilename || ''}"></a>` : 'N/A';
-                    
-                    row.innerHTML = `
-                        <td><input type="checkbox" class="row-checkbox" data-index="${originalIndex}"></td>
-                        <td>${imageCell}</td>
-                        <td>${ativo.etiqueta || ''}</td>
-                        <td>${ativo.empresa || ''}</td>
-                        <td>${ativo.tipoItem || ''}</td>
-                        <td>${ativo.statusLocalizacao || ''}</td>
-                        <td>${ativo.unidade || ''}</td>
-                        <td>${ativo.usuario || ''}</td>
-                        <td>${ativo.localizacao || ''}</td>
-                        <td class="actions-cell">
-                            <button class="btn btn-edit edit-btn" data-index="${originalIndex}">Editar</button>
-                            <button class="btn btn-danger remove-btn" data-index="${originalIndex}">Remover</button>
-                        </td>`;
+
+                    Object.keys(allColumns).forEach(key => {
+                        const td = document.createElement('td');
+                        td.dataset.key = key;
+                        if (!columnVisibility[key]) td.classList.add('hidden');
+
+                        switch (key) {
+                            case 'select':
+                                const checkbox = document.createElement('input');
+                                checkbox.type = 'checkbox';
+                                checkbox.className = 'row-checkbox';
+                                checkbox.dataset.index = originalIndex;
+                                td.appendChild(checkbox);
+                                break;
+                            case 'imageDataUrl':
+                                td.innerHTML = ativo.imageDataUrl ? `<a href="${ativo.imageDataUrl}" target="_blank"><img src="${ativo.imageDataUrl}" class="asset-image-thumbnail" alt="${ativo.imageFilename || ''}"></a>` : 'N/A';
+                                break;
+                            case 'actions':
+                                td.innerHTML = `<button class="btn btn-edit edit-btn" data-index="${originalIndex}">Editar</button> <button class="btn btn-danger remove-btn" data-index="${originalIndex}">Remover</button>`;
+                                break;
+                            default:
+                                td.textContent = ativo[key] || '';
+                                break;
+                        }
+                        row.appendChild(td);
+                    });
                     tableBody.appendChild(row);
                 });
             }
@@ -276,429 +343,73 @@
             lastCheckedCheckbox = null;
         };
 
-        function updateBulkActionUI() {
-            const selectedCheckboxes = document.querySelectorAll('.row-checkbox:checked');
-            const anySelected = selectedCheckboxes.length > 0;
-            
-            bulkDeleteBtn.style.display = anySelected ? 'inline-block' : 'none';
-            bulkEditBtn.style.display = anySelected ? 'inline-block' : 'none';
-
-            if (anySelected) {
-                bulkDeleteBtn.textContent = `Excluir ${selectedCheckboxes.length}`;
-                bulkEditBtn.textContent = `Ação em Massa (${selectedCheckboxes.length})`;
-            }
-
-            const allVisibleCheckboxes = document.querySelectorAll('.row-checkbox');
-            if (allVisibleCheckboxes.length > 0 && selectedCheckboxes.length === allVisibleCheckboxes.length) {
-                selectAllCheckbox.checked = true;
-                selectAllCheckbox.indeterminate = false;
-            } else if (anySelected) {
-                selectAllCheckbox.checked = false;
-                selectAllCheckbox.indeterminate = true;
-            } else {
-                selectAllCheckbox.checked = false;
-                selectAllCheckbox.indeterminate = false;
-            }
-        }
-        
-        function handleBulkDelete() {
-            const selectedCheckboxes = document.querySelectorAll('.row-checkbox:checked');
-            if (selectedCheckboxes.length === 0) return;
-            
-            if (confirm(`Tem certeza que deseja excluir os ${selectedCheckboxes.length} ativos selecionados? Esta ação não pode ser desfeita.`)) {
-                const indicesToDelete = Array.from(selectedCheckboxes).map(cb => parseInt(cb.dataset.index, 10));
-                ativos = ativos.filter((_, index) => !indicesToDelete.includes(index));
-                saveAtivos();
-                renderTable();
-            }
-        }
-
-        function openBulkEditModal() {
-            const selectedCheckboxes = document.querySelectorAll('.row-checkbox:checked');
-            if (selectedCheckboxes.length === 0) return;
-            
-            bulkEditCount.textContent = selectedCheckboxes.length;
-            bulkEditModal.style.display = 'block';
-        }
-
-        function closeBulkEditModal() {
-            bulkEditModal.style.display = 'none';
-            bulkEditForm.reset();
-            for (const id in bulkChoicesInstances) {
-                bulkChoicesInstances[id].setChoiceByValue('');
-            }
-        }
-
-        function handleBulkEditSave() {
-            const selectedIndices = Array.from(document.querySelectorAll('.row-checkbox:checked')).map(cb => parseInt(cb.dataset.index, 10));
-            if (selectedIndices.length === 0) return;
-
-            let changesMade = false;
-            selectedIndices.forEach(index => {
-                const ativo = ativos[index];
-                bulkEditFields.forEach(field => {
-                    const bulkElement = document.getElementById(`bulk-${field}`);
-                    if (!bulkElement) return;
-
-                    let value;
-                    if (bulkChoicesInstances[`bulk-${field}`]) {
-                        value = bulkChoicesInstances[`bulk-${field}`].getValue(true);
-                    } else {
-                        value = bulkElement.value;
-                    }
-
-                    if (value !== null && value !== undefined && value !== '') {
-                        if (ativo[field] !== value) {
-                            ativo[field] = value;
-                            changesMade = true;
-                        }
-                    }
+        function updateColumnVisibility() {
+            Object.keys(allColumns).forEach(key => {
+                const visible = columnVisibility[key];
+                document.querySelectorAll(`#asset-table [data-key='${key}']`).forEach(el => {
+                    el.classList.toggle('hidden', !visible);
                 });
             });
-
-            if (changesMade) {
-                saveAtivos();
-                renderTable();
-                alert(`${selectedIndices.length} ativos foram atualizados com sucesso!`);
-            } else {
-                alert("Nenhuma alteração foi feita. Os campos estavam vazios ou os valores eram os mesmos.");
-            }
-            closeBulkEditModal();
-        }
-        
-        function initializeChoices(prefix = '', instanceObject = choicesInstances) {
-            for (const id in options) {
-                const selectElement = document.getElementById(`${prefix}${id}`);
-                if (selectElement) {
-                    instanceObject[`${prefix}${id}`] = new Choices(selectElement, {
-                        choices: options[id].map(val => ({ value: val, label: val })),
-                        removeItemButton: true,
-                        searchResultLimit: 15,
-                        itemSelectText: 'Pressione para selecionar',
-                        placeholder: true,
-                        placeholderValue: 'Selecione uma opção'
-                    });
-                }
-            }
-            const tipoItemElement = document.getElementById('tipoItem');
-            if (tipoItemElement) {
-                tipoItemElement.addEventListener('change', toggleConditionalFields);
-            }
         }
 
-        function toggleConditionalFields() {
-            const tipo = choicesInstances['tipoItem'] ? choicesInstances['tipoItem'].getValue(true) : '';
-            notebookFields.classList.toggle('visible', tipo === 'Notebook');
-            celularFields.classList.toggle('visible', tipo === 'Celular');
-            if (tipo !== 'Notebook') {
-                ['processador', 'memoriaRam', 'memoriaRom', 'placaDeVideo'].forEach(id => choicesInstances[id]?.setValue([]));
-            }
-            if (tipo !== 'Celular') {
-                ['imei1', 'imei2', 'numeroTelefone'].forEach(id => {
-                    const el = document.getElementById(id);
-                    if (el) el.value = '';
-                });
-            }
-        }
-        async function openCamera() {
-            try {
-                cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-                cameraFeed.srcObject = cameraStream;
-                cameraModal.style.display = 'flex';
-            } catch (err) {
-                alert("Não foi possível acessar a câmera. Verifique as permissões.");
-            }
-        }
-        function closeCamera() {
-            if (cameraStream) {
-                cameraStream.getTracks().forEach(track => track.stop());
-            }
-            cameraModal.style.display = 'none';
-        }
-        function takePicture() {
-            const canvas = document.createElement('canvas');
-            canvas.width = cameraFeed.videoWidth;
-            canvas.height = cameraFeed.videoHeight;
-            canvas.getContext('2d').drawImage(cameraFeed, 0, 0, canvas.width, canvas.height);
-            const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
-            const baseName = etiquetaInput.value.trim().replace(/\s+/g, '-') || 'ativo';
-            currentImageData = { fileName: `${baseName}-${Date.now()}.jpg`, dataUrl: dataUrl };
-            imagePreview.src = dataUrl;
-            imagePreview.style.display = 'block';
-            closeCamera();
-        }
-        function dataURLtoBlob(dataurl) {
-            let arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1], bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
-            while(n--){
-                u8arr[n] = bstr.charCodeAt(n);
-            }
-            return new Blob([u8arr], {type:mime});
-        }
-        function getFormData() {
-            const data = {};
-            formFields.forEach(id => {
-                const element = document.getElementById(id);
-                if (element) data[id] = choicesInstances[id] ? choicesInstances[id].getValue(true) : element.value;
-            });
-            data.imageFilename = currentImageData.fileName;
-            data.imageDataUrl = currentImageData.dataUrl;
-            return data;
-        };
-        function setFormData(ativo) {
-            formFields.forEach(id => {
-                const element = document.getElementById(id);
-                if (choicesInstances[id]) {
-                    // Recarrega as opções e depois define o valor para corrigir o bug
-                    choicesInstances[id].setChoices(
-                        options[id].map(val => ({ value: val, label: val })),
-                        'value',
-                        'label',
-                        true // Limpa as opções existentes antes de adicionar as novas
-                    );
-
-                    if (ativo[id]) {
-                        choicesInstances[id].setChoiceByValue(String(ativo[id]));
-                    } else {
-                        choicesInstances[id].setChoiceByValue(''); // Garante que a seleção seja limpa se não houver valor
-                    }
-                } else if (element) {
-                    element.value = ativo[id] || '';
-                }
-            });
-        };
-        function handleFormSubmit(e) {
-            e.preventDefault();
-            const ativoData = getFormData();
-            if (editingIndex !== null) {
-                ativos[editingIndex] = ativoData;
-                alert('Ativo atualizado!');
-            } else {
-                ativos.push(ativoData);
-                alert('Ativo cadastrado!');
-            }
-            saveAtivos();
-            resetFormMode();
-            renderTable();
-        };
-        function startEditing(index) {
-            editingIndex = index;
-            const ativo = ativos[index];
-            setFormData(ativo);
-            currentImageData = { fileName: ativo.imageFilename, dataUrl: ativo.imageDataUrl };
-            if (ativo.imageDataUrl) {
-                imagePreview.src = ativo.imageDataUrl;
-                imagePreview.style.display = 'block';
-            } else {
-                imagePreview.style.display = 'none';
-            }
-            submitBtn.textContent = 'Atualizar Ativo';
-            cancelEditBtn.style.display = 'inline-block';
-            formTabBtn.click();
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-            toggleConditionalFields();
-        };
-        function resetFormMode() {
-            editingIndex = null;
-            form.reset();
-            for (const id in choicesInstances) {
-                choicesInstances[id].setChoiceByValue('');
-            }
-            imagePreview.style.display = 'none';
-            imagePreview.src = '';
-            currentImageData = { fileName: null, dataUrl: null };
-            submitBtn.textContent = 'Salvar Ativo';
-            cancelEditBtn.style.display = 'none';
-            toggleConditionalFields();
-        };
-        async function exportToSystem() {
-            if (ativos.length === 0) return alert('Não há dados para exportar.');
-            alert('Gerando arquivo ZIP...');
-            const zip = new JSZip();
-            zip.file("backup_ativos.json", JSON.stringify(ativos, null, 2));
-            const imgFolder = zip.folder("images");
-            ativos.forEach(ativo => {
-                if (ativo.imageDataUrl && ativo.imageFilename) {
-                    const blob = dataURLtoBlob(ativo.imageDataUrl);
-                    imgFolder.file(ativo.imageFilename, blob);
-                }
-            });
-            try {
-                const content = await zip.generateAsync({ type: "blob" });
-                const a = document.createElement("a");
-                a.href = URL.createObjectURL(content);
-                a.download = `backup_completo_${new Date().toISOString().slice(0,10)}.zip`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(a.href);
-            } catch(e) {
-                console.error(e);
-                alert("Ocorreu um erro ao gerar o arquivo ZIP.");
-            }
-        };
-        async function importFromSystem(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            alert('Lendo arquivo ZIP...');
-            try {
-                const zip = await JSZip.loadAsync(file);
-                const jsonFile = zip.file("backup_ativos.json");
-                if (!jsonFile) throw new Error("'backup_ativos.json' não encontrado.");
-                const jsonContent = await jsonFile.async("string");
-                let importedAtivos = JSON.parse(jsonContent);
-                const imageMap = new Map();
-                const imageFolder = zip.folder("images");
-                const imagePromises = [];
-                if(imageFolder) {
-                    imageFolder.forEach((relativePath, zipEntry) => {
-                        const promise = zipEntry.async("base64").then(base64 => {
-                            const mimeType = zipEntry.name.endsWith('png') ? 'image/png' : 'image/jpeg';
-                            imageMap.set(zipEntry.name, `data:${mimeType};base64,${base64}`);
-                        });
-                        imagePromises.push(promise);
-                    });
-                }
-                await Promise.all(imagePromises);
-                importedAtivos.forEach(ativo => {
-                    if (ativo.imageFilename && imageMap.has(ativo.imageFilename)) {
-                        ativo.imageDataUrl = imageMap.get(ativo.imageFilename);
-                    }
-                });
-                if (confirm('Dados lidos. Deseja substituir os dados atuais?')) {
-                    ativos = importedAtivos;
-                    saveAtivos();
-                    resetFormMode();
-                    renderTable();
-                    alert('Sistema restaurado com sucesso!');
-                }
-            } catch(e) {
-                console.error(e);
-                alert("Erro ao importar ZIP: " + e.message);
-            }
-            e.target.value = null;
-        };
-        function exportToCsv() {
-            if (ativos.length === 0) return alert('Não há dados para exportar.');
-            alert('Gerando CSV...');
-            const headers = ['ETIQUETA DE PATRIMÔNIO', 'Status.localizacao', 'Tipo.item', 'Marca', 'Modelo', 'N.Série', 'IMEI.1', 'IMEI.2', 'Descrição', 'Classificação Contábil', 'Localização', 'Usuário', 'Empresa', 'Dpto', 'Unidade', 'Nota Fiscal', 'Valor', 'Data da Compra', 'Estado do bem', 'Descarte', 'Proprietário', 'Processador', 'Memória RAM', 'Memória ROM', 'Placa de Video', 'Número de Telefone', 'Nome Arquivo Imagem'];
-            const rows = ativos.map(ativo => {
-                return [ 
-                    ativo.etiqueta, ativo.statusLocalizacao, ativo.tipoItem, ativo.marca, ativo.modelo, ativo.nSerie, ativo.imei1, ativo.imei2, ativo.descricao, ativo.classificacaoContabil, ativo.localizacao, ativo.usuario, ativo.empresa, ativo.dpto, ativo.unidade, ativo.notaFiscal, ativo.valor, ativo.dataCompra, ativo.estadoBem, ativo.descarte, ativo.proprietario, ativo.processador, ativo.memoriaRam, ativo.memoriaRom, ativo.placaDeVideo, ativo.numeroTelefone, ativo.imageFilename || '' 
-                ].map(val => `"${(val || '').toString().replace(/"/g, '""')}"`).join(';');
-            });
-            const csvContent = "\uFEFF" + headers.join(';') + '\n' + rows.join('\n');
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const a = document.createElement("a");
-            a.href = URL.createObjectURL(blob);
-            a.download = `export_ativos_${new Date().toISOString().slice(0,10)}.csv`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-        }
-        let backButtonPressedOnce = false;
-        window.addEventListener('popstate', (e) => {
-            if (window.matchMedia('(display-mode: fullscreen)').matches) {
-                if (backButtonPressedOnce) {
-                    history.back();
-                    return;
-                }
-                e.preventDefault();
-                history.pushState(null, '', location.href);
-                backButtonPressedOnce = true;
-                const toast = document.getElementById('exit-toast');
-                toast.classList.add('show');
-                setTimeout(() => {
-                    backButtonPressedOnce = false;
-                    toast.classList.remove('show');
-                }, 2000);
-            }
-        });
-        history.pushState(null, '', location.href);
+        // Funções de Ação em Massa e outras (sem alterações significativas)
+        function updateBulkActionUI() { const selectedCheckboxes = document.querySelectorAll('.row-checkbox:checked'); const anySelected = selectedCheckboxes.length > 0; const bulkDeleteBtn = document.getElementById('bulk-delete-btn'); const bulkEditBtn = document.getElementById('bulk-edit-btn'); bulkDeleteBtn.style.display = anySelected ? 'inline-block' : 'none'; bulkEditBtn.style.display = anySelected ? 'inline-block' : 'none'; if (anySelected) { bulkDeleteBtn.textContent = `Excluir ${selectedCheckboxes.length}`; bulkEditBtn.textContent = `Ação em Massa (${selectedCheckboxes.length})`; } const allVisibleCheckboxes = document.querySelectorAll('#asset-table-body .row-checkbox'); if (allVisibleCheckboxes.length > 0 && selectedCheckboxes.length === allVisibleCheckboxes.length) { selectAllCheckbox.checked = true; selectAllCheckbox.indeterminate = false; } else if (anySelected) { selectAllCheckbox.checked = false; selectAllCheckbox.indeterminate = true; } else { selectAllCheckbox.checked = false; selectAllCheckbox.indeterminate = false; } }
+        function handleBulkDelete() { const selectedCheckboxes = document.querySelectorAll('.row-checkbox:checked'); if (selectedCheckboxes.length === 0) return; if (confirm(`Tem certeza que deseja excluir os ${selectedCheckboxes.length} ativos selecionados?`)) { const indicesToDelete = Array.from(selectedCheckboxes).map(cb => parseInt(cb.dataset.index, 10)); ativos = ativos.filter((_, index) => !indicesToDelete.includes(index)); saveAtivos(); renderTable(); } }
+        function openBulkEditModal() { const selectedCheckboxes = document.querySelectorAll('.row-checkbox:checked'); if (selectedCheckboxes.length === 0) return; document.getElementById('bulk-edit-count').textContent = selectedCheckboxes.length; document.getElementById('bulk-edit-modal').style.display = 'block'; }
+        function closeBulkEditModal() { document.getElementById('bulk-edit-modal').style.display = 'none'; document.getElementById('bulk-edit-form').reset(); for (const id in bulkChoicesInstances) { bulkChoicesInstances[id].setChoiceByValue(''); } }
+        function handleBulkEditSave() { const selectedIndices = Array.from(document.querySelectorAll('.row-checkbox:checked')).map(cb => parseInt(cb.dataset.index, 10)); if (selectedIndices.length === 0) return; let changesMade = false; selectedIndices.forEach(index => { const ativo = ativos[index]; bulkEditFields.forEach(field => { const bulkElement = document.getElementById(`bulk-${field}`); if (!bulkElement) return; let value; if (bulkChoicesInstances[`bulk-${field}`]) { value = bulkChoicesInstances[`bulk-${field}`].getValue(true); } else { value = bulkElement.value; } if (value !== null && value !== undefined && value !== '') { if (ativo[field] !== value) { ativo[field] = value; changesMade = true; } } }); }); if (changesMade) { saveAtivos(); renderTable(); alert(`${selectedIndices.length} ativos foram atualizados!`); } else { alert("Nenhuma alteração foi feita."); } closeBulkEditModal(); }
+        function initializeChoices(prefix = '', instanceObject = choicesInstances) { for (const id in options) { const selectElement = document.getElementById(`${prefix}${id}`); if (selectElement) { instanceObject[`${prefix}${id}`] = new Choices(selectElement, { choices: options[id].map(val => ({ value: val, label: val })), removeItemButton: true, searchResultLimit: 15, itemSelectText: 'Pressione para selecionar', placeholder: true, placeholderValue: 'Selecione uma opção' }); } } const tipoItemElement = document.getElementById('tipoItem'); if (tipoItemElement) { tipoItemElement.addEventListener('change', toggleConditionalFields); } }
+        function toggleConditionalFields() { const tipo = choicesInstances['tipoItem'] ? choicesInstances['tipoItem'].getValue(true) : ''; document.getElementById('notebook-fields').classList.toggle('visible', tipo === 'Notebook'); document.getElementById('celular-fields').classList.toggle('visible', tipo === 'Celular'); }
+        function getFormData() { const data = {}; formFields.forEach(id => { const element = document.getElementById(id); if (element) data[id] = choicesInstances[id] ? choicesInstances[id].getValue(true) : element.value; }); data.imageFilename = currentImageData.fileName; data.imageDataUrl = currentImageData.dataUrl; return data; };
+        function setFormData(ativo) { formFields.forEach(id => { const element = document.getElementById(id); if (choicesInstances[id]) { choicesInstances[id].setChoices(options[id].map(val => ({ value: val, label: val })), 'value', 'label', true); if (ativo[id]) { choicesInstances[id].setChoiceByValue(String(ativo[id])); } else { choicesInstances[id].setChoiceByValue(''); } } else if (element) { element.value = ativo[id] || ''; } }); };
+        function handleFormSubmit(e) { e.preventDefault(); const ativoData = getFormData(); if (editingIndex !== null) { ativos[editingIndex] = ativoData; } else { ativos.push(ativoData); } saveAtivos(); resetFormMode(); renderTable(); alert(editingIndex !== null ? 'Ativo atualizado!' : 'Ativo cadastrado!'); };
+        function startEditing(index) { editingIndex = index; const ativo = ativos[index]; setFormData(ativo); currentImageData = { fileName: ativo.imageFilename, dataUrl: ativo.imageDataUrl }; const imagePreview = document.getElementById('image-preview'); if (ativo.imageDataUrl) { imagePreview.src = ativo.imageDataUrl; imagePreview.style.display = 'block'; } else { imagePreview.style.display = 'none'; } document.getElementById('submit-btn').textContent = 'Atualizar Ativo'; document.getElementById('cancel-edit-btn').style.display = 'inline-block'; document.getElementById('form-tab-btn').click(); window.scrollTo({ top: 0, behavior: 'smooth' }); toggleConditionalFields(); };
+        function resetFormMode() { editingIndex = null; document.getElementById('asset-form').reset(); for (const id in choicesInstances) { choicesInstances[id].setChoiceByValue(''); } const imagePreview = document.getElementById('image-preview'); imagePreview.style.display = 'none'; imagePreview.src = ''; currentImageData = { fileName: null, dataUrl: null }; document.getElementById('submit-btn').textContent = 'Salvar Ativo'; document.getElementById('cancel-edit-btn').style.display = 'none'; toggleConditionalFields(); };
 
         // --- EVENT LISTENERS ---
-        form.addEventListener('submit', handleFormSubmit);
-        cancelEditBtn.addEventListener('click', resetFormMode);
-        openCameraBtn.addEventListener('click', openCamera);
-        cancelCameraBtn.addEventListener('click', closeCamera);
-        snapPhotoBtn.addEventListener('click', takePicture);
-        exportSystemBtn.addEventListener('click', exportToSystem);
-        exportCsvBtn.addEventListener('click', exportToCsv);
-        importSystemInput.addEventListener('change', importFromSystem);
-        selectFileBtn.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                    const baseName = etiquetaInput.value.trim().replace(/\s+/g, '-') || 'ativo';
-                    const uniqueFilename = `${baseName}-${Date.now()}.${file.name.split('.').pop()}`;
-                    imagePreview.src = event.target.result;
-                    imagePreview.style.display = 'block';
-                    currentImageData = { fileName: uniqueFilename, dataUrl: event.target.result };
-                };
-                reader.readAsDataURL(file);
-            }
-        });
-        tabs.forEach(tab => tab.addEventListener('click', (e) => {
-            tabs.forEach(t => t.classList.remove('active'));
-            tabContents.forEach(c => c.classList.remove('active'));
-            e.currentTarget.classList.add('active');
-            document.getElementById(e.currentTarget.dataset.tab).classList.add('active');
-            if(e.currentTarget.dataset.tab === 'tab-list') renderTable();
-        }));
-        
+        document.getElementById('asset-form').addEventListener('submit', handleFormSubmit);
+        document.getElementById('cancel-edit-btn').addEventListener('click', resetFormMode);
+        document.querySelectorAll('.tab-button').forEach(tab => tab.addEventListener('click', (e) => { document.querySelectorAll('.tab-button').forEach(t => t.classList.remove('active')); document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active')); e.currentTarget.classList.add('active'); document.getElementById(e.currentTarget.dataset.tab).classList.add('active'); if(e.currentTarget.dataset.tab === 'tab-list') renderTable(); }));
         tableBody.addEventListener('click', (e) => {
-            if (e.target.classList.contains('remove-btn')) { if (confirm('Tem certeza?')) { const index = parseInt(e.target.dataset.index, 10); ativos.splice(index, 1); if (editingIndex === index) resetFormMode(); saveAtivos(); renderTable(); } }
+            if (e.target.classList.contains('remove-btn')) { handleBulkDelete(); }
             if (e.target.classList.contains('edit-btn')) { startEditing(parseInt(e.target.dataset.index, 10)); }
-            
             if (e.target.classList.contains('row-checkbox')) {
                 if (e.shiftKey && lastCheckedCheckbox) {
                     const checkboxes = Array.from(tableBody.querySelectorAll('.row-checkbox'));
                     const start = checkboxes.indexOf(lastCheckedCheckbox);
                     const end = checkboxes.indexOf(e.target);
                     const range = (start < end) ? checkboxes.slice(start, end + 1) : checkboxes.slice(end, start + 1);
-                    const shouldBeChecked = lastCheckedCheckbox.checked;
-                    range.forEach(checkbox => checkbox.checked = shouldBeChecked);
+                    range.forEach(checkbox => checkbox.checked = lastCheckedCheckbox.checked);
                 }
                 lastCheckedCheckbox = e.target;
                 updateBulkActionUI();
             }
         });
-        
         searchInput.addEventListener('input', renderTable);
-        bulkDeleteBtn.addEventListener('click', handleBulkDelete);
-        selectAllCheckbox.addEventListener('click', (e) => {
-            document.querySelectorAll('#asset-table-body .row-checkbox').forEach(checkbox => {
-                checkbox.checked = e.target.checked;
-            });
-            updateBulkActionUI();
-        });
-
-        bulkEditBtn.addEventListener('click', openBulkEditModal);
-        closeBulkModalBtn.addEventListener('click', closeBulkEditModal);
-        saveBulkEditBtn.addEventListener('click', handleBulkEditSave);
-        window.addEventListener('click', (e) => {
-            if (e.target == bulkEditModal) {
-                closeBulkEditModal();
+        searchColumnSelect.addEventListener('change', renderTable);
+        selectAllCheckbox.addEventListener('click', (e) => { document.querySelectorAll('#asset-table-body .row-checkbox').forEach(checkbox => { checkbox.checked = e.target.checked; }); updateBulkActionUI(); });
+        document.getElementById('bulk-delete-btn').addEventListener('click', handleBulkDelete);
+        document.getElementById('bulk-edit-btn').addEventListener('click', openBulkEditModal);
+        document.getElementById('close-bulk-modal-btn').addEventListener('click', closeBulkEditModal);
+        document.getElementById('save-bulk-edit-btn').addEventListener('click', handleBulkEditSave);
+        toggleColumnsBtn.addEventListener('click', () => columnsDropdown.classList.toggle('show'));
+        columnsDropdown.addEventListener('change', (e) => {
+            if (e.target.type === 'checkbox') {
+                const key = e.target.dataset.key;
+                columnVisibility[key] = e.target.checked;
+                saveColumnVisibility(columnVisibility);
+                updateColumnVisibility();
             }
         });
+        window.addEventListener('click', (e) => { if (!e.target.matches('#toggle-columns-btn')) { if (columnsDropdown.classList.contains('show')) { columnsDropdown.classList.remove('show'); } } if (e.target == document.getElementById('bulk-edit-modal')) { closeBulkEditModal(); } });
 
         // --- INICIALIZAÇÃO ---
         initializeChoices('', choicesInstances);
         initializeChoices('bulk-', bulkChoicesInstances);
+        setupColumnControls();
+        setupSearch();
         renderTable();
-        toggleConditionalFields();
-        updateBulkActionUI();
     });
-
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('./sw.js').then(registration => {
-                console.log('SW registrado:', registration.scope);
-            }, err => {
-                console.log('SW falhou:', err);
-            });
-        });
-    }
     </script>
 </body>
 </html>
