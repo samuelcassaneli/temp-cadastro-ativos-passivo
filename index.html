@@ -248,6 +248,7 @@
         let cameraStream = null;
         const choicesInstances = {};
         const bulkChoicesInstances = {};
+        const filterChoicesInstances = {}; // New: Choices.js instances for filter controls
         let lastCheckedCheckbox = null;
         let activeFilters = [{}];
 
@@ -405,6 +406,14 @@
 
         function renderFilterControls() {
             filterContainer.innerHTML = '';
+            // Destroy existing Choices.js instances for filters
+            for (const key in filterChoicesInstances) {
+                if (filterChoicesInstances[key]) {
+                    filterChoicesInstances[key].destroy();
+                    delete filterChoicesInstances[key];
+                }
+            }
+
             activeFilters.forEach((filter, index) => {
                 const filterRow = document.createElement('div');
                 filterRow.className = 'filter-row';
@@ -415,20 +424,45 @@
                 columnSelect.innerHTML = '<option value="">Selecione a Coluna</option>' + 
                     Object.entries(filterableColumns).map(([key, {label}]) => `<option value="${key}" ${filter.column === key ? 'selected' : ''}>${label}</option>`).join('');
 
-                const valueInput = document.createElement('input');
-                valueInput.type = 'text';
-                valueInput.placeholder = 'Digite o valor para filtrar...';
-                valueInput.dataset.index = index;
-                valueInput.className = 'filter-value';
-                valueInput.value = filter.value || '';
+                let valueElement;
+                const filterColumnKey = filter.column;
+
+                if (filterColumnKey && options[filterColumnKey]) {
+                    valueElement = document.createElement('select');
+                    valueElement.id = `filter-value-${index}`; // Unique ID for Choices.js
+                    valueElement.dataset.index = index;
+                    valueElement.className = 'filter-value';
+                } else {
+                    valueElement = document.createElement('input');
+                    valueElement.type = 'text';
+                    valueElement.placeholder = 'Digite o valor para filtrar...';
+                    valueElement.dataset.index = index;
+                    valueElement.className = 'filter-value';
+                    valueElement.value = filter.value || '';
+                }
 
                 const removeBtn = document.createElement('button');
                 removeBtn.className = 'btn btn-danger remove-filter-btn';
                 removeBtn.textContent = 'X';
                 removeBtn.dataset.index = index;
 
-                filterRow.append(columnSelect, valueInput, removeBtn);
+                filterRow.append(columnSelect, valueElement, removeBtn);
                 filterContainer.appendChild(filterRow);
+
+                // Initialize Choices.js for the select element if it exists
+                if (filterColumnKey && options[filterColumnKey]) {
+                    filterChoicesInstances[`filter-value-${index}`] = new Choices(valueElement, {
+                        choices: options[filterColumnKey].map(val => ({ value: val, label: val })),
+                        removeItemButton: true,
+                        searchResultLimit: 15,
+                        itemSelectText: 'Pressione para selecionar',
+                        placeholder: true,
+                        placeholderValue: 'Selecione uma opção'
+                    });
+                    if (filter.value) {
+                        filterChoicesInstances[`filter-value-${index}`].setChoiceByValue(filter.value);
+                    }
+                }
             });
         }
 
@@ -469,8 +503,14 @@
             const filteredAtivos = ativos.filter(ativo => {
                 return activeFilters.every(filter => {
                     if (!filter.column || !filter.value) return true;
-                    const ativoValue = ativo[filter.column]?.toString().toLowerCase() || '';
-                    return ativoValue.includes(filter.value.toLowerCase());
+                    const ativoValue = ativo[filter.column]?.toString() || ''; // Get original case for exact match
+                    
+                    // Check if the column is one of the dropdown types
+                    if (options[filter.column]) {
+                        return ativoValue === filter.value; // Exact match for dropdowns
+                    } else {
+                        return ativoValue.toLowerCase().includes(filter.value.toLowerCase()); // Partial match for text inputs
+                    }
                 });
             });
 
@@ -998,14 +1038,22 @@
         });
 
         filterContainer.addEventListener('change', e => {
+            const index = e.target.dataset.index;
             if (e.target.classList.contains('filter-column')) {
-                activeFilters[e.target.dataset.index].column = e.target.value;
+                activeFilters[index].column = e.target.value;
+                activeFilters[index].value = ''; // Reset value
+                renderFilterControls(); // Re-render to get correct input
+                renderTable();
+            } else if (e.target.classList.contains('filter-value')) {
+                // Handle both native select and Choices.js select
+                const choicesInstance = filterChoicesInstances[`filter-value-${index}`];
+                activeFilters[index].value = choicesInstance ? choicesInstance.getValue(true) : e.target.value;
                 renderTable();
             }
         });
 
         filterContainer.addEventListener('input', e => {
-            if (e.target.classList.contains('filter-value')) {
+            if (e.target.classList.contains('filter-value') && e.target.tagName === 'INPUT') {
                 activeFilters[e.target.dataset.index].value = e.target.value;
                 renderTable();
             }
