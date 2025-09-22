@@ -70,8 +70,108 @@
         #column-toggle-dropdown label { display: block; margin-bottom: 5px; cursor: pointer; }
         #bulk-actions-container { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
         #bulk-delete-btn, #bulk-edit-btn { display: none; }
-        .modal { display: none; position: fixed; z-index: 1001; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.6); }
+        .modal, #camera-modal { display: none; position: fixed; z-index: 1001; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.6); }
         .modal-content { background-color: var(--midnight-green); margin: 5% auto; padding: 30px; border-radius: 15px; width: 90%; max-width: 900px; position: relative; }
+        #camera-modal .modal-content { max-width: 640px; }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            .container {
+                padding: 15px;
+            }
+            header h1 {
+                font-size: 2rem;
+            }
+            .actions-bar {
+                flex-direction: column;
+                gap: 10px;
+            }
+            .btn, .btn-like-input-label {
+                width: 100%;
+                padding: 15px;
+            }
+            .tabs {
+                flex-wrap: wrap;
+            }
+            .tab-button {
+                flex-grow: 1;
+                text-align: center;
+            }
+            #asset-form, .conditional-fields {
+                grid-template-columns: 1fr;
+            }
+            .form-actions {
+                flex-direction: column;
+            }
+            .form-actions .btn {
+                width: 100%;
+            }
+            .list-controls {
+                flex-direction: column;
+            }
+            #filter-controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .filter-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .filter-row > * {
+                width: 100% !important;
+            }
+            #asset-table {
+                display: block;
+                width: 100%;
+            }
+            #asset-table thead {
+                display: none;
+            }
+            #asset-table tbody, #asset-table tr, #asset-table td {
+                display: block;
+                width: 100%;
+            }
+            #asset-table tr {
+                margin-bottom: 15px;
+                border: 1px solid var(--teal);
+                border-radius: 8px;
+                padding: 10px;
+            }
+            #asset-table td {
+                padding: 8px 0;
+                border: none;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                text-align: right !important;
+                white-space: normal;
+            }
+            #asset-table td:before {
+                content: attr(data-label);
+                font-weight: bold;
+                text-align: left;
+                margin-right: 10px;
+                color: var(--tiffany-blue);
+            }
+            #asset-table td:first-child {
+                justify-content: center;
+            }
+            #asset-table td:first-child:before {
+                content: '';
+                margin-right: 0;
+            }
+            .asset-image-thumbnail {
+                max-width: 100px;
+                max-height: 100px;
+            }
+            .modal-content {
+                width: 95%;
+                margin: 10% auto;
+                padding: 20px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -383,7 +483,7 @@
                     const row = document.createElement('tr');
                     row.dataset.index = originalIndex;
 
-                    let rowHtml = `<td><input type="checkbox" class="row-checkbox" data-index="${originalIndex}"></td>`;
+                    let rowHtml = `<td data-label="Selecionar"><input type="checkbox" class="row-checkbox" data-index="${originalIndex}"></td>`;
                     
                     visibleColumns.forEach(key => {
                         let cellContent = '';
@@ -394,7 +494,7 @@
                         } else {
                             cellContent = ativo[key] || '';
                         }
-                        rowHtml += `<td>${cellContent}</td>`;
+                        rowHtml += `<td data-label="${tableColumns[key].label}">${cellContent}</td>`;
                     });
 
                     row.innerHTML = rowHtml;
