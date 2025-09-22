@@ -37,7 +37,6 @@
         .form-group { display: flex; flex-direction: column; }
         .form-group label { margin-bottom: 5px; color: var(--tiffany-blue); font-weight: bold; }
         .form-group input, .form-group select, .form-group textarea, .search-input { width: 100%; padding: 10px; border: 1px solid var(--teal); background-color: rgba(0, 92, 115, 0.5); color: var(--white); border-radius: 5px; font-size: 1rem; }
-        .form-group input:focus, .form-group select:focus, .form-group textarea:focus, .search-input:focus { outline: none; border-color: var(--tiffany-blue); box-shadow: 0 0 10px rgba(150, 209, 211, 0.5); }
         #image-preview-container { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; }
         #image-controls { display: flex; align-items: center; gap: 15px; flex-wrap: wrap; }
         #image-preview { max-width: 150px; max-height: 150px; border-radius: 5px; border: 1px dashed var(--teal); display: none; }
@@ -46,46 +45,33 @@
         .table-container { overflow-x: auto; }
         #asset-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
         #asset-table th, #asset-table td { padding: 12px; text-align: left; border-bottom: 1px solid var(--midnight-green); white-space: nowrap; }
-        #asset-table th.hidden, #asset-table td.hidden { display: none; }
         #asset-table th:first-child, #asset-table td:first-child { text-align: center; }
         .asset-image-thumbnail { max-width: 60px; max-height: 60px; border-radius: 5px; cursor: pointer; transition: transform 0.2s; }
-        .asset-image-thumbnail:hover { transform: scale(1.1); }
-        #camera-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.8); z-index: 1000; display: none; justify-content: center; align-items: center; flex-direction: column; gap: 20px; }
-        #camera-feed { max-width: 80%; max-height: 70%; border-radius: 10px; }
-        .modal-buttons { display: flex; gap: 20px; }
         .conditional-fields { display: none; grid-column: 1 / -1; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; border: 1px dashed var(--teal); padding: 15px; border-radius: 8px; margin-top: 10px; }
         .conditional-fields.visible { display: grid; }
-        .choices { width: 100%; }
-        .choices__inner { background-color: rgba(0, 92, 115, 0.5); border: 1px solid var(--teal); border-radius: 5px; padding: 7px; font-size: 1rem; color: var(--white); min-height: 44px; }
-        .choices.is-open .choices__inner { border-color: var(--tiffany-blue); }
-        .choices__list--dropdown { background-color: var(--midnight-green); border-color: var(--teal); }
-        .choices__item--choice { color: var(--white); }
-        .choices__item--choice.is-highlighted { background-color: var(--tiffany-blue); color: var(--midnight-green); }
-        .choices__item--selectable { background-color: var(--teal); border: 1px solid var(--tiffany-blue); }
-        .choices__button { border-left: 1px solid rgba(255, 255, 255, 0.5); filter: invert(1); opacity: 0.75; }
-        .choices__placeholder { color: var(--tiffany-blue); opacity: 0.8; }
-        .choices[data-type*="select-one"]::after { border-color: var(--white) transparent transparent; }
-        .choices.is-open[data-type*="select-one"]::after { border-color: transparent transparent var(--white); margin-top: -2.5px; }
-        #exit-toast { position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%); background-color: var(--black); color: var(--white); padding: 12px 25px; border-radius: 25px; font-size: 0.9rem; z-index: 2000; transition: bottom 0.4s ease-in-out; box-shadow: 0 5px 15px var(--shadow); }
-        #exit-toast.show { bottom: 30px; }
-        .list-controls { display: flex; gap: 10px; align-items: stretch; margin-bottom: 20px; flex-wrap: wrap; }
-        .search-group { display: flex; flex-grow: 1; }
-        #search-column { border-radius: 8px 0 0 8px; background: var(--teal); color: var(--white); border: 1px solid var(--teal); padding: 0 10px; font-weight: bold; }
-        #search-column:focus { outline: none; }
-        #search-input { border-radius: 0 8px 8px 0; border-left: none; }
+                .choices__inner { background-color: rgba(0, 92, 115, 0.5); border-radius: 5px; font-size: 1rem; color: var(--white); }
+        .choices__list--dropdown, .choices__list[aria-expanded] { background-color: var(--midnight-green) !important; border-color: var(--teal) !important; }
+        .choices__item--choice, .choices__item { color: var(--white) !important; }
+        .choices__item--choice.is-highlighted, .choices__item.is-highlighted { background-color: var(--tiffany-blue) !important; color: var(--midnight-green) !important; }
+        .choices__input { background-color: transparent !important; color: var(--white) !important; }
+        #exit-toast { position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%); background-color: var(--black); color: var(--white); padding: 12px 25px; border-radius: 25px; font-size: 0.9rem; z-index: 2000; }
+        .list-controls { display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px; }
+        #filter-controls { display: flex; flex-wrap: wrap; gap: 15px; align-items: center; }
+        .filter-row { display: flex; gap: 8px; align-items: center; background-color: rgba(0, 92, 115, 0.5); padding: 8px; border-radius: 8px; }
+        .filter-row .choices__inner { font-size: 0.9rem; padding: 6px; min-height: auto; background-color: transparent; }
+        .filter-row select, .filter-row input { border: 1px solid var(--teal); background-color: transparent; color: var(--white); border-radius: 5px; font-size: 0.9rem; padding: 8px; }
+        .filter-row input { flex-grow: 1; }
+        .filter-row select option { background-color: var(--midnight-green); }
+        .filter-row .btn-danger { padding: 8px 12px; line-height: 1; font-size: 0.8rem; }
+        #add-filter-btn { padding: 9px 15px; }
+        .column-toggle-container { position: relative; }
+        #column-toggle-dropdown { display: none; position: absolute; top: 100%; left: 0; background-color: var(--midnight-green); border: 1px solid var(--teal); border-radius: 8px; padding: 10px; z-index: 1002; min-width: 200px; }
+        #column-toggle-dropdown.show { display: block; }
+        #column-toggle-dropdown label { display: block; margin-bottom: 5px; cursor: pointer; }
+        #bulk-actions-container { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
         #bulk-delete-btn, #bulk-edit-btn { display: none; }
-        .dropdown { position: relative; display: inline-block; }
-        .dropdown-content { display: none; position: absolute; background-color: var(--midnight-green); border: 1px solid var(--tiffany-blue); min-width: 220px; box-shadow: 0 8px 16px 0 var(--shadow); border-radius: 8px; padding: 12px 16px; z-index: 1; right: 0; }
-        .dropdown-content label { display: block; color: var(--white); margin-bottom: 8px; cursor: pointer; }
-        .dropdown-content label:hover { color: var(--tiffany-blue); }
-        .dropdown-content input { margin-right: 10px; }
-        .show { display: block; }
         .modal { display: none; position: fixed; z-index: 1001; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.6); }
-        .modal-content { background-color: var(--midnight-green); margin: 5% auto; padding: 30px; border: 1px solid var(--teal); border-radius: 15px; width: 90%; max-width: 900px; box-shadow: 0 10px 30px var(--shadow); position: relative; animation: fadeIn 0.5s; }
-        .modal-content h2 { color: var(--tiffany-blue); margin-bottom: 15px; }
-        .modal-content p { margin-bottom: 20px; }
-        .close-btn { color: var(--white); position: absolute; top: 15px; right: 25px; font-size: 28px; font-weight: bold; cursor: pointer; }
-        .close-btn:hover, .close-btn:focus { color: var(--tiffany-blue); }
+        .modal-content { background-color: var(--midnight-green); margin: 5% auto; padding: 30px; border-radius: 15px; width: 90%; max-width: 900px; position: relative; }
     </style>
 </head>
 <body>
@@ -93,6 +79,8 @@
         <header><h1>Gerenciador de Ativos</h1></header>
         <div class="actions-bar">
             <button id="export-csv-btn" class="btn">Exportar CSV</button>
+            <label for="import-csv-input" class="btn-like-input-label">Importar CSV (Adicionar)</label>
+            <input type="file" id="import-csv-input" accept=".csv">
             <button id="export-system-btn" class="btn">Exportar Sistema (ZIP)</button>
             <label for="import-system-input" class="btn-like-input-label">Importar Sistema (ZIP)</label>
             <input type="file" id="import-system-input" accept=".zip">
@@ -103,7 +91,169 @@
         </div>
 
         <div id="tab-form" class="tab-content active">
-            <form id="asset-form">
+            <form id="asset-form"></form>
+        </div>
+
+        <div id="tab-list" class="tab-content">
+            <div class="list-controls">
+                <div id="filter-controls">
+                    <div id="filter-container"></div>
+                    <button id="add-filter-btn" class="btn">+</button>
+                    <div class="column-toggle-container">
+                        <button id="column-toggle-btn" class="btn">Colunas</button>
+                        <div id="column-toggle-dropdown"></div>
+                    </div>
+                </div>
+                <div id="bulk-actions-container">
+                    <button id="bulk-edit-btn" class="btn">Ação em Massa</button>
+                    <button id="bulk-delete-btn" class="btn btn-danger">Excluir Selecionados</button>
+                </div>
+            </div>
+            <div class="table-container">
+                <table id="asset-table">
+                    <thead id="asset-table-head"></thead>
+                    <tbody id="asset-table-body"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="bulk-edit-modal" class="modal"><div class="modal-content"></div></div>
+    <div id="camera-modal"></div>
+    <div id="exit-toast">Pressione voltar novamente para sair</div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const STORAGE_KEY = 'gerenciadorDeAtivosData';
+        const VISIBILITY_KEY = 'gerenciadorDeAtivosColumnVisibility';
+        const form = document.getElementById('asset-form');
+        const tableHead = document.getElementById('asset-table-head');
+        const tableBody = document.getElementById('asset-table-body');
+        const addFilterBtn = document.getElementById('add-filter-btn');
+        const filterContainer = document.getElementById('filter-container');
+        const importCsvInput = document.getElementById('import-csv-input');
+        const importSystemInput = document.getElementById('import-system-input');
+        const exportCsvBtn = document.getElementById('export-csv-btn');
+        const exportSystemBtn = document.getElementById('export-system-btn');
+        const columnToggleBtn = document.getElementById('column-toggle-btn');
+        const columnToggleDropdown = document.getElementById('column-toggle-dropdown');
+        const cameraModal = document.getElementById('camera-modal');
+        const selectAllCheckbox = document.createElement('input');
+        selectAllCheckbox.type = 'checkbox';
+        selectAllCheckbox.id = 'select-all-checkbox';
+        selectAllCheckbox.title = 'Selecionar Todos';
+
+        let editingIndex = null;
+        let currentImageData = { fileName: null, dataUrl: null };
+        let cameraStream = null;
+        const choicesInstances = {};
+        const bulkChoicesInstances = {};
+        let lastCheckedCheckbox = null;
+        let activeFilters = [{}];
+
+        const tableColumns = {
+            imagem: { label: 'Imagem' },
+            etiqueta: { label: 'Etiqueta' },
+            empresa: { label: 'Empresa' },
+            tipoItem: { label: 'Tipo' },
+            marca: { label: 'Marca' },
+            modelo: { label: 'Modelo' },
+            nSerie: { label: 'N. Série' },
+            statusLocalizacao: { label: 'Status Loc.' },
+            unidade: { label: 'Unidade' },
+            usuario: { label: 'Usuário' },
+            descricao: { label: 'Descrição'},
+            localizacao: { label: 'Localização' },
+            acoes: { label: 'Ações' },
+        };
+
+        const fieldLabels = {
+            etiqueta: 'Etiqueta de Patrimônio',
+            tipoItem: 'Tipo do Item',
+            marca: 'Marca',
+            modelo: 'Modelo',
+            nSerie: 'N. Série',
+            imei1: 'IMEI 1',
+            imei2: 'IMEI 2',
+            descricao: 'Descrição',
+            classificacaoContabil: 'Classificação Contábil',
+            localizacao: 'Localização Física',
+            usuario: 'Usuário',
+            empresa: 'Empresa',
+            dpto: 'Departamento',
+            unidade: 'Unidade',
+            notaFiscal: 'Nota Fiscal',
+            valor: 'Valor (R$)',
+            dataCompra: 'Data da Compra',
+            estadoBem: 'Estado do Bem',
+            descarte: 'Descarte',
+            proprietario: 'Proprietário',
+            numeroTelefone: 'Número de Telefone Vinculado',
+            processador: 'Processador',
+            memoriaRam: 'Memória RAM',
+            memoriaRom: 'Memória ROM (Armazenamento)',
+            placaDeVideo: 'Placa de Vídeo?',
+            statusLocalizacao: 'Status Localização'
+        };
+
+        const loadColumnVisibility = () => {
+            try {
+                const stored = localStorage.getItem(VISIBILITY_KEY);
+                if (stored) {
+                    const loadedVisibility = JSON.parse(stored);
+                    const defaultVisibility = {};
+                    Object.keys(tableColumns).forEach(key => {
+                        defaultVisibility[key] = loadedVisibility.hasOwnProperty(key) ? loadedVisibility[key] : true;
+                    });
+                    return defaultVisibility;
+                }
+            } catch (e) {
+                console.error("Failed to load column visibility:", e);
+            }
+            const defaultVisibility = {};
+            Object.keys(tableColumns).forEach(key => defaultVisibility[key] = true);
+            return defaultVisibility;
+        };
+
+        const saveColumnVisibility = () => {
+            try {
+                localStorage.setItem(VISIBILITY_KEY, JSON.stringify(columnVisibility));
+            } catch (e) {
+                console.error("Failed to save column visibility:", e);
+            }
+        };
+
+        let columnVisibility = loadColumnVisibility();
+
+        const filterableColumns = {
+            etiqueta: { label: 'Etiqueta' }, tipoItem: { label: 'Tipo' }, marca: { label: 'Marca' }, modelo: { label: 'Modelo' },
+            nSerie: { label: 'N. Série' }, statusLocalizacao: { label: 'Status Loc.' }, usuario: { label: 'Usuário' }, empresa: { label: 'Empresa' },
+            dpto: { label: 'Dpto' }, unidade: { label: 'Unidade' }, localizacao: { label: 'Localização' }
+        };
+
+        const options = {
+            empresa: ['PPay', 'MNTZZ', 'VG'],
+            tipoItem: ["Notebook", "Celular", "Desktop", "Fonte Notebook", "Radio Comunicador", "Monitor", "Apoio de Pé", "Teclado", "Mouse", "Tablet", "Carregador", "Câmera de Segurança", "Headset", "Outro"],
+            statusLocalizacao: ['Em estoque', 'Em uso', 'Em manutenção', 'Para descarte'],
+            dpto: ["FACILITIES", "TI", "INFRA", "CS", "JURIDICO", "FINANCEIRO", "MARKETING", "EVENTOS", "ADM", "DIRETORIA"],
+            unidade: ['TERRACINHO', 'MATRIZ', 'PO'],
+            classificacaoContabil: ["Móveis e Utensílios", "Computadores e Periféricos", "Aparelhos telefônicos", "Bens de pequeno valor", "Máquinas e equipamentos", "Adornos"],
+            estadoBem: ['Novo', 'Bom', 'Regular', 'Ruim', 'Sucata'],
+            descarte: ['Não', 'Sim'],
+            processador: ['i3', 'i5', 'i7', 'Ryzen 3', 'Ryzen 5', 'Ryzen 7'],
+            memoriaRam: ['4GB', '8GB', '12GB', '16GB', '32GB'],
+            memoriaRom: ['128GB SSD', '256GB SSD', '512GB SSD', '1TB SSD', '500GB HDD', '1TB HDD'],
+            placaDeVideo: ['Não', 'Sim']
+        };
+        const formFields = ['etiqueta', 'statusLocalizacao', 'tipoItem', 'marca', 'modelo', 'nSerie', 'imei1', 'imei2', 'descricao', 'classificacaoContabil', 'localizacao', 'usuario', 'empresa', 'dpto', 'unidade', 'notaFiscal', 'valor', 'dataCompra', 'estadoBem', 'descarte', 'proprietario', 'numeroTelefone', 'processador', 'memoriaRam', 'memoriaRom', 'placaDeVideo'];
+        const bulkEditFields = ['tipoItem', 'marca', 'modelo', 'statusLocalizacao', 'usuario', 'empresa', 'dpto', 'unidade', 'localizacao', 'estadoBem', 'descarte', 'descricao', 'classificacaoContabil', 'proprietario', 'notaFiscal', 'valor', 'dataCompra'];
+
+        const loadAtivos = () => { try { const data = localStorage.getItem(STORAGE_KEY); return data ? JSON.parse(data) : []; } catch (e) { console.error("Failed to load assets:", e); return []; } };
+        const saveAtivos = () => { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(ativos)); } catch (e) { alert("Não foi possível salvar os dados."); console.error("Failed to save assets:", e); } };
+        let ativos = loadAtivos();
+
+        function renderMainForm() {
+            form.innerHTML = `
                 <h3 class="section-title">Informações do Ativo</h3>
                 <div class="form-group"><label for="etiqueta">Etiqueta de Patrimônio</label><input type="text" id="etiqueta" required></div>
                 <div class="form-group"><label for="tipoItem">Tipo do Item</label><select id="tipoItem"></select></div>
@@ -120,222 +270,134 @@
                 <h3 class="section-title">Informações Contábeis e de Compra</h3>
                 <div class="form-group"><label for="classificacaoContabil">Classificação Contábil</label><select id="classificacaoContabil"></select></div><div class="form-group"><label for="proprietario">Proprietário</label><input type="text" id="proprietario"></div><div class="form-group"><label for="notaFiscal">Nota Fiscal</label><input type="text" id="notaFiscal"></div><div class="form-group"><label for="valor">Valor (R$)</label><input type="number" id="valor" step="0.01"></div><div class="form-group"><label for="dataCompra">Data da Compra</label><input type="date" id="dataCompra"></div>
                 <div class="form-actions"><button type="button" id="cancel-edit-btn" class="btn btn-secondary" style="display: none;">Cancelar Edição</button><button type="submit" id="submit-btn" class="btn">Salvar Ativo</button></div>
-            </form>
-        </div>
+            `;
+        }
 
-        <div id="tab-list" class="tab-content">
-            <div class="list-controls">
-                <div class="search-group">
-                    <select id="search-column"></select>
-                    <input type="search" id="search-input" class="search-input" placeholder="Pesquisar ativos...">
-                </div>
-                <div class="dropdown">
-                    <button id="toggle-columns-btn" class="btn">Exibir Colunas</button>
-                    <div id="columns-dropdown" class="dropdown-content"></div>
-                </div>
-                <button id="bulk-edit-btn" class="btn">Ação em Massa</button>
-                <button id="bulk-delete-btn" class="btn btn-danger">Excluir Selecionados</button>
-            </div>
+        function renderBulkEditForm() {
+            const bulkEditModalContent = document.querySelector('#bulk-edit-modal .modal-content');
+            if (!bulkEditModalContent) return;
 
-            <div class="table-container">
-                <table id="asset-table">
-                    <thead id="asset-table-head"></thead>
-                    <tbody id="asset-table-body"></tbody>
-                </table>
-            </div>
-        </div>
-    </div>
+            let formHtml = `
+                <form id="bulk-edit-form">
+                    <h3 class="section-title">Edição em Massa (<span id="bulk-edit-count"></span> ativos)</h3>
+                    <p style="grid-column: 1 / -1; margin-bottom: 10px;">Preencha apenas os campos que deseja alterar nos itens selecionados. Campos em branco não serão modificados.</p>
+            `;
 
-    <div id="bulk-edit-modal" class="modal">
-        <div class="modal-content">
-            <span id="close-bulk-modal-btn" class="close-btn">&times;</span>
-            <h2>Ação em Massa</h2>
-            <p>Alterar os campos para <strong id="bulk-edit-count">0</strong> itens selecionados. Deixe um campo em branco para não alterá-lo.</p>
-            <form id="bulk-edit-form">
-                <div class="form-group"><label for="bulk-tipoItem">Tipo do Item</label><select id="bulk-tipoItem"></select></div>
-                <div class="form-group"><label for="bulk-marca">Marca</label><input type="text" id="bulk-marca" placeholder="Não alterar"></div>
-                <div class="form-group"><label for="bulk-modelo">Modelo</label><input type="text" id="bulk-modelo" placeholder="Não alterar"></div>
-                <div class="form-group"><label for="bulk-statusLocalizacao">Status Localização</label><select id="bulk-statusLocalizacao"></select></div>
-                <div class="form-group"><label for="bulk-usuario">Usuário</label><input type="text" id="bulk-usuario" placeholder="Não alterar"></div>
-                <div class="form-group"><label for="bulk-empresa">Empresa</label><select id="bulk-empresa"></select></div>
-                <div class="form-group"><label for="bulk-dpto">Departamento</label><select id="bulk-dpto"></select></div>
-                <div class="form-group"><label for="bulk-unidade">Unidade</label><select id="bulk-unidade"></select></div>
-                <div class="form-group"><label for="bulk-localizacao">Localização Física</label><input type="text" id="bulk-localizacao" placeholder="Não alterar"></div>
-                <div class="form-group"><label for="bulk-estadoBem">Estado do Bem</label><select id="bulk-estadoBem"></select></div>
-                <div class="form-group"><label for="bulk-descarte">Descarte</label><select id="bulk-descarte"></select></div>
-                <div class="form-group" style="grid-column: 1 / -1;"><label for="bulk-descricao">Descrição</label><textarea id="bulk-descricao" rows="3" placeholder="Não alterar"></textarea></div>
-                <div class="form-group"><label for="bulk-classificacaoContabil">Classificação Contábil</label><select id="bulk-classificacaoContabil"></select></div>
-                <div class="form-group"><label for="bulk-proprietario">Proprietário</label><input type="text" id="bulk-proprietario" placeholder="Não alterar"></div>
-                <div class="form-group"><label for="bulk-notaFiscal">Nota Fiscal</label><input type="text" id="bulk-notaFiscal" placeholder="Não alterar"></div>
-                <div class="form-group"><label for="bulk-valor">Valor (R$)</label><input type="number" id="bulk-valor" step="0.01" placeholder="Não alterar"></div>
-                <div class="form-group"><label for="bulk-dataCompra">Data da Compra</label><input type="date" id="bulk-dataCompra"></div>
-            </form>
-            <div class="form-actions">
-                <button type="button" id="save-bulk-edit-btn" class="btn">Salvar Alterações</button>
-            </div>
-        </div>
-    </div>
+            bulkEditFields.forEach(field => {
+                const label = fieldLabels[field] || field;
+                if (options[field]) {
+                    formHtml += `<div class="form-group"><label for="bulk-${field}">${label}</label><select id="bulk-${field}"></select></div>`;
+                } else {
+                    const inputType = (field === 'valor') ? 'number' : (field === 'dataCompra') ? 'date' : 'text';
+                    formHtml += `<div class="form-group"><label for="bulk-${field}">${label}</label><input type="${inputType}" id="bulk-${field}" ${inputType === 'number' ? 'step="0.01"' : ''}></div>`;
+                }
+            });
 
-    <div id="camera-modal"><video id="camera-feed" playsinline autoplay></video><div class="modal-buttons"><button id="snap-photo-btn" class="btn">Tirar Foto</button><button id="cancel-camera-btn" class="btn btn-danger">Cancelar</button></div></div>
-    <div id="exit-toast">Pressione voltar novamente para sair</div>
+            formHtml += `
+                    <div class="form-actions">
+                        <button type="button" id="close-bulk-modal-btn" class="btn btn-secondary">Cancelar</button>
+                        <button type="button" id="save-bulk-edit-btn" class="btn">Salvar Alterações</button>
+                    </div>
+                </form>
+            `;
+            bulkEditModalContent.innerHTML = formHtml;
+        }
 
-    <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const STORAGE_KEY = 'gerenciadorDeAtivosData';
-        const COLUMN_VISIBILITY_KEY = 'gerenciadorDeAtivosColumns';
-        const form = document.getElementById('asset-form');
-        const tableHead = document.getElementById('asset-table-head');
-        const tableBody = document.getElementById('asset-table-body');
-        const searchInput = document.getElementById('search-input');
-        const searchColumnSelect = document.getElementById('search-column');
-        const toggleColumnsBtn = document.getElementById('toggle-columns-btn');
-        const columnsDropdown = document.getElementById('columns-dropdown');
-        const selectAllCheckbox = document.createElement('input');
-        selectAllCheckbox.type = 'checkbox';
-        selectAllCheckbox.id = 'select-all-checkbox';
-        selectAllCheckbox.title = 'Selecionar Todos';
+        function renderFilterControls() {
+            filterContainer.innerHTML = '';
+            activeFilters.forEach((filter, index) => {
+                const filterRow = document.createElement('div');
+                filterRow.className = 'filter-row';
+                
+                const columnSelect = document.createElement('select');
+                columnSelect.dataset.index = index;
+                columnSelect.className = 'filter-column';
+                columnSelect.innerHTML = '<option value="">Selecione a Coluna</option>' + 
+                    Object.entries(filterableColumns).map(([key, {label}]) => `<option value="${key}" ${filter.column === key ? 'selected' : ''}>${label}</option>`).join('');
 
-        let editingIndex = null;
-        let currentImageData = { fileName: null, dataUrl: null };
-        let cameraStream = null;
-        const choicesInstances = {};
-        const bulkChoicesInstances = {};
-        let lastCheckedCheckbox = null;
+                const valueInput = document.createElement('input');
+                valueInput.type = 'text';
+                valueInput.placeholder = 'Digite o valor para filtrar...';
+                valueInput.dataset.index = index;
+                valueInput.className = 'filter-value';
+                valueInput.value = filter.value || '';
 
-        const allColumns = {
-            select: { label: '' },
-            imageDataUrl: { label: 'Imagem' },
-            etiqueta: { label: 'Etiqueta' },
-            empresa: { label: 'Empresa' },
-            tipoItem: { label: 'Tipo' },
-            statusLocalizacao: { label: 'Status Loc.' },
-            unidade: { label: 'Unidade' },
-            usuario: { label: 'Usuário' },
-            localizacao: { label: 'Localização' },
-            nSerie: { label: 'N. Série' },
-            marca: { label: 'Marca' },
-            modelo: { label: 'Modelo' },
-            dataCompra: { label: 'Data Compra' },
-            valor: { label: 'Valor' },
-            actions: { label: 'Ações' }
-        };
+                const removeBtn = document.createElement('button');
+                removeBtn.className = 'btn btn-danger remove-filter-btn';
+                removeBtn.textContent = 'X';
+                removeBtn.dataset.index = index;
 
-        const loadAtivos = () => { try { const data = localStorage.getItem(STORAGE_KEY); return data ? JSON.parse(data) : []; } catch (e) { return []; } };
-        const saveAtivos = () => { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(ativos)); } catch (e) { alert("Não foi possível salvar os dados."); } };
-        let ativos = loadAtivos();
+                filterRow.append(columnSelect, valueInput, removeBtn);
+                filterContainer.appendChild(filterRow);
+            });
+        }
 
-        const loadColumnVisibility = () => {
-            const saved = localStorage.getItem(COLUMN_VISIBILITY_KEY);
-            if (saved) return JSON.parse(saved);
-            // Default visibility
-            return { select: true, imageDataUrl: true, etiqueta: true, empresa: true, tipoItem: true, statusLocalizacao: true, unidade: true, usuario: true, localizacao: true, nSerie: false, marca: false, modelo: false, dataCompra: false, valor: false, actions: true };
-        };
-        const saveColumnVisibility = (visibility) => {
-            localStorage.setItem(COLUMN_VISIBILITY_KEY, JSON.stringify(visibility));
-        };
-        let columnVisibility = loadColumnVisibility();
-
-        const options = {
-            empresa: ['PPay', 'MNTZZ', 'VG'],
-            tipoItem: ["Notebook", "Celular", "Desktop", "Fonte Notebook", "Radio Comunicador", "Monitor", "Apoio de Pé", "Teclado", "Mouse", "Tablet", "Carregador", "Câmera de Segurança", "Headset", "Suporte Papel Higiênico", "Suporte Sabão Líquido", "Suporte Papel Toalha", "Espelho", "Proteção de Ar Condicionado", "Webcam", "Impressora", "Scanner", "Nobreak (UPS)", "Roteador", "Switch", "Servidor", "Projetor", "TV", "Mesa", "Cadeira", "Cadeira de Escritório", "Cadeira de Reunião", "Armário", "Gaveteiro", "Estante", "Sofá", "Poltrona", "Quadro Branco", "Lixeira", "Geladeira", "Micro-ondas", "Bebedouro", "Cafeteira", "Ar Condicionado", "Ventilador", "Extintor de Incêndio", "Outro"],
-            statusLocalizacao: ['Em estoque', 'Em uso', 'Em manutenção', 'Para descarte'],
-            dpto: ["FACILITIES", "TI", "INFRA", "CS", "JURIDICO", "FINANCEIRO", "MARKETING", "EVENTOS", "ADM", "DIRETORIA"],
-            unidade: ['TERRACINHO', 'MATRIZ', 'PO'],
-            classificacaoContabil: ["Móveis e Utensílios", "Computadores e Periféricos", "Aparelhos telefônicos", "Bens de pequeno valor", "Máquinas e equipamentos", "Adornos"],
-            estadoBem: ['Novo', 'Bom', 'Regular', 'Ruim', 'Sucata'],
-            descarte: ['Não', 'Sim'],
-            processador: ['i3', 'i5', 'i7', 'Ryzen 3', 'Ryzen 5', 'Ryzen 7'],
-            memoriaRam: ['4GB', '8GB', '12GB', '16GB', '32GB'],
-            memoriaRom: ['128GB SSD', '256GB SSD', '512GB SSD', '1TB SSD', '500GB HDD', '1TB HDD'],
-            placaDeVideo: ['Não', 'Sim']
-        };
-        const formFields = ['etiqueta', 'statusLocalizacao', 'tipoItem', 'marca', 'modelo', 'nSerie', 'imei1', 'imei2', 'descricao', 'classificacaoContabil', 'localizacao', 'usuario', 'empresa', 'dpto', 'unidade', 'notaFiscal', 'valor', 'dataCompra', 'estadoBem', 'descarte', 'proprietario', 'numeroTelefone', 'processador', 'memoriaRam', 'memoriaRom', 'placaDeVideo'];
-        const bulkEditFields = ['tipoItem', 'marca', 'modelo', 'statusLocalizacao', 'usuario', 'empresa', 'dpto', 'unidade', 'localizacao', 'estadoBem', 'descarte', 'descricao', 'classificacaoContabil', 'proprietario', 'notaFiscal', 'valor', 'dataCompra'];
-
-        function setupColumnControls() {
-            columnsDropdown.innerHTML = '';
-            Object.keys(allColumns).forEach(key => {
-                if (key === 'select' || key === 'actions') return;
+        function renderColumnToggleUI() {
+            columnToggleDropdown.innerHTML = '';
+            Object.keys(tableColumns).forEach(key => {
+                if (key === 'acoes') {
+                    columnVisibility[key] = true;
+                }
                 const label = document.createElement('label');
                 const checkbox = document.createElement('input');
                 checkbox.type = 'checkbox';
                 checkbox.dataset.key = key;
                 checkbox.checked = columnVisibility[key];
+                if (key === 'acoes') {
+                    checkbox.disabled = true;
+                }
                 label.appendChild(checkbox);
-                label.appendChild(document.createTextNode(allColumns[key].label));
-                columnsDropdown.appendChild(label);
+                label.append(` ${tableColumns[key].label}`);
+                columnToggleDropdown.appendChild(label);
             });
-        }
-
-        function setupSearch() {
-            const searchableColumns = { all: 'Qualquer Coluna', ...Object.fromEntries(Object.entries(allColumns).filter(([k,v]) => k !== 'select' && k !== 'actions' && k !== 'imageDataUrl').map(([k,v]) => [k, v.label])) };
-            searchColumnSelect.innerHTML = Object.entries(searchableColumns).map(([key, label]) => `<option value="${key}">${label}</option>`).join('');
         }
 
         function renderTable() {
-            const searchTerm = searchInput.value.toLowerCase().trim();
-            const searchColumn = searchColumnSelect.value;
-
-            tableHead.innerHTML = '';
-            const headerRow = document.createElement('tr');
-            Object.keys(allColumns).forEach(key => {
-                const th = document.createElement('th');
-                th.dataset.key = key;
-                if (key === 'select') {
-                    th.appendChild(selectAllCheckbox);
-                } else {
-                    th.textContent = allColumns[key].label;
-                }
-                if (!columnVisibility[key]) th.classList.add('hidden');
-                headerRow.appendChild(th);
+            const visibleColumns = Object.keys(tableColumns).filter(key => columnVisibility[key]);
+            
+            let headerHtml = '<tr><th><input type="checkbox" id="select-all-checkbox-header"></th>';
+            visibleColumns.forEach(key => {
+                 headerHtml += `<th>${tableColumns[key].label}</th>`;
             });
-            tableHead.appendChild(headerRow);
+            tableHead.innerHTML = headerHtml;
+
+            const selectAllHeaderCheckbox = tableHead.querySelector('#select-all-checkbox-header');
+            if (selectAllHeaderCheckbox) {
+                selectAllHeaderCheckbox.replaceWith(selectAllCheckbox);
+            }
+
+            const filteredAtivos = ativos.filter(ativo => {
+                return activeFilters.every(filter => {
+                    if (!filter.column || !filter.value) return true;
+                    const ativoValue = ativo[filter.column]?.toString().toLowerCase() || '';
+                    return ativoValue.includes(filter.value.toLowerCase());
+                });
+            });
 
             tableBody.innerHTML = '';
-            const filteredAtivos = ativos.filter(ativo => {
-                if (!searchTerm) return true;
-                if (searchColumn === 'all') {
-                    return Object.keys(ativo).some(key => 
-                        ativo[key] && ativo[key].toString().toLowerCase().includes(searchTerm)
-                    );
-                } else {
-                    return ativo[searchColumn] && ativo[searchColumn].toString().toLowerCase().includes(searchTerm);
-                }
-            });
-
             if (filteredAtivos.length === 0) {
-                 tableBody.innerHTML = `<tr><td colspan="${Object.keys(allColumns).length}" style="text-align:center; padding: 20px;">Nenhum ativo encontrado.</td></tr>`;
+                 tableBody.innerHTML = `<tr><td colspan="${visibleColumns.length + 1}" style="text-align:center; padding: 20px;">Nenhum ativo encontrado.</td></tr>`;
             } else {
                 filteredAtivos.forEach(ativo => {
                     const originalIndex = ativos.indexOf(ativo);
                     const row = document.createElement('tr');
                     row.dataset.index = originalIndex;
 
-                    Object.keys(allColumns).forEach(key => {
-                        const td = document.createElement('td');
-                        td.dataset.key = key;
-                        if (!columnVisibility[key]) td.classList.add('hidden');
-
-                        switch (key) {
-                            case 'select':
-                                const checkbox = document.createElement('input');
-                                checkbox.type = 'checkbox';
-                                checkbox.className = 'row-checkbox';
-                                checkbox.dataset.index = originalIndex;
-                                td.appendChild(checkbox);
-                                break;
-                            case 'imageDataUrl':
-                                td.innerHTML = ativo.imageDataUrl ? `<a href="${ativo.imageDataUrl}" target="_blank"><img src="${ativo.imageDataUrl}" class="asset-image-thumbnail" alt="${ativo.imageFilename || ''}"></a>` : 'N/A';
-                                break;
-                            case 'actions':
-                                td.innerHTML = `<button class="btn btn-edit edit-btn" data-index="${originalIndex}">Editar</button> <button class="btn btn-danger remove-btn" data-index="${originalIndex}">Remover</button>`;
-                                break;
-                            default:
-                                td.textContent = ativo[key] || '';
-                                break;
+                    let rowHtml = `<td><input type="checkbox" class="row-checkbox" data-index="${originalIndex}"></td>`;
+                    
+                    visibleColumns.forEach(key => {
+                        let cellContent = '';
+                        if (key === 'imagem') {
+                            cellContent = ativo.imageDataUrl ? `<a href="${ativo.imageDataUrl}" target="_blank"><img src="${ativo.imageDataUrl}" class="asset-image-thumbnail" alt="${ativo.imageFilename || ''}"></a>` : 'N/A';
+                        } else if (key === 'acoes') {
+                            cellContent = `<button class="btn btn-edit edit-btn" data-index="${originalIndex}">Editar</button><button class="btn btn-danger remove-btn" data-index="${originalIndex}">Remover</button>`;
+                        } else {
+                            cellContent = ativo[key] || '';
                         }
-                        row.appendChild(td);
+                        rowHtml += `<td>${cellContent}</td>`;
                     });
+
+                    row.innerHTML = rowHtml;
                     tableBody.appendChild(row);
                 });
             }
@@ -343,35 +405,450 @@
             lastCheckedCheckbox = null;
         };
 
-        function updateColumnVisibility() {
-            Object.keys(allColumns).forEach(key => {
-                const visible = columnVisibility[key];
-                document.querySelectorAll(`#asset-table [data-key='${key}']`).forEach(el => {
-                    el.classList.toggle('hidden', !visible);
-                });
+        function updateBulkActionUI() { 
+            const selectedCheckboxes = document.querySelectorAll('.row-checkbox:checked');
+            const anySelected = selectedCheckboxes.length > 0;
+            const bulkDeleteBtn = document.getElementById('bulk-delete-btn');
+            const bulkEditBtn = document.getElementById('bulk-edit-btn');
+            if(bulkDeleteBtn) bulkDeleteBtn.style.display = anySelected ? 'inline-block' : 'none';
+            if(bulkEditBtn) bulkEditBtn.style.display = anySelected ? 'inline-block' : 'none';
+            if (anySelected) { 
+                if(bulkDeleteBtn) bulkDeleteBtn.textContent = `Excluir ${selectedCheckboxes.length}`;
+                if(bulkEditBtn) bulkEditBtn.textContent = `Ação em Massa (${selectedCheckboxes.length})`;
+            }
+            const allVisibleCheckboxes = document.querySelectorAll('#asset-table-body .row-checkbox');
+            if (allVisibleCheckboxes.length > 0 && selectedCheckboxes.length === allVisibleCheckboxes.length) {
+                selectAllCheckbox.checked = true;
+                selectAllCheckbox.indeterminate = false;
+            } else if (anySelected) {
+                selectAllCheckbox.checked = false;
+                selectAllCheckbox.indeterminate = true;
+            } else {
+                selectAllCheckbox.checked = false;
+                selectAllCheckbox.indeterminate = false;
+            }
+        }
+
+        function handleBulkDelete() { 
+            const selectedCheckboxes = document.querySelectorAll('.row-checkbox:checked'); 
+            if (selectedCheckboxes.length === 0) return;
+            if (confirm(`Tem certeza que deseja excluir os ${selectedCheckboxes.length} ativos selecionados?`)) { 
+                const indicesToDelete = Array.from(selectedCheckboxes).map(cb => parseInt(cb.dataset.index, 10));
+                ativos = ativos.filter((_, index) => !indicesToDelete.includes(index)); 
+                saveAtivos(); 
+                renderTable(); 
+            }
+        }
+        
+        function openBulkEditModal() {
+            const selectedCheckboxes = document.querySelectorAll('.row-checkbox:checked');
+            if (selectedCheckboxes.length === 0) return;
+
+            renderBulkEditForm();
+            for (const key in bulkChoicesInstances) {
+                if (bulkChoicesInstances[key]) {
+                    bulkChoicesInstances[key].destroy();
+                    delete bulkChoicesInstances[key];
+                }
+            }
+            initializeChoices('bulk-', bulkChoicesInstances);
+
+            document.getElementById('bulk-edit-count').textContent = selectedCheckboxes.length;
+            document.getElementById('bulk-edit-modal').style.display = 'block';
+        }
+
+        function closeBulkEditModal() { 
+            document.getElementById('bulk-edit-modal').style.display = 'none';
+        }
+        
+        function handleBulkEditSave() { 
+            const selectedIndices = Array.from(document.querySelectorAll('.row-checkbox:checked')).map(cb => parseInt(cb.dataset.index, 10)); 
+            if (selectedIndices.length === 0) return; 
+            let changesMade = false; 
+            selectedIndices.forEach(index => { 
+                const ativo = ativos[index]; 
+                bulkEditFields.forEach(field => { 
+                    const bulkElement = document.getElementById(`bulk-${field}`); 
+                    if (!bulkElement) return; 
+                    let value;
+                    if (bulkChoicesInstances[`bulk-${field}`]) { 
+                        value = bulkChoicesInstances[`bulk-${field}`].getValue(true);
+                    } else { 
+                        value = bulkElement.value; 
+                    } 
+                    if (value !== null && value !== undefined && value !== '') { 
+                        if (ativo[field] !== value) { 
+                            ativo[field] = value; 
+                            changesMade = true; 
+                        } 
+                    } 
+                }); 
+            }); 
+            if (changesMade) { 
+                saveAtivos(); 
+                renderTable(); 
+                alert(`${selectedIndices.length} ativos foram atualizados!`); 
+            } else { 
+                alert("Nenhuma alteração foi feita."); 
+            } 
+            closeBulkEditModal(); 
+        }
+
+        function initializeChoices(prefix = '', instanceObject = choicesInstances) { 
+            for (const id in options) { 
+                const selectElement = document.getElementById(`${prefix}${id}`); 
+                if (selectElement) { 
+                    instanceObject[`${prefix}${id}`] = new Choices(selectElement, { 
+                        choices: options[id].map(val => ({ value: val, label: val })), 
+                        removeItemButton: true, 
+                        searchResultLimit: 15, 
+                        itemSelectText: 'Pressione para selecionar', 
+                        placeholder: true, 
+                        placeholderValue: 'Selecione uma opção' 
+                    }); 
+                } 
+            } 
+            const tipoItemElement = document.getElementById('tipoItem'); 
+            if (tipoItemElement) { 
+                tipoItemElement.addEventListener('change', toggleConditionalFields); 
+            } 
+        }
+
+        function toggleConditionalFields() { 
+            const tipoItemSelect = choicesInstances['tipoItem']; 
+            if (!tipoItemSelect) return; 
+            const tipo = tipoItemSelect.getValue(true); 
+            const notebookFields = document.getElementById('notebook-fields'); 
+            const celularFields = document.getElementById('celular-fields'); 
+            if(notebookFields) notebookFields.classList.toggle('visible', tipo === 'Notebook'); 
+            if(celularFields) celularFields.classList.toggle('visible', tipo === 'Celular'); 
+        }
+
+        function getFormData() { 
+            const data = {}; 
+            formFields.forEach(id => { 
+                const element = document.getElementById(id); 
+                if (element) data[id] = choicesInstances[id] ? choicesInstances[id].getValue(true) : element.value; 
+            }); 
+            data.imageFilename = currentImageData.fileName; 
+            data.imageDataUrl = currentImageData.dataUrl; 
+            return data; 
+        };
+        
+        function setFormData(ativo) {
+            formFields.forEach(id => {
+                const element = document.getElementById(id);
+                if (choicesInstances[id]) {
+                    if (ativo[id]) {
+                        choicesInstances[id].setChoiceByValue(String(ativo[id]));
+                    } else {
+                        choicesInstances[id].setChoiceByValue('');
+                    }
+                } else if (element) {
+                    element.value = ativo[id] || '';
+                }
+            });
+        };
+
+        function handleFormSubmit(e) { 
+            e.preventDefault(); 
+            const ativoData = getFormData(); 
+            if (editingIndex !== null) { 
+                ativos[editingIndex] = { ...ativos[editingIndex], ...ativoData }; 
+            } else { 
+                ativos.push(ativoData); 
+            } 
+            saveAtivos(); 
+            resetFormMode(); 
+            renderTable(); 
+            alert(editingIndex !== null ? 'Ativo atualizado!' : 'Ativo cadastrado!'); 
+        };
+
+        function startEditing(index) { 
+            editingIndex = index; 
+            const ativo = ativos[index]; 
+            setFormData(ativo); 
+            const imagePreview = document.getElementById('image-preview'); 
+            currentImageData = { fileName: ativo.imageFilename, dataUrl: ativo.imageDataUrl }; 
+            if (ativo.imageDataUrl) { 
+                imagePreview.src = ativo.imageDataUrl; 
+                imagePreview.style.display = 'block'; 
+            } else { 
+                imagePreview.style.display = 'none'; 
+            } 
+            document.getElementById('submit-btn').textContent = 'Atualizar Ativo'; 
+            document.getElementById('cancel-edit-btn').style.display = 'inline-block'; 
+            document.getElementById('form-tab-btn').click(); 
+            window.scrollTo({ top: 0, behavior: 'smooth' }); 
+            toggleConditionalFields(); 
+        };
+        
+        function resetFormMode() {
+            editingIndex = null;
+            form.reset();
+            for (const id in choicesInstances) {
+                if (choicesInstances[id]) choicesInstances[id].setChoiceByValue('');
+            }
+            const imagePreview = document.getElementById('image-preview');
+            if (imagePreview) {
+                imagePreview.style.display = 'none';
+                imagePreview.src = '';
+            }
+            currentImageData = { fileName: null, dataUrl: null };
+            document.getElementById('submit-btn').textContent = 'Salvar Ativo';
+            document.getElementById('cancel-edit-btn').style.display = 'none';
+            toggleConditionalFields();
+        };
+
+        function escapeCsvCell(cell) {
+            if (cell === null || cell === undefined) return '';
+            cell = String(cell);
+            if (cell.includes(',') || cell.includes('"') || cell.includes('\n')) {
+                return `"${cell.replace(/"/g, '""')}"`;
+            }
+            return cell;
+        }
+
+        function exportToCsv() {
+            if (ativos.length === 0) {
+                alert('Nenhum ativo para exportar.');
+                return;
+            }
+            const headers = formFields.filter(f => f !== 'imageDataUrl' && f !== 'imageFilename');
+            const csvRows = [headers.join(',')];
+
+            ativos.forEach(ativo => {
+                const row = headers.map(header => escapeCsvCell(ativo[header]));
+                csvRows.push(row.join(','));
+            });
+
+            const csvString = csvRows.join('\r\n');
+            const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', 'ativos.csv');
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function exportSystemData() {
+            if (ativos.length === 0 && Object.values(columnVisibility).every(v => v)) {
+                alert('Nenhum dado para exportar.');
+                return;
+            }
+            const zip = new JSZip();
+            const appData = {
+                assets: ativos,
+                settings: { columnVisibility: columnVisibility }
+            };
+            zip.file("data.json", JSON.stringify(appData, null, 2));
+
+            zip.generateAsync({ type: "blob" }).then(function(content) {
+                const link = document.createElement('a');
+                const url = URL.createObjectURL(content);
+                link.setAttribute('href', url);
+                link.setAttribute('download', 'gerenciador_de_ativos_backup.zip');
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
             });
         }
 
-        // Funções de Ação em Massa e outras (sem alterações significativas)
-        function updateBulkActionUI() { const selectedCheckboxes = document.querySelectorAll('.row-checkbox:checked'); const anySelected = selectedCheckboxes.length > 0; const bulkDeleteBtn = document.getElementById('bulk-delete-btn'); const bulkEditBtn = document.getElementById('bulk-edit-btn'); bulkDeleteBtn.style.display = anySelected ? 'inline-block' : 'none'; bulkEditBtn.style.display = anySelected ? 'inline-block' : 'none'; if (anySelected) { bulkDeleteBtn.textContent = `Excluir ${selectedCheckboxes.length}`; bulkEditBtn.textContent = `Ação em Massa (${selectedCheckboxes.length})`; } const allVisibleCheckboxes = document.querySelectorAll('#asset-table-body .row-checkbox'); if (allVisibleCheckboxes.length > 0 && selectedCheckboxes.length === allVisibleCheckboxes.length) { selectAllCheckbox.checked = true; selectAllCheckbox.indeterminate = false; } else if (anySelected) { selectAllCheckbox.checked = false; selectAllCheckbox.indeterminate = true; } else { selectAllCheckbox.checked = false; selectAllCheckbox.indeterminate = false; } }
-        function handleBulkDelete() { const selectedCheckboxes = document.querySelectorAll('.row-checkbox:checked'); if (selectedCheckboxes.length === 0) return; if (confirm(`Tem certeza que deseja excluir os ${selectedCheckboxes.length} ativos selecionados?`)) { const indicesToDelete = Array.from(selectedCheckboxes).map(cb => parseInt(cb.dataset.index, 10)); ativos = ativos.filter((_, index) => !indicesToDelete.includes(index)); saveAtivos(); renderTable(); } }
-        function openBulkEditModal() { const selectedCheckboxes = document.querySelectorAll('.row-checkbox:checked'); if (selectedCheckboxes.length === 0) return; document.getElementById('bulk-edit-count').textContent = selectedCheckboxes.length; document.getElementById('bulk-edit-modal').style.display = 'block'; }
-        function closeBulkEditModal() { document.getElementById('bulk-edit-modal').style.display = 'none'; document.getElementById('bulk-edit-form').reset(); for (const id in bulkChoicesInstances) { bulkChoicesInstances[id].setChoiceByValue(''); } }
-        function handleBulkEditSave() { const selectedIndices = Array.from(document.querySelectorAll('.row-checkbox:checked')).map(cb => parseInt(cb.dataset.index, 10)); if (selectedIndices.length === 0) return; let changesMade = false; selectedIndices.forEach(index => { const ativo = ativos[index]; bulkEditFields.forEach(field => { const bulkElement = document.getElementById(`bulk-${field}`); if (!bulkElement) return; let value; if (bulkChoicesInstances[`bulk-${field}`]) { value = bulkChoicesInstances[`bulk-${field}`].getValue(true); } else { value = bulkElement.value; } if (value !== null && value !== undefined && value !== '') { if (ativo[field] !== value) { ativo[field] = value; changesMade = true; } } }); }); if (changesMade) { saveAtivos(); renderTable(); alert(`${selectedIndices.length} ativos foram atualizados!`); } else { alert("Nenhuma alteração foi feita."); } closeBulkEditModal(); }
-        function initializeChoices(prefix = '', instanceObject = choicesInstances) { for (const id in options) { const selectElement = document.getElementById(`${prefix}${id}`); if (selectElement) { instanceObject[`${prefix}${id}`] = new Choices(selectElement, { choices: options[id].map(val => ({ value: val, label: val })), removeItemButton: true, searchResultLimit: 15, itemSelectText: 'Pressione para selecionar', placeholder: true, placeholderValue: 'Selecione uma opção' }); } } const tipoItemElement = document.getElementById('tipoItem'); if (tipoItemElement) { tipoItemElement.addEventListener('change', toggleConditionalFields); } }
-        function toggleConditionalFields() { const tipo = choicesInstances['tipoItem'] ? choicesInstances['tipoItem'].getValue(true) : ''; document.getElementById('notebook-fields').classList.toggle('visible', tipo === 'Notebook'); document.getElementById('celular-fields').classList.toggle('visible', tipo === 'Celular'); }
-        function getFormData() { const data = {}; formFields.forEach(id => { const element = document.getElementById(id); if (element) data[id] = choicesInstances[id] ? choicesInstances[id].getValue(true) : element.value; }); data.imageFilename = currentImageData.fileName; data.imageDataUrl = currentImageData.dataUrl; return data; };
-        function setFormData(ativo) { formFields.forEach(id => { const element = document.getElementById(id); if (choicesInstances[id]) { choicesInstances[id].setChoices(options[id].map(val => ({ value: val, label: val })), 'value', 'label', true); if (ativo[id]) { choicesInstances[id].setChoiceByValue(String(ativo[id])); } else { choicesInstances[id].setChoiceByValue(''); } } else if (element) { element.value = ativo[id] || ''; } }); };
-        function handleFormSubmit(e) { e.preventDefault(); const ativoData = getFormData(); if (editingIndex !== null) { ativos[editingIndex] = ativoData; } else { ativos.push(ativoData); } saveAtivos(); resetFormMode(); renderTable(); alert(editingIndex !== null ? 'Ativo atualizado!' : 'Ativo cadastrado!'); };
-        function startEditing(index) { editingIndex = index; const ativo = ativos[index]; setFormData(ativo); currentImageData = { fileName: ativo.imageFilename, dataUrl: ativo.imageDataUrl }; const imagePreview = document.getElementById('image-preview'); if (ativo.imageDataUrl) { imagePreview.src = ativo.imageDataUrl; imagePreview.style.display = 'block'; } else { imagePreview.style.display = 'none'; } document.getElementById('submit-btn').textContent = 'Atualizar Ativo'; document.getElementById('cancel-edit-btn').style.display = 'inline-block'; document.getElementById('form-tab-btn').click(); window.scrollTo({ top: 0, behavior: 'smooth' }); toggleConditionalFields(); };
-        function resetFormMode() { editingIndex = null; document.getElementById('asset-form').reset(); for (const id in choicesInstances) { choicesInstances[id].setChoiceByValue(''); } const imagePreview = document.getElementById('image-preview'); imagePreview.style.display = 'none'; imagePreview.src = ''; currentImageData = { fileName: null, dataUrl: null }; document.getElementById('submit-btn').textContent = 'Salvar Ativo'; document.getElementById('cancel-edit-btn').style.display = 'none'; toggleConditionalFields(); };
+        function handleSystemImport(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            JSZip.loadAsync(file).then(function(zip) {
+                const dataFile = zip.file("data.json");
+                if (dataFile) {
+                    dataFile.async("string").then(function(content) {
+                        try {
+                            const appData = JSON.parse(content);
+                            if (confirm('Isso substituirá todos os dados atuais do sistema. Deseja continuar?')) {
+                                ativos = appData.assets || [];
+                                columnVisibility = appData.settings?.columnVisibility || loadColumnVisibility();
+                                saveAtivos();
+                                saveColumnVisibility();
+                                renderTable();
+                                renderColumnToggleUI();
+                                alert('Dados do sistema importados com sucesso!');
+                            }
+                        } catch (e) {
+                            alert('Erro ao processar o arquivo de dados (JSON inválido).');
+                            console.error("JSON Parse Error:", e);
+                        }
+                    });
+                } else {
+                    alert('Arquivo de backup inválido (data.json não encontrado).');
+                }
+            }).catch(function(err) {
+                alert('Erro ao ler o arquivo ZIP: ' + err.message);
+            });
+            event.target.value = '';
+        }
+
+        function handleCsvImport(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const text = e.target.result;
+                const lines = text.split(/\r\n|\n/);
+                if (lines.length < 2) {
+                    alert('CSV inválido ou vazio.');
+                    return;
+                }
+                
+                const parseCsvRow = rowString => {
+                    const regex = /(?:")([^"]*(?:""[^"]*)*)(?:")|([^,]+)/g;
+                    let match;
+                    const result = [];
+                    while (match = regex.exec(rowString)) {
+                        let value = match[1] ? match[1].replace(/""/g, '"') : match[2];
+                        result.push(value.trim());
+                    }
+                    return result;
+                };
+
+                const headers = parseCsvRow(lines[0]);
+                const newAtivos = [];
+                for (let i = 1; i < lines.length; i++) {
+                    if (!lines[i]) continue;
+                    const values = parseCsvRow(lines[i]);
+                    if (values.length === 0 || values.every(v => !v)) continue;
+
+                    const ativo = {};
+                    headers.forEach((header, index) => {
+                        if (values[index] && formFields.includes(header)) {
+                            ativo[header] = values[index];
+                        }
+                    });
+                    if (Object.keys(ativo).length > 0) {
+                        newAtivos.push(ativo);
+                    }
+                }
+
+                if (newAtivos.length > 0) {
+                    if (confirm(`Foram encontrados ${newAtivos.length} ativos no arquivo. Deseja adicioná-los à lista existente?`)) {
+                        ativos.push(...newAtivos);
+                        saveAtivos();
+                        renderTable();
+                        alert(`${newAtivos.length} ativos importados com sucesso!`);
+                    }
+                } else {
+                    alert('Nenhum ativo válido encontrado no CSV.');
+                }
+                importCsvInput.value = '';
+            };
+            reader.readAsText(file, 'UTF-8');
+        }
+
+        function openCamera() {
+            cameraModal.innerHTML = `
+                <div class="modal-content">
+                    <h3 class="section-title">Capturar Imagem</h3>
+                    <video id="camera-stream" autoplay playsinline style="width: 100%; border-radius: 8px;"></video>
+                    <div class="form-actions">
+                        <button type="button" id="capture-image-btn" class="btn">Capturar</button>
+                        <button type="button" id="close-camera-btn" class="btn btn-secondary">Cancelar</button>
+                    </div>
+                </div>
+            `;
+            cameraModal.style.display = 'block';
+
+            navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+                .then(stream => {
+                    cameraStream = stream;
+                    const videoElement = document.getElementById('camera-stream');
+                    if (videoElement) videoElement.srcObject = stream;
+                })
+                .catch(err => {
+                    console.error("Camera Error:", err);
+                    alert("Não foi possível acessar a câmera. Verifique as permissões do navegador.");
+                    closeCamera();
+                });
+        }
+
+        function closeCamera() {
+            if (cameraStream) {
+                cameraStream.getTracks().forEach(track => track.stop());
+            }
+            cameraStream = null;
+            cameraModal.style.display = 'none';
+            cameraModal.innerHTML = '';
+        }
+
+        function captureImage() {
+            const videoElement = document.getElementById('camera-stream');
+            if (!videoElement) return;
+
+            const canvas = document.createElement('canvas');
+            canvas.width = videoElement.videoWidth;
+            canvas.height = videoElement.videoHeight;
+            canvas.getContext('2d').drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+            const dataUrl = canvas.toDataURL('image/jpeg');
+            const fileName = `capture_${new Date().toISOString()}.jpg`;
+
+            currentImageData = { fileName, dataUrl };
+
+            const imagePreview = document.getElementById('image-preview');
+            if (imagePreview) {
+                imagePreview.src = dataUrl;
+                imagePreview.style.display = 'block';
+            }
+
+            closeCamera();
+        }
 
         // --- EVENT LISTENERS ---
-        document.getElementById('asset-form').addEventListener('submit', handleFormSubmit);
-        document.getElementById('cancel-edit-btn').addEventListener('click', resetFormMode);
-        document.querySelectorAll('.tab-button').forEach(tab => tab.addEventListener('click', (e) => { document.querySelectorAll('.tab-button').forEach(t => t.classList.remove('active')); document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active')); e.currentTarget.classList.add('active'); document.getElementById(e.currentTarget.dataset.tab).classList.add('active'); if(e.currentTarget.dataset.tab === 'tab-list') renderTable(); }));
+        form.addEventListener('submit', handleFormSubmit);
+        form.addEventListener('click', (e) => {
+            if (e.target.id === 'cancel-edit-btn') resetFormMode();
+            if (e.target.id === 'open-camera-btn') openCamera();
+        });
+        form.addEventListener('change', e => {
+            if (e.target.id === 'select-file-btn') {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (loadEvent) => {
+                        currentImageData = { fileName: file.name, dataUrl: loadEvent.target.result };
+                        const imagePreview = document.getElementById('image-preview');
+                        imagePreview.src = loadEvent.target.result;
+                        imagePreview.style.display = 'block';
+                    };
+                    reader.readAsDataURL(file);
+                }
+            }
+        });
+
+        importCsvInput.addEventListener('change', handleCsvImport);
+        importSystemInput.addEventListener('change', handleSystemImport);
+        exportCsvBtn.addEventListener('click', exportToCsv);
+        exportSystemBtn.addEventListener('click', exportSystemData);
+        
+        document.querySelectorAll('.tab-button').forEach(tab => tab.addEventListener('click', (e) => { 
+            document.querySelector('.tab-button.active')?.classList.remove('active'); 
+            document.querySelector('.tab-content.active')?.classList.remove('active'); 
+            e.currentTarget.classList.add('active'); 
+            document.getElementById(e.currentTarget.dataset.tab).classList.add('active'); 
+            if(e.currentTarget.dataset.tab === 'tab-list') renderTable(); 
+        }));
+
         tableBody.addEventListener('click', (e) => {
-            if (e.target.classList.contains('remove-btn')) { handleBulkDelete(); }
+            if (e.target.classList.contains('remove-btn')) { 
+                if(confirm('Tem certeza?')) {
+                    const index = parseInt(e.target.dataset.index, 10);
+                    ativos.splice(index, 1);
+                    saveAtivos();
+                    renderTable();
+                }
+            }
             if (e.target.classList.contains('edit-btn')) { startEditing(parseInt(e.target.dataset.index, 10)); }
             if (e.target.classList.contains('row-checkbox')) {
                 if (e.shiftKey && lastCheckedCheckbox) {
@@ -385,29 +862,80 @@
                 updateBulkActionUI();
             }
         });
-        searchInput.addEventListener('input', renderTable);
-        searchColumnSelect.addEventListener('change', renderTable);
-        selectAllCheckbox.addEventListener('click', (e) => { document.querySelectorAll('#asset-table-body .row-checkbox').forEach(checkbox => { checkbox.checked = e.target.checked; }); updateBulkActionUI(); });
-        document.getElementById('bulk-delete-btn').addEventListener('click', handleBulkDelete);
-        document.getElementById('bulk-edit-btn').addEventListener('click', openBulkEditModal);
-        document.getElementById('close-bulk-modal-btn').addEventListener('click', closeBulkEditModal);
-        document.getElementById('save-bulk-edit-btn').addEventListener('click', handleBulkEditSave);
-        toggleColumnsBtn.addEventListener('click', () => columnsDropdown.classList.toggle('show'));
-        columnsDropdown.addEventListener('change', (e) => {
-            if (e.target.type === 'checkbox') {
-                const key = e.target.dataset.key;
-                columnVisibility[key] = e.target.checked;
-                saveColumnVisibility(columnVisibility);
-                updateColumnVisibility();
+
+        selectAllCheckbox.addEventListener('click', (e) => { 
+            document.querySelectorAll('#asset-table-body .row-checkbox').forEach(checkbox => { 
+                checkbox.checked = e.target.checked; 
+            }); 
+            updateBulkActionUI(); 
+        });
+
+        document.getElementById('bulk-delete-btn')?.addEventListener('click', handleBulkDelete);
+        document.getElementById('bulk-edit-btn')?.addEventListener('click', openBulkEditModal);
+
+        document.getElementById('bulk-edit-modal').addEventListener('click', (e) => {
+            if (e.target.id === 'close-bulk-modal-btn') closeBulkEditModal();
+            if (e.target.id === 'save-bulk-edit-btn') handleBulkEditSave();
+        });
+
+        cameraModal.addEventListener('click', (e) => {
+            if (e.target.id === 'capture-image-btn') captureImage();
+            if (e.target.id === 'close-camera-btn') closeCamera();
+        });
+
+        addFilterBtn.addEventListener('click', () => {
+            activeFilters.push({});
+            renderFilterControls();
+        });
+
+        filterContainer.addEventListener('click', e => {
+            if (e.target.classList.contains('remove-filter-btn')) {
+                activeFilters.splice(e.target.dataset.index, 1);
+                if (activeFilters.length === 0) activeFilters.push({});
+                renderFilterControls();
+                renderTable();
             }
         });
-        window.addEventListener('click', (e) => { if (!e.target.matches('#toggle-columns-btn')) { if (columnsDropdown.classList.contains('show')) { columnsDropdown.classList.remove('show'); } } if (e.target == document.getElementById('bulk-edit-modal')) { closeBulkEditModal(); } });
+
+        filterContainer.addEventListener('change', e => {
+            if (e.target.classList.contains('filter-column')) {
+                activeFilters[e.target.dataset.index].column = e.target.value;
+                renderTable();
+            }
+        });
+
+        filterContainer.addEventListener('input', e => {
+            if (e.target.classList.contains('filter-value')) {
+                activeFilters[e.target.dataset.index].value = e.target.value;
+                renderTable();
+            }
+        });
+
+        columnToggleBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            columnToggleDropdown.classList.toggle('show');
+        });
+
+        columnToggleDropdown.addEventListener('change', (e) => {
+            const key = e.target.dataset.key;
+            if (key) {
+                columnVisibility[key] = e.target.checked;
+                saveColumnVisibility();
+                renderTable();
+            }
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!columnToggleDropdown.contains(e.target) && e.target !== columnToggleBtn) {
+                columnToggleDropdown.classList.remove('show');
+            }
+        });
 
         // --- INICIALIZAÇÃO ---
+        renderMainForm();
         initializeChoices('', choicesInstances);
-        initializeChoices('bulk-', bulkChoicesInstances);
-        setupColumnControls();
-        setupSearch();
+        renderFilterControls();
+        renderColumnToggleUI();
         renderTable();
     });
     </script>
