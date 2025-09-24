@@ -745,10 +745,25 @@
                 const element = document.getElementById(id); 
                 if (element) data[id] = choicesInstances[id] ? choicesInstances[id].getValue(true) : element.value; 
             }); 
-            data.imageFilename = currentImageData.fileName; 
-            data.imageDataUrl = currentImageData.dataUrl; 
+            
+            data.imageDataUrl = currentImageData.dataUrl;
+            
+            // If we have image data, its name should be generated from the etiqueta.
+            if (data.imageDataUrl) {
+                const etiquetaValue = data.etiqueta;
+                data.imageFilename = generateImageFilename(etiquetaValue) || currentImageData.fileName;
+            } else {
+                // If we are in edit mode and there's no new image, keep the old one.
+                if (editingIndex !== null) {
+                    data.imageFilename = ativos[editingIndex].imageFilename;
+                    data.imageDataUrl = ativos[editingIndex].imageDataUrl;
+                } else {
+                    data.imageFilename = null;
+                }
+            }
+            
             return data; 
-        };
+        }; 
         
         function setFormData(ativo) {
             formFields.forEach(id => {
@@ -796,7 +811,7 @@
             document.getElementById('form-tab-btn').click(); 
             window.scrollTo({ top: 0, behavior: 'smooth' }); 
             toggleConditionalFields(); 
-        };
+        }; 
         
         function generateImageFilename(etiqueta) {
             if (!etiqueta) return null;
@@ -961,11 +976,11 @@
                 }
                 
                 const parseCsvRow = rowString => {
-                    const regex = /(?:")([^"]*(?:""[^"]*)*)(?:")|([^,]+)/g;
+                    const regex = /(?:\")([^\"]*(?:\\[^\"]*)*)(?:\")|([^,]+)/g;
                     let match;
                     const result = [];
                     while (match = regex.exec(rowString)) {
-                        let value = match[1] ? match[1].replace(/""/g, '"') : match[2];
+                        let value = match[1] ? match[1].replace(/\"\"/g, '\"') : match[2];
                         result.push(value.trim());
                     }
                     return result;
@@ -1048,9 +1063,7 @@
             canvas.height = videoElement.videoHeight;
             canvas.getContext('2d').drawImage(videoElement, 0, 0, canvas.width, canvas.height);
             const dataUrl = canvas.toDataURL('image/jpeg');
-            
-            const etiquetaValue = document.getElementById('etiqueta')?.value;
-            const fileName = generateImageFilename(etiquetaValue) || `capture_${new Date().toISOString()}.jpg`;
+            const fileName = `capture_${new Date().toISOString()}.jpg`; // Temporary name
 
             currentImageData = { fileName, dataUrl };
 
@@ -1075,6 +1088,7 @@
                 if (file) {
                     const reader = new FileReader();
                     reader.onload = (loadEvent) => {
+                        // Use original file name as a temporary name
                         currentImageData = { fileName: file.name, dataUrl: loadEvent.target.result };
                         const imagePreview = document.getElementById('image-preview');
                         imagePreview.src = loadEvent.target.result;
