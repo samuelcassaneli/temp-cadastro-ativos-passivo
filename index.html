@@ -49,20 +49,82 @@
         .asset-image-thumbnail { max-width: 60px; max-height: 60px; border-radius: 5px; cursor: pointer; transition: transform 0.2s; }
         .conditional-fields { display: none; grid-column: 1 / -1; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; border: 1px dashed var(--teal); padding: 15px; border-radius: 8px; margin-top: 10px; }
         .conditional-fields.visible { display: grid; }
-                .choices__inner { background-color: rgba(0, 92, 115, 0.5); border-radius: 5px; font-size: 1rem; color: var(--white); }
-        .choices__list--dropdown, .choices__list[aria-expanded] { background-color: var(--midnight-green) !important; border-color: var(--teal) !important; }
-        .choices__item--choice, .choices__item { color: var(--white) !important; }
-        .choices__item--choice.is-highlighted, .choices__item.is-highlighted { background-color: var(--tiffany-blue) !important; color: var(--midnight-green) !important; }
-        .choices__input { background-color: transparent !important; color: var(--white) !important; }
+                .choices__inner {
+            background-color: rgba(0, 92, 115, 0.5);
+            border-radius: 5px;
+            font-size: 1rem;
+            color: var(--white); /* Default text color for the input area */
+        }
+        .choices__list--dropdown, .choices__list[aria-expanded] {
+            background-color: var(--midnight-green) !important;
+            border-color: var(--teal) !important;
+        }
+        .choices__item--choice, .choices__item {
+            color: var(--midnight-green); /* Default text color for items */
+        }
+        .choices__list--dropdown .choices__item--choice, .choices__list--dropdown .choices__item {
+            color: var(--white); /* White text for items in dropdown */
+        }
+        .choices__item--choice.is-highlighted, .choices__item.is-highlighted {
+            background-color: var(--tiffany-blue) !important;
+            color: var(--midnight-green) !important; /* Highlighted item: light blue background, dark blue text */
+        }
+        .choices__input {
+            background-color: transparent !important;
+            color: var(--white) !important; /* Input text color */
+        }
+        /* Ensure selected choices (tags) within the input have good contrast */
+        .choices__list--single .choices__item {
+            color: var(--midnight-green) !important; /* Ensure selected text is dark on light background */
+        }
+        .choices__list--multiple .choices__item {
+            background-color: var(--teal) !important; /* Background for selected tags in multi-select */
+            color: var(--white) !important; /* Text color for selected tags */
+        }
+        .choices__item.choices__item--select-text {
+            color: var(--white) !important; /* Ensure placeholder text is white */
+        }
         #exit-toast { position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%); background-color: var(--black); color: var(--white); padding: 12px 25px; border-radius: 25px; font-size: 0.9rem; z-index: 2000; }
         .list-controls { display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px; }
         #filter-controls { display: flex; flex-wrap: wrap; gap: 15px; align-items: center; }
-        .filter-row { display: flex; gap: 8px; align-items: center; background-color: rgba(0, 92, 115, 0.5); padding: 8px; border-radius: 8px; }
-        .filter-row .choices__inner { font-size: 0.9rem; padding: 6px; min-height: auto; background-color: transparent; }
-        .filter-row select, .filter-row input { border: 1px solid var(--teal); background-color: transparent; color: var(--white); border-radius: 5px; font-size: 0.9rem; padding: 8px; }
-        .filter-row input { flex-grow: 1; }
-        .filter-row select option { background-color: var(--midnight-green); }
-        .filter-row .btn-danger { padding: 8px 12px; line-height: 1; font-size: 0.8rem; }
+        .filter-row {
+            display: flex;
+            gap: 10px; /* Increased gap for better spacing */
+            align-items: center;
+            background-color: rgba(0, 92, 115, 0.5);
+            padding: 10px; /* Increased padding */
+            border-radius: 8px;
+            flex-wrap: wrap; /* Allow wrapping on smaller desktop screens if needed */
+        }
+        .filter-row .filter-column {
+            flex-basis: 150px; /* Give column select a fixed base width */
+            flex-shrink: 0; /* Prevent shrinking */
+        }
+        .filter-row .filter-value {
+            flex-grow: 1; /* Allow value input/select to take remaining space */
+            min-width: 180px; /* Ensure a minimum width to prevent excessive wrapping */
+        }
+        .filter-row .choices__inner {
+            font-size: 0.9rem;
+            padding: 6px;
+            min-height: auto;
+            background-color: transparent;
+            width: 100%; /* Ensure Choices.js inner element takes full width of its container */
+        }
+        .filter-row select, .filter-row input {
+            border: 1px solid var(--teal);
+            background-color: transparent;
+            color: var(--white);
+            border-radius: 5px;
+            font-size: 0.9rem;
+            padding: 8px;
+        }
+        .filter-row .btn-danger {
+            padding: 8px 12px;
+            line-height: 1;
+            font-size: 0.8rem;
+            flex-shrink: 0; /* Prevent button from shrinking */
+        }
         #add-filter-btn { padding: 9px 15px; }
         .column-toggle-container { position: relative; }
         #column-toggle-dropdown { display: none; position: absolute; top: 100%; left: 0; background-color: var(--midnight-green); border: 1px solid var(--teal); border-radius: 8px; padding: 10px; z-index: 1002; min-width: 200px; }
@@ -257,6 +319,7 @@
             etiqueta: { label: 'Etiqueta' },
             empresa: { label: 'Empresa' },
             tipoItem: { label: 'Tipo' },
+            estadoBem: {label: 'Estado'},
             marca: { label: 'Marca' },
             modelo: { label: 'Modelo' },
             nSerie: { label: 'N. Série' },
@@ -327,8 +390,9 @@
         let columnVisibility = loadColumnVisibility();
 
         const filterableColumns = {
+            allColumns: { label: 'Todas as Colunas' }, // New option for searching all columns
             etiqueta: { label: 'Etiqueta' }, tipoItem: { label: 'Tipo' }, marca: { label: 'Marca' }, modelo: { label: 'Modelo' },
-            nSerie: { label: 'N. Série' }, statusLocalizacao: { label: 'Status Loc.' }, usuario: { label: 'Usuário' }, empresa: { label: 'Empresa' },
+            nSerie: { label: 'N. Série' }, estadoBem: {label: 'Estado'}, statusLocalizacao: { label: 'Status Loc.' }, usuario: { label: 'Usuário' }, empresa: { label: 'Empresa' },
             dpto: { label: 'Dpto' }, unidade: { label: 'Unidade' }, localizacao: { label: 'Localização' }
         };
 
@@ -421,8 +485,8 @@
                 const columnSelect = document.createElement('select');
                 columnSelect.dataset.index = index;
                 columnSelect.className = 'filter-column';
-                columnSelect.innerHTML = '<option value="">Selecione a Coluna</option>' + 
-                    Object.entries(filterableColumns).map(([key, {label}]) => `<option value="${key}" ${filter.column === key ? 'selected' : ''}>${label}</option>`).join('');
+                columnSelect.innerHTML = '<option value="" class= "filter-row">Selecione a Coluna</option>' + 
+                    Object.entries(filterableColumns).map(([key, {label}]) => `<option value="${key}" class= "filter-row" ${filter.column === key ? 'selected' : ''}>${label}</option>`).join('');
 
                 let valueElement;
                 const filterColumnKey = filter.column;
@@ -432,6 +496,7 @@
                     valueElement.id = `filter-value-${index}`; // Unique ID for Choices.js
                     valueElement.dataset.index = index;
                     valueElement.className = 'filter-value';
+                    valueElement.innerHTML = '<option value="">Selecione uma opção</option>'; // Add placeholder only
                 } else {
                     valueElement = document.createElement('input');
                     valueElement.type = 'text';
@@ -503,13 +568,23 @@
             const filteredAtivos = ativos.filter(ativo => {
                 return activeFilters.every(filter => {
                     if (!filter.column || !filter.value) return true;
-                    const ativoValue = ativo[filter.column]?.toString() || ''; // Get original case for exact match
-                    
-                    // Check if the column is one of the dropdown types
-                    if (options[filter.column]) {
-                        return ativoValue === filter.value; // Exact match for dropdowns
+                    const filterValueLower = filter.value.toLowerCase();
+
+                    if (filter.column === 'allColumns') {
+                        // Search across all relevant columns
+                        const searchableColumns = Object.keys(tableColumns).filter(key => key !== 'imagem' && key !== 'acoes');
+                        return searchableColumns.some(colKey => {
+                            const ativoColValue = ativo[colKey]?.toString().toLowerCase() || '';
+                            return ativoColValue.includes(filterValueLower);
+                        });
                     } else {
-                        return ativoValue.toLowerCase().includes(filter.value.toLowerCase()); // Partial match for text inputs
+                        const ativoValue = ativo[filter.column]?.toString() || '';
+                        // Check if the column is one of the dropdown types
+                        if (options[filter.column]) {
+                            return ativoValue === filter.value; // Exact match for dropdowns
+                        } else {
+                            return ativoValue.toLowerCase().includes(filterValueLower); // Partial match for text inputs
+                        }
                     }
                 });
             });
@@ -723,6 +798,16 @@
             toggleConditionalFields(); 
         };
         
+        function generateImageFilename(etiqueta) {
+            if (!etiqueta) return null;
+            const today = new Date();
+            const day = String(today.getDate()).padStart(2, '0');
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const year = today.getFullYear();
+            const cleanEtiqueta = String(etiqueta).replace(/[^a-zA-Z0-9.-]/g, '_');
+            return `${cleanEtiqueta}-${day}${month}${year}.jpg`;
+        }
+
         function resetFormMode() {
             editingIndex = null;
             form.reset();
@@ -754,11 +839,13 @@
                 alert('Nenhum ativo para exportar.');
                 return;
             }
-            const headers = formFields.filter(f => f !== 'imageDataUrl' && f !== 'imageFilename');
+            const headers = [...formFields.filter(f => f !== 'imageDataUrl'), 'imageFilename'];
             const csvRows = [headers.join(',')];
 
             ativos.forEach(ativo => {
-                const row = headers.map(header => escapeCsvCell(ativo[header]));
+                const row = headers.map(header => {
+                    return escapeCsvCell(ativo[header]);
+                });
                 csvRows.push(row.join(','));
             });
 
@@ -775,13 +862,29 @@
         }
 
         function exportSystemData() {
-            if (ativos.length === 0 && Object.values(columnVisibility).every(v => v)) {
+            if (ativos.length === 0) {
                 alert('Nenhum dado para exportar.');
                 return;
             }
             const zip = new JSZip();
+            const imagesFolder = zip.folder("images");
+            
+            const ativosForExport = JSON.parse(JSON.stringify(ativos));
+
+            ativosForExport.forEach(ativo => {
+                if (ativo.imageDataUrl && ativo.imageFilename) {
+                    const imageData = ativo.imageDataUrl.split(',')[1];
+                    if (imageData) {
+                        imagesFolder.file(ativo.imageFilename, imageData, { base64: true });
+                        ativo.imageDataUrl = `images/${ativo.imageFilename}`;
+                    } else {
+                        delete ativo.imageDataUrl;
+                    }
+                }
+            });
+
             const appData = {
-                assets: ativos,
+                assets: ativosForExport,
                 settings: { columnVisibility: columnVisibility }
             };
             zip.file("data.json", JSON.stringify(appData, null, 2));
@@ -805,11 +908,24 @@
             JSZip.loadAsync(file).then(function(zip) {
                 const dataFile = zip.file("data.json");
                 if (dataFile) {
-                    dataFile.async("string").then(function(content) {
+                    dataFile.async("string").then(async function(content) {
                         try {
                             const appData = JSON.parse(content);
                             if (confirm('Isso substituirá todos os dados atuais do sistema. Deseja continuar?')) {
-                                ativos = appData.assets || [];
+                                const importedAssets = appData.assets || [];
+                                
+                                for (const ativo of importedAssets) {
+                                    if (ativo.imageDataUrl && typeof ativo.imageDataUrl === 'string' && ativo.imageDataUrl.startsWith('images/')) {
+                                        const imageFile = zip.file(ativo.imageDataUrl);
+                                        if (imageFile) {
+                                            const base64Data = await imageFile.async("base64");
+                                            const mimeType = ativo.imageFilename && ativo.imageFilename.endsWith('png') ? 'image/png' : 'image/jpeg';
+                                            ativo.imageDataUrl = `data:${mimeType};base64,${base64Data}`;
+                                        }
+                                    }
+                                }
+
+                                ativos = importedAssets;
                                 columnVisibility = appData.settings?.columnVisibility || loadColumnVisibility();
                                 saveAtivos();
                                 saveColumnVisibility();
@@ -818,8 +934,8 @@
                                 alert('Dados do sistema importados com sucesso!');
                             }
                         } catch (e) {
-                            alert('Erro ao processar o arquivo de dados (JSON inválido).');
-                            console.error("JSON Parse Error:", e);
+                            alert('Erro ao processar o arquivo de dados (JSON inválido ou erro na imagem).');
+                            console.error("Import Error:", e);
                         }
                     });
                 } else {
@@ -932,7 +1048,9 @@
             canvas.height = videoElement.videoHeight;
             canvas.getContext('2d').drawImage(videoElement, 0, 0, canvas.width, canvas.height);
             const dataUrl = canvas.toDataURL('image/jpeg');
-            const fileName = `capture_${new Date().toISOString()}.jpg`;
+            
+            const etiquetaValue = document.getElementById('etiqueta')?.value;
+            const fileName = generateImageFilename(etiquetaValue) || `capture_${new Date().toISOString()}.jpg`;
 
             currentImageData = { fileName, dataUrl };
 
