@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Gerenciador de Ativos</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    
+    <style>
+        :root {
+            --tiffany-blue: #96D1D3; --midnight-green: #003e4d; --teal: #01848C; --teal-bg: #005C73;
+            --white: #f0f8ff; --light-gray: #cddce7; --shadow: rgba(0, 0, 0, 0.4);
+        }
+        body { background-color: var(--midnight-green); color: var(--light-gray); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .main-container { background-color: var(--teal-bg); backdrop-filter: blur(10px); border: 1px solid var(--teal); }
+        .header-title { color: var(--tiffany-blue); text-shadow: 1px 1px 4px var(--shadow); }
+        .btn-outline-primary { border-color: var(--teal); color: var(--tiffany-blue); }
+        .btn-outline-primary:hover, .btn-outline-primary:focus { background-color: var(--teal); color: var(--white); }
+        
+        .kpi-card {
+            background-color: rgba(0,0,0,0.2);
+            border-left: 5px solid var(--tiffany-blue);
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+        }
+        .kpi-title { font-size: 1rem; color: var(--light-gray); }
+        .kpi-value { font-size: 2.5rem; font-weight: 700; color: var(--white); }
+        .kpi-icon { font-size: 3rem; color: var(--tiffany-blue); opacity: 0.3; }
+
+        .chart-container {
+            background-color: rgba(0,0,0,0.2);
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+        }
+        .recent-item-img {
+            width: 40px;
+            height: 40px;
+            object-fit: cover;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-xl my-3 my-md-4">
+        <main class="main-container rounded-4 shadow-lg p-3 p-md-4">
+            <header class="text-center pb-3 mb-4 border-bottom border-secondary-subtle">
+                <div class="d-flex flex-wrap justify-content-center align-items-center">
+                    <h1 class="fw-bold header-title flex-grow-1">Dashboard de Ativos</h1>
+                    <a href="index.html" class="btn btn-outline-primary ms-auto"><i class="bi bi-pencil-square me-2"></i>Gerenciar Ativos</a>
+                </div>
+            </header>
+
+            <!-- KPIs Principais -->
+            <div class="row g-4 mb-4">
+                <div class="col-md-6">
+                    <div class="kpi-card d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="kpi-title">TOTAL DE ATIVOS</div>
+                            <div id="total-ativos-kpi" class="kpi-value">...</div>
+                        </div>
+                        <i class="bi bi-box-seam kpi-icon"></i>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="kpi-card d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="kpi-title">VALOR TOTAL DO PATRIMÔNIO</div>
+                            <div id="valor-total-kpi" class="kpi-value">...</div>
+                        </div>
+                        <i class="bi bi-cash-coin kpi-icon"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gráficos -->
+            <div class="row g-4 mb-4">
+                <div class="col-lg-4 col-md-6">
+                    <div class="chart-container">
+                        <h5 class="text-center text-tiffany-blue mb-3">Ativos por Status</h5>
+                        <canvas id="status-chart"></canvas>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6">
+                    <div class="chart-container">
+                        <h5 class="text-center text-tiffany-blue mb-3">Ativos por Condição</h5>
+                        <canvas id="estado-chart"></canvas>
+                    </div>
+                </div>
+                 <div class="col-lg-4">
+                    <div class="chart-container">
+                        <h5 class="text-center text-tiffany-blue mb-3">Top 5 Tipos de Ativos</h5>
+                        <canvas id="tipo-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ativos Recentes -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="chart-container">
+                        <h5 class="text-tiffany-blue mb-3">Últimos Ativos Adicionados</h5>
+                        <ul id="recentes-container" class="list-group list-group-flush">
+                            <li class="list-group-item bg-transparent text-light">Carregando...</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const STORAGE_KEY = 'gerenciadorDeAtivosData';
+            const loadAtivos = () => { try { const data = localStorage.getItem(STORAGE_KEY); return data ? JSON.parse(data) : []; } catch (e) { return []; } };
+
+            let statusChart, tipoChart, estadoChart;
+            const chartColors = ['#01848C', '#96D1D3', '#f39c12', '#e74c3c', '#3498db', '#9b59b6', '#34495e', '#1abc9c', '#7f8c8d'];
+
+            function updateDashboard() {
+                const ativos = loadAtivos();
+
+                // KPI: Total de Ativos
+                document.getElementById('total-ativos-kpi').textContent = ativos.length;
+
+                // KPI: Valor Total
+                const valorTotal = ativos.reduce((sum, ativo) => sum + (parseFloat(ativo.valor) || 0), 0);
+                document.getElementById('valor-total-kpi').textContent = valorTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+                // Processar dados para os gráficos
+                const statusCounts = countBy(ativos, 'statusLocalizacao');
+                const tipoCounts = countBy(ativos, 'tipoItem');
+                const estadoCounts = countBy(ativos, 'estadoBem');
+
+                // Renderizar gráficos
+                renderPieChart('status-chart', statusCounts, 'Ativos por Status', 'doughnut');
+                renderBarChart('tipo-chart', tipoCounts, 'Top 5 Tipos de Ativos');
+                renderPieChart('estado-chart', estadoCounts, 'Ativos por Condição', 'pie');
+                
+                // Renderizar lista de recentes
+                renderRecentes(ativos);
+            }
+
+            function countBy(data, key) {
+                return data.reduce((acc, item) => {
+                    const group = item[key] || 'Não definido';
+                    acc[group] = (acc[group] || 0) + 1;
+                    return acc;
+                }, {});
+            }
+
+            function renderPieChart(canvasId, data, label, type) {
+                const chartInstance = canvasId === 'status-chart' ? statusChart : estadoChart;
+                if (chartInstance) chartInstance.destroy();
+                
+                const ctx = document.getElementById(canvasId).getContext('2d');
+                const newChart = new Chart(ctx, {
+                    type: type,
+                    data: {
+                        labels: Object.keys(data),
+                        datasets: [{
+                            label: label,
+                            data: Object.values(data),
+                            backgroundColor: chartColors,
+                            borderColor: 'var(--teal-bg)',
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: { legend: { labels: { color: 'var(--light-gray)' } } }
+                    }
+                });
+                if (canvasId === 'status-chart') statusChart = newChart; else estadoChart = newChart;
+            }
+            
+            function renderBarChart(canvasId, data) {
+                if (tipoChart) tipoChart.destroy();
+                
+                const sortedData = Object.entries(data).sort((a, b) => b[1] - a[1]).slice(0, 5);
+                const labels = sortedData.map(item => item[0]);
+                const values = sortedData.map(item => item[1]);
+
+                const ctx = document.getElementById(canvasId).getContext('2d');
+                tipoChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Quantidade',
+                            data: values,
+                            backgroundColor: chartColors,
+                            borderColor: chartColors,
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        plugins: { legend: { display: false } },
+                        scales: { x: { ticks: { color: 'var(--light-gray)' } }, y: { ticks: { color: 'var(--light-gray)' } } }
+                    }
+                });
+            }
+            
+            function renderRecentes(ativos) {
+                const container = document.getElementById('recentes-container');
+                container.innerHTML = '';
+                const recentes = ativos.slice(-5).reverse();
+                if (recentes.length === 0) {
+                    container.innerHTML = '<li class="list-group-item bg-transparent text-light text-center">Nenhum ativo cadastrado.</li>';
+                    return;
+                }
+                recentes.forEach(ativo => {
+                    const li = document.createElement('li');
+                    li.className = 'list-group-item bg-transparent text-light d-flex align-items-center gap-3';
+                    li.innerHTML = `
+                        <img src="${ativo.imageDataUrl || 'data:image/svg+xml,%3Csvg width="40" height="40" xmlns="http://www.w3.org/2000/svg"%3E%3Crect width="40" height="40" fill="%23212529"%3E%3C/rect%3E%3C/svg%3E'}" class="recent-item-img rounded">
+                        <div class="flex-grow-1">
+                            <strong>${ativo.etiqueta || 'Sem Etiqueta'}</strong>
+                            <small class="d-block text-muted">${ativo.tipoItem || 'N/A'} - ${ativo.usuario || 'Sem usuário'}</small>
+                        </div>
+                        <span class="badge text-bg-secondary">${ativo.estadoBem || ''}</span>
+                    `;
+                    container.appendChild(li);
+                });
+            }
+
+            // Atualização em tempo real
+            window.addEventListener('storage', (event) => {
+                if (event.key === STORAGE_KEY) {
+                    console.log('Dados atualizados, recarregando dashboard...');
+                    updateDashboard();
+                }
+            });
+
+            // Carga inicial
+            updateDashboard();
+        });
+    </script>
+</body>
+</html>
