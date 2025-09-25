@@ -53,63 +53,62 @@
             background-color: rgba(0, 92, 115, 0.5);
             border-radius: 5px;
             font-size: 1rem;
-            color: var(--white); /* Default text color for the input area */
+            color: var(--white);
         }
         .choices__list--dropdown, .choices__list[aria-expanded] {
             background-color: var(--midnight-green) !important;
             border-color: var(--teal) !important;
         }
         .choices__item--choice, .choices__item {
-            color: var(--midnight-green); /* Default text color for items */
+            color: var(--midnight-green);
         }
         .choices__list--dropdown .choices__item--choice, .choices__list--dropdown .choices__item {
-            color: var(--white); /* White text for items in dropdown */
+            color: var(--white);
         }
         .choices__item--choice.is-highlighted, .choices__item.is-highlighted {
             background-color: var(--tiffany-blue) !important;
-            color: var(--midnight-green) !important; /* Highlighted item: light blue background, dark blue text */
+            color: var(--midnight-green) !important;
         }
         .choices__input {
             background-color: transparent !important;
-            color: var(--white) !important; /* Input text color */
+            color: var(--white) !important;
         }
-        /* Ensure selected choices (tags) within the input have good contrast */
         .choices__list--single .choices__item {
-            color: var(--white) !important; /* Ensure selected text is dark on light background */
+            color: var(--white) !important;
         }
         .choices__list--multiple .choices__item {
-            background-color: var(--teal) !important; /* Background for selected tags in multi-select */
-            color: var(--white) !important; /* Text color for selected tags */
+            background-color: var(--teal) !important;
+            color: var(--white) !important;
         }
         .choices__item.choices__item--select-text {
-            color: var(--white) !important; /* Ensure placeholder text is white */
+            color: var(--white) !important;
         }
         #exit-toast { position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%); background-color: var(--black); color: var(--white); padding: 12px 25px; border-radius: 25px; font-size: 0.9rem; z-index: 2000; }
         .list-controls { display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px; }
         #filter-controls { display: flex; flex-wrap: wrap; gap: 15px; align-items: center; }
         .filter-row {
             display: flex;
-            gap: 10px; /* Increased gap for better spacing */
+            gap: 10px;
             align-items: center;
             background-color: rgba(0, 92, 115, 0.5);
-            padding: 10px; /* Increased padding */
+            padding: 10px;
             border-radius: 8px;
-            flex-wrap: wrap; /* Allow wrapping on smaller desktop screens if needed */
+            flex-wrap: wrap;
         }
         .filter-row .filter-column {
-            flex-basis: 150px; /* Give column select a fixed base width */
-            flex-shrink: 0; /* Prevent shrinking */
+            flex-basis: 150px;
+            flex-shrink: 0;
         }
         .filter-row .filter-value {
-            flex-grow: 1; /* Allow value input/select to take remaining space */
-            min-width: 180px; /* Ensure a minimum width to prevent excessive wrapping */
+            flex-grow: 1;
+            min-width: 180px;
         }
         .filter-row .choices__inner {
             font-size: 0.9rem;
             padding: 6px;
             min-height: auto;
             background-color: transparent;
-            width: 100%; /* Ensure Choices.js inner element takes full width of its container */
+            width: 100%;
         }
         .filter-row select, .filter-row input {
             border: 1px solid var(--teal);
@@ -123,7 +122,7 @@
             padding: 8px 12px;
             line-height: 1;
             font-size: 0.8rem;
-            flex-shrink: 0; /* Prevent button from shrinking */
+            flex-shrink: 0;
         }
         #add-filter-btn { padding: 9px 15px; }
         .column-toggle-container { position: relative; }
@@ -137,102 +136,34 @@
         #camera-modal .modal-content { max-width: 640px; }
 
         @media (max-width: 768px) {
-            body {
-                padding: 10px;
-            }
-            .container {
-                padding: 15px;
-            }
-            header h1 {
-                font-size: 2rem;
-            }
-            .actions-bar {
-                flex-direction: column;
-                gap: 10px;
-            }
-            .btn, .btn-like-input-label {
-                width: 100%;
-                padding: 15px;
-            }
-            .tabs {
-                flex-wrap: wrap;
-            }
-            .tab-button {
-                flex-grow: 1;
-                text-align: center;
-            }
-            #asset-form, .conditional-fields {
-                grid-template-columns: 1fr;
-            }
-            .form-actions {
-                flex-direction: column;
-            }
-            .form-actions .btn {
-                width: 100%;
-            }
-            .list-controls {
-                flex-direction: column;
-            }
-            #filter-controls {
-                flex-direction: column;
-                align-items: stretch;
-            }
-            .filter-row {
-                flex-direction: column;
-                align-items: stretch;
-            }
-            .filter-row > * {
-                width: 100% !important;
-            }
-            #asset-table {
-                display: block;
-                width: 100%;
-            }
-            #asset-table thead {
-                display: none;
-            }
-            #asset-table tbody, #asset-table tr, #asset-table td {
-                display: block;
-                width: 100%;
-            }
-            #asset-table tr {
-                margin-bottom: 15px;
-                border: 1px solid var(--teal);
-                border-radius: 8px;
-                padding: 10px;
-            }
-            #asset-table td {
-                padding: 8px 0;
-                border: none;
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                text-align: right !important;
-                white-space: normal;
-            }
-            #asset-table td:before {
-                content: attr(data-label);
-                font-weight: bold;
-                text-align: left;
-                margin-right: 10px;
-                color: var(--tiffany-blue);
-            }
-            #asset-table td:first-child {
-                justify-content: center;
-            }
-            #asset-table td:first-child:before {
-                content: '';
-                margin-right: 0;
-            }
-            .asset-image-thumbnail {
-                max-width: 100px;
-                max-height: 100px;
-            }
-            .modal-content {
-                width: 95%;
-                margin: 10% auto;
-                padding: 20px;
-            }
+            body { padding: 10px; }
+            .container { padding: 15px; }
+            header h1 { font-size: 2rem; }
+            .actions-bar { flex-direction: column; gap: 10px; }
+            .btn, .btn-like-input-label { width: 100%; padding: 15px; }
+            .tabs { flex-wrap: wrap; }
+            .tab-button { flex-grow: 1; text-align: center; }
+            #asset-form, .conditional-fields { grid-template-columns: 1fr; }
+            .form-actions { flex-direction: column; }
+            .form-actions .btn { width: 100%; }
+            .list-controls { flex-direction: column; }
+            #filter-controls { flex-direction: column; align-items: stretch; }
+            .filter-row { flex-direction: column; align-items: stretch; }
+            .filter-row > * { width: 100% !important; }
+            #asset-table { display: block; width: 100%; }
+            #asset-table thead { display: block; width: 100%; border-bottom: 1px solid var(--teal); }
+            #asset-table thead tr { display: block; }
+            #asset-table thead th:not(:first-child) { display: none; }
+            #asset-table thead th:first-child { display: inline-block; padding: 10px; }
+            #asset-table thead th:first-child::after { content: 'Selecionar Todos'; margin-left: 10px; font-weight: normal; color: var(--white); }
+            #asset-table tbody, #asset-table tr, #asset-table td { display: block; width: 100%; }
+            #asset-table tr { margin-bottom: 15px; border: 1px solid var(--teal); border-radius: 8px; padding: 10px; }
+            #asset-table td { padding: 8px 0; border: none; display: flex; justify-content: space-between; align-items: center; text-align: right !important; white-space: normal; }
+            #asset-table td:before { content: attr(data-label); font-weight: bold; text-align: left; margin-right: 10px; color: var(--tiffany-blue); }
+            #asset-table td:first-child { justify-content: center; }
+            #asset-table td:first-child:before { content: ''; margin-right: 0; }
+            .asset-image-thumbnail { max-width: 100px; max-height: 100px; }
+            .modal-content { width: 95%; margin: 10% auto; padding: 20px; }
         }
     </style>
 </head>
@@ -310,112 +241,47 @@
         let cameraStream = null;
         const choicesInstances = {};
         const bulkChoicesInstances = {};
-        const filterChoicesInstances = {}; // New: Choices.js instances for filter controls
+        const filterChoicesInstances = {};
         let lastCheckedCheckbox = null;
         let activeFilters = [{}];
 
         const tableColumns = {
-            imagem: { label: 'Imagem' },
-            etiqueta: { label: 'Etiqueta' },
-            empresa: { label: 'Empresa' },
-            tipoItem: { label: 'Tipo' },
-            estadoBem: {label: 'Estado'},
-            marca: { label: 'Marca' },
-            modelo: { label: 'Modelo' },
-            nSerie: { label: 'N. Série' },
-            statusLocalizacao: { label: 'Status Loc.' },
-            unidade: { label: 'Unidade' },
-            usuario: { label: 'Usuário' },
-            descricao: { label: 'Descrição'},
-            localizacao: { label: 'Localização' },
-            acoes: { label: 'Ações' },
+            imagem: { label: 'Imagem' }, etiqueta: { label: 'Etiqueta' }, empresa: { label: 'Empresa' }, tipoItem: { label: 'Tipo' }, estadoBem: {label: 'Estado'}, marca: { label: 'Marca' }, modelo: { label: 'Modelo' }, nSerie: { label: 'N. Série' }, statusLocalizacao: { label: 'Status Loc.' }, unidade: { label: 'Unidade' }, usuario: { label: 'Usuário' }, descricao: { label: 'Descrição'}, localizacao: { label: 'Localização' }, acoes: { label: 'Ações' },
         };
-
         const fieldLabels = {
-            etiqueta: 'Etiqueta de Patrimônio',
-            tipoItem: 'Tipo do Item',
-            marca: 'Marca',
-            modelo: 'Modelo',
-            nSerie: 'N. Série',
-            imei1: 'IMEI 1',
-            imei2: 'IMEI 2',
-            descricao: 'Descrição',
-            classificacaoContabil: 'Classificação Contábil',
-            localizacao: 'Localização Física',
-            usuario: 'Usuário',
-            empresa: 'Empresa',
-            dpto: 'Departamento',
-            unidade: 'Unidade',
-            notaFiscal: 'Nota Fiscal',
-            valor: 'Valor (R$)',
-            dataCompra: 'Data da Compra',
-            estadoBem: 'Estado do Bem',
-            descarte: 'Descarte',
-            proprietario: 'Proprietário',
-            numeroTelefone: 'Número de Telefone Vinculado',
-            processador: 'Processador',
-            memoriaRam: 'Memória RAM',
-            memoriaRom: 'Memória ROM (Armazenamento)',
-            placaDeVideo: 'Placa de Vídeo?',
-            statusLocalizacao: 'Status Localização'
+            etiqueta: 'Etiqueta de Patrimônio', tipoItem: 'Tipo do Item', marca: 'Marca', modelo: 'Modelo', nSerie: 'N. Série', imei1: 'IMEI 1', imei2: 'IMEI 2', descricao: 'Descrição', classificacaoContabil: 'Classificação Contábil', localizacao: 'Localização Física', usuario: 'Usuário', empresa: 'Empresa', dpto: 'Departamento', unidade: 'Unidade', notaFiscal: 'Nota Fiscal', valor: 'Valor (R$)', dataCompra: 'Data da Compra', estadoBem: 'Estado do Bem', descarte: 'Descarte', proprietario: 'Proprietário', numeroTelefone: 'Número de Telefone Vinculado', processador: 'Processador', memoriaRam: 'Memória RAM', memoriaRom: 'Memória ROM (Armazenamento)', placaDeVideo: 'Placa de Vídeo?', statusLocalizacao: 'Status Localização'
         };
-
         const loadColumnVisibility = () => {
-            try {
-                const stored = localStorage.getItem(VISIBILITY_KEY);
-                if (stored) {
-                    const loadedVisibility = JSON.parse(stored);
-                    const defaultVisibility = {};
-                    Object.keys(tableColumns).forEach(key => {
-                        defaultVisibility[key] = loadedVisibility.hasOwnProperty(key) ? loadedVisibility[key] : true;
-                    });
-                    return defaultVisibility;
-                }
-            } catch (e) {
-                console.error("Failed to load column visibility:", e);
-            }
-            const defaultVisibility = {};
-            Object.keys(tableColumns).forEach(key => defaultVisibility[key] = true);
-            return defaultVisibility;
+            try { const stored = localStorage.getItem(VISIBILITY_KEY); if (stored) { const loadedVisibility = JSON.parse(stored); const defaultVisibility = {}; Object.keys(tableColumns).forEach(key => { defaultVisibility[key] = loadedVisibility.hasOwnProperty(key) ? loadedVisibility[key] : true; }); return defaultVisibility; } } catch (e) { console.error("Failed to load column visibility:", e); } const defaultVisibility = {}; Object.keys(tableColumns).forEach(key => defaultVisibility[key] = true); return defaultVisibility;
         };
-
-        const saveColumnVisibility = () => {
-            try {
-                localStorage.setItem(VISIBILITY_KEY, JSON.stringify(columnVisibility));
-            } catch (e) {
-                console.error("Failed to save column visibility:", e);
-            }
-        };
-
+        const saveColumnVisibility = () => { try { localStorage.setItem(VISIBILITY_KEY, JSON.stringify(columnVisibility)); } catch (e) { console.error("Failed to save column visibility:", e); } };
         let columnVisibility = loadColumnVisibility();
-
         const filterableColumns = {
-            allColumns: { label: 'Todas as Colunas' }, // New option for searching all columns
-            etiqueta: { label: 'Etiqueta' }, tipoItem: { label: 'Tipo' }, marca: { label: 'Marca' }, modelo: { label: 'Modelo' },
-            nSerie: { label: 'N. Série' }, estadoBem: {label: 'Estado'}, statusLocalizacao: { label: 'Status Loc.' }, usuario: { label: 'Usuário' }, empresa: { label: 'Empresa' },
-            dpto: { label: 'Dpto' }, unidade: { label: 'Unidade' }, localizacao: { label: 'Localização' }
+            allColumns: { label: 'Todas as Colunas' }, etiqueta: { label: 'Etiqueta' }, tipoItem: { label: 'Tipo' }, marca: { label: 'Marca' }, modelo: { label: 'Modelo' }, nSerie: { label: 'N. Série' }, estadoBem: {label: 'Estado'}, statusLocalizacao: { label: 'Status Loc.' }, usuario: { label: 'Usuário' }, empresa: { label: 'Empresa' }, dpto: { label: 'Dpto' }, unidade: { label: 'Unidade' }, localizacao: { label: 'Localização' }
         };
-
         const options = {
-            empresa: ['PPay', 'MNTZZ', 'VG'],
-            tipoItem: ["Notebook", "Celular", "Desktop", "Fonte Notebook", "Radio Comunicador", "Monitor", "Apoio de Pé", "Teclado", "Mouse", "Tablet", "Carregador", "Câmera de Segurança", "Headset", "Outro"],
-            statusLocalizacao: ['Em estoque', 'Em uso', 'Em manutenção', 'Para descarte'],
-            dpto: ["FACILITIES", "TI", "INFRA", "CS", "JURIDICO", "FINANCEIRO", "MARKETING", "EVENTOS", "ADM", "DIRETORIA"],
-            unidade: ['TERRACINHO', 'MATRIZ', 'PO'],
-            classificacaoContabil: ["Móveis e Utensílios", "Computadores e Periféricos", "Aparelhos telefônicos", "Bens de pequeno valor", "Máquinas e equipamentos", "Adornos"],
-            estadoBem: ['Novo', 'Bom', 'Regular', 'Ruim', 'Sucata'],
-            descarte: ['Não', 'Sim'],
-            processador: ['i3', 'i5', 'i7', 'Ryzen 3', 'Ryzen 5', 'Ryzen 7'],
-            memoriaRam: ['4GB', '8GB', '12GB', '16GB', '32GB'],
-            memoriaRom: ['128GB SSD', '256GB SSD', '512GB SSD', '1TB SSD', '500GB HDD', '1TB HDD'],
-            placaDeVideo: ['Não', 'Sim']
+            empresa: ['PPay', 'MNTZZ', 'VG'], tipoItem: ["Notebook", "Celular", "Desktop", "Fonte Notebook", "Radio Comunicador", "Monitor", "Apoio de Pé", "Teclado", "Mouse", "Tablet", "Carregador", "Câmera de Segurança", "Headset", "Outro"], statusLocalizacao: ['Em estoque', 'Em uso', 'Em manutenção', 'Para descarte'], dpto: ["FACILITIES", "TI", "INFRA", "CS", "JURIDICO", "FINANCEIRO", "MARKETING", "EVENTOS", "ADM", "DIRETORIA"], unidade: ['TERRACINHO', 'MATRIZ', 'PO'], classificacaoContabil: ["Móveis e Utensílios", "Computadores e Periféricos", "Aparelhos telefônicos", "Bens de pequeno valor", "Máquinas e equipamentos", "Adornos"], estadoBem: ['Novo', 'Bom', 'Regular', 'Ruim', 'Sucata'], descarte: ['Não', 'Sim'], processador: ['i3', 'i5', 'i7', 'Ryzen 3', 'Ryzen 5', 'Ryzen 7'], memoriaRam: ['4GB', '8GB', '12GB', '16GB', '32GB'], memoriaRom: ['128GB SSD', '256GB SSD', '512GB SSD', '1TB SSD', '500GB HDD', '1TB HDD'], placaDeVideo: ['Não', 'Sim']
         };
         const formFields = ['etiqueta', 'statusLocalizacao', 'tipoItem', 'marca', 'modelo', 'nSerie', 'imei1', 'imei2', 'descricao', 'classificacaoContabil', 'localizacao', 'usuario', 'empresa', 'dpto', 'unidade', 'notaFiscal', 'valor', 'dataCompra', 'estadoBem', 'descarte', 'proprietario', 'numeroTelefone', 'processador', 'memoriaRam', 'memoriaRom', 'placaDeVideo'];
         const bulkEditFields = ['tipoItem', 'marca', 'modelo', 'statusLocalizacao', 'usuario', 'empresa', 'dpto', 'unidade', 'localizacao', 'estadoBem', 'descarte', 'descricao', 'classificacaoContabil', 'proprietario', 'notaFiscal', 'valor', 'dataCompra'];
-
         const loadAtivos = () => { try { const data = localStorage.getItem(STORAGE_KEY); return data ? JSON.parse(data) : []; } catch (e) { console.error("Failed to load assets:", e); return []; } };
         const saveAtivos = () => { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(ativos)); } catch (e) { alert("Não foi possível salvar os dados."); console.error("Failed to save assets:", e); } };
+        
         let ativos = loadAtivos();
+
+        (() => {
+            let migrationNeeded = false;
+            ativos.forEach(ativo => {
+                if (!ativo.assetId) {
+                    ativo.assetId = Date.now().toString(36) + Math.random().toString(36).substring(2);
+                    migrationNeeded = true;
+                }
+            });
+            if (migrationNeeded) {
+                console.log('Migração de dados concluída: IDs únicos adicionados aos ativos existentes.');
+                saveAtivos();
+            }
+        })();
 
         function renderMainForm() {
             form.innerHTML = `
@@ -437,17 +303,10 @@
                 <div class="form-actions"><button type="button" id="cancel-edit-btn" class="btn btn-secondary" style="display: none;">Cancelar Edição</button><button type="submit" id="submit-btn" class="btn">Salvar Ativo</button></div>
             `;
         }
-
         function renderBulkEditForm() {
             const bulkEditModalContent = document.querySelector('#bulk-edit-modal .modal-content');
             if (!bulkEditModalContent) return;
-
-            let formHtml = `
-                <form id="bulk-edit-form">
-                    <h3 class="section-title">Edição em Massa (<span id="bulk-edit-count"></span> ativos)</h3>
-                    <p style="grid-column: 1 / -1; margin-bottom: 10px;">Preencha apenas os campos que deseja alterar nos itens selecionados. Campos em branco não serão modificados.</p>
-            `;
-
+            let formHtml = `<form id="bulk-edit-form"><h3 class="section-title">Edição em Massa (<span id="bulk-edit-count"></span> ativos)</h3><p style="grid-column: 1 / -1; margin-bottom: 10px;">Preencha apenas os campos que deseja alterar nos itens selecionados. Campos em branco não serão modificados.</p>`;
             bulkEditFields.forEach(field => {
                 const label = fieldLabels[field] || field;
                 if (options[field]) {
@@ -457,46 +316,33 @@
                     formHtml += `<div class="form-group"><label for="bulk-${field}">${label}</label><input type="${inputType}" id="bulk-${field}" ${inputType === 'number' ? 'step="0.01"' : ''}></div>`;
                 }
             });
-
-            formHtml += `
-                    <div class="form-actions">
-                        <button type="button" id="close-bulk-modal-btn" class="btn btn-secondary">Cancelar</button>
-                        <button type="button" id="save-bulk-edit-btn" class="btn">Salvar Alterações</button>
-                    </div>
-                </form>
-            `;
+            formHtml += `<div class="form-actions"><button type="button" id="close-bulk-modal-btn" class="btn btn-secondary">Cancelar</button><button type="button" id="save-bulk-edit-btn" class="btn">Salvar Alterações</button></div></form>`;
             bulkEditModalContent.innerHTML = formHtml;
         }
-
         function renderFilterControls() {
             filterContainer.innerHTML = '';
-            // Destroy existing Choices.js instances for filters
             for (const key in filterChoicesInstances) {
                 if (filterChoicesInstances[key]) {
                     filterChoicesInstances[key].destroy();
                     delete filterChoicesInstances[key];
                 }
             }
-
             activeFilters.forEach((filter, index) => {
                 const filterRow = document.createElement('div');
                 filterRow.className = 'filter-row';
-                
                 const columnSelect = document.createElement('select');
                 columnSelect.dataset.index = index;
                 columnSelect.className = 'filter-column';
                 columnSelect.innerHTML = '<option value="" class= "filter-row">Selecione a Coluna</option>' + 
                     Object.entries(filterableColumns).map(([key, {label}]) => `<option value="${key}" class= "filter-row" ${filter.column === key ? 'selected' : ''}>${label}</option>`).join('');
-
                 let valueElement;
                 const filterColumnKey = filter.column;
-
                 if (filterColumnKey && options[filterColumnKey]) {
                     valueElement = document.createElement('select');
-                    valueElement.id = `filter-value-${index}`; // Unique ID for Choices.js
+                    valueElement.id = `filter-value-${index}`;
                     valueElement.dataset.index = index;
                     valueElement.className = 'filter-value';
-                    valueElement.innerHTML = '<option value="">Selecione uma opção</option>'; // Add placeholder only
+                    valueElement.innerHTML = '<option value="">Selecione uma opção</option>';
                 } else {
                     valueElement = document.createElement('input');
                     valueElement.type = 'text';
@@ -505,16 +351,12 @@
                     valueElement.className = 'filter-value';
                     valueElement.value = filter.value || '';
                 }
-
                 const removeBtn = document.createElement('button');
                 removeBtn.className = 'btn btn-danger remove-filter-btn';
                 removeBtn.textContent = 'X';
                 removeBtn.dataset.index = index;
-
                 filterRow.append(columnSelect, valueElement, removeBtn);
                 filterContainer.appendChild(filterRow);
-
-                // Initialize Choices.js for the select element if it exists
                 if (filterColumnKey && options[filterColumnKey]) {
                     filterChoicesInstances[`filter-value-${index}`] = new Choices(valueElement, {
                         choices: options[filterColumnKey].map(val => ({ value: val, label: val })),
@@ -530,48 +372,33 @@
                 }
             });
         }
-
         function renderColumnToggleUI() {
             columnToggleDropdown.innerHTML = '';
             Object.keys(tableColumns).forEach(key => {
-                if (key === 'acoes') {
-                    columnVisibility[key] = true;
-                }
+                if (key === 'acoes') { columnVisibility[key] = true; }
                 const label = document.createElement('label');
                 const checkbox = document.createElement('input');
                 checkbox.type = 'checkbox';
                 checkbox.dataset.key = key;
                 checkbox.checked = columnVisibility[key];
-                if (key === 'acoes') {
-                    checkbox.disabled = true;
-                }
+                if (key === 'acoes') { checkbox.disabled = true; }
                 label.appendChild(checkbox);
                 label.append(` ${tableColumns[key].label}`);
                 columnToggleDropdown.appendChild(label);
             });
         }
-
         function renderTable() {
             const visibleColumns = Object.keys(tableColumns).filter(key => columnVisibility[key]);
-            
             let headerHtml = '<tr><th><input type="checkbox" id="select-all-checkbox-header"></th>';
-            visibleColumns.forEach(key => {
-                 headerHtml += `<th>${tableColumns[key].label}</th>`;
-            });
+            visibleColumns.forEach(key => { headerHtml += `<th>${tableColumns[key].label}</th>`; });
             tableHead.innerHTML = headerHtml;
-
             const selectAllHeaderCheckbox = tableHead.querySelector('#select-all-checkbox-header');
-            if (selectAllHeaderCheckbox) {
-                selectAllHeaderCheckbox.replaceWith(selectAllCheckbox);
-            }
-
+            if (selectAllHeaderCheckbox) { selectAllHeaderCheckbox.replaceWith(selectAllCheckbox); }
             const filteredAtivos = ativos.filter(ativo => {
                 return activeFilters.every(filter => {
                     if (!filter.column || !filter.value) return true;
                     const filterValueLower = filter.value.toLowerCase();
-
                     if (filter.column === 'allColumns') {
-                        // Search across all relevant columns
                         const searchableColumns = Object.keys(tableColumns).filter(key => key !== 'imagem' && key !== 'acoes');
                         return searchableColumns.some(colKey => {
                             const ativoColValue = ativo[colKey]?.toString().toLowerCase() || '';
@@ -579,16 +406,11 @@
                         });
                     } else {
                         const ativoValue = ativo[filter.column]?.toString() || '';
-                        // Check if the column is one of the dropdown types
-                        if (options[filter.column]) {
-                            return ativoValue === filter.value; // Exact match for dropdowns
-                        } else {
-                            return ativoValue.toLowerCase().includes(filterValueLower); // Partial match for text inputs
-                        }
+                        if (options[filter.column]) { return ativoValue === filter.value; } 
+                        else { return ativoValue.toLowerCase().includes(filterValueLower); }
                     }
                 });
             });
-
             tableBody.innerHTML = '';
             if (filteredAtivos.length === 0) {
                  tableBody.innerHTML = `<tr><td colspan="${visibleColumns.length + 1}" style="text-align:center; padding: 20px;">Nenhum ativo encontrado.</td></tr>`;
@@ -597,9 +419,7 @@
                     const originalIndex = ativos.indexOf(ativo);
                     const row = document.createElement('tr');
                     row.dataset.index = originalIndex;
-
                     let rowHtml = `<td data-label="Selecionar"><input type="checkbox" class="row-checkbox" data-index="${originalIndex}"></td>`;
-                    
                     visibleColumns.forEach(key => {
                         let cellContent = '';
                         if (key === 'imagem') {
@@ -611,7 +431,6 @@
                         }
                         rowHtml += `<td data-label="${tableColumns[key].label}">${cellContent}</td>`;
                     });
-
                     row.innerHTML = rowHtml;
                     tableBody.appendChild(row);
                 });
@@ -619,7 +438,6 @@
             updateBulkActionUI();
             lastCheckedCheckbox = null;
         };
-
         function updateBulkActionUI() { 
             const selectedCheckboxes = document.querySelectorAll('.row-checkbox:checked');
             const anySelected = selectedCheckboxes.length > 0;
@@ -643,7 +461,6 @@
                 selectAllCheckbox.indeterminate = false;
             }
         }
-
         function handleBulkDelete() { 
             const selectedCheckboxes = document.querySelectorAll('.row-checkbox:checked'); 
             if (selectedCheckboxes.length === 0) return;
@@ -654,28 +471,18 @@
                 renderTable(); 
             }
         }
-        
         function openBulkEditModal() {
             const selectedCheckboxes = document.querySelectorAll('.row-checkbox:checked');
             if (selectedCheckboxes.length === 0) return;
-
             renderBulkEditForm();
             for (const key in bulkChoicesInstances) {
-                if (bulkChoicesInstances[key]) {
-                    bulkChoicesInstances[key].destroy();
-                    delete bulkChoicesInstances[key];
-                }
+                if (bulkChoicesInstances[key]) { bulkChoicesInstances[key].destroy(); delete bulkChoicesInstances[key]; }
             }
             initializeChoices('bulk-', bulkChoicesInstances);
-
             document.getElementById('bulk-edit-count').textContent = selectedCheckboxes.length;
             document.getElementById('bulk-edit-modal').style.display = 'block';
         }
-
-        function closeBulkEditModal() { 
-            document.getElementById('bulk-edit-modal').style.display = 'none';
-        }
-        
+        function closeBulkEditModal() { document.getElementById('bulk-edit-modal').style.display = 'none'; }
         function handleBulkEditSave() { 
             const selectedIndices = Array.from(document.querySelectorAll('.row-checkbox:checked')).map(cb => parseInt(cb.dataset.index, 10)); 
             if (selectedIndices.length === 0) return; 
@@ -686,16 +493,10 @@
                     const bulkElement = document.getElementById(`bulk-${field}`); 
                     if (!bulkElement) return; 
                     let value;
-                    if (bulkChoicesInstances[`bulk-${field}`]) { 
-                        value = bulkChoicesInstances[`bulk-${field}`].getValue(true);
-                    } else { 
-                        value = bulkElement.value; 
-                    } 
+                    if (bulkChoicesInstances[`bulk-${field}`]) { value = bulkChoicesInstances[`bulk-${field}`].getValue(true); } 
+                    else { value = bulkElement.value; } 
                     if (value !== null && value !== undefined && value !== '') { 
-                        if (ativo[field] !== value) { 
-                            ativo[field] = value; 
-                            changesMade = true; 
-                        } 
+                        if (ativo[field] !== value) { ativo[field] = value; changesMade = true; } 
                     } 
                 }); 
             }); 
@@ -703,32 +504,22 @@
                 saveAtivos(); 
                 renderTable(); 
                 alert(`${selectedIndices.length} ativos foram atualizados!`); 
-            } else { 
-                alert("Nenhuma alteração foi feita."); 
-            } 
+            } else { alert("Nenhuma alteração foi feita."); } 
             closeBulkEditModal(); 
         }
-
         function initializeChoices(prefix = '', instanceObject = choicesInstances) { 
             for (const id in options) { 
                 const selectElement = document.getElementById(`${prefix}${id}`); 
                 if (selectElement) { 
                     instanceObject[`${prefix}${id}`] = new Choices(selectElement, { 
                         choices: options[id].map(val => ({ value: val, label: val })), 
-                        removeItemButton: true, 
-                        searchResultLimit: 15, 
-                        itemSelectText: 'Pressione para selecionar', 
-                        placeholder: true, 
-                        placeholderValue: 'Selecione uma opção' 
+                        removeItemButton: true, searchResultLimit: 15, itemSelectText: 'Pressione para selecionar', placeholder: true, placeholderValue: 'Selecione uma opção' 
                     }); 
                 } 
             } 
             const tipoItemElement = document.getElementById('tipoItem'); 
-            if (tipoItemElement) { 
-                tipoItemElement.addEventListener('change', toggleConditionalFields); 
-            } 
+            if (tipoItemElement) { tipoItemElement.addEventListener('change', toggleConditionalFields); } 
         }
-
         function toggleConditionalFields() { 
             const tipoItemSelect = choicesInstances['tipoItem']; 
             if (!tipoItemSelect) return; 
@@ -738,54 +529,44 @@
             if(notebookFields) notebookFields.classList.toggle('visible', tipo === 'Notebook'); 
             if(celularFields) celularFields.classList.toggle('visible', tipo === 'Celular'); 
         }
-
         function getFormData() { 
             const data = {}; 
             formFields.forEach(id => { 
                 const element = document.getElementById(id); 
                 if (element) data[id] = choicesInstances[id] ? choicesInstances[id].getValue(true) : element.value; 
             }); 
-            
             data.imageDataUrl = currentImageData.dataUrl;
-            
-            // If we have image data, its name should be generated from the etiqueta.
-            if (data.imageDataUrl) {
-                const etiquetaValue = data.etiqueta;
-                data.imageFilename = generateImageFilename(etiquetaValue) || currentImageData.fileName;
-            } else {
-                // If we are in edit mode and there's no new image, keep the old one.
-                if (editingIndex !== null) {
-                    data.imageFilename = ativos[editingIndex].imageFilename;
-                    data.imageDataUrl = ativos[editingIndex].imageDataUrl;
-                } else {
-                    data.imageFilename = null;
-                }
-            }
-            
             return data; 
-        }; 
-        
+        };
         function setFormData(ativo) {
             formFields.forEach(id => {
                 const element = document.getElementById(id);
                 if (choicesInstances[id]) {
-                    if (ativo[id]) {
-                        choicesInstances[id].setChoiceByValue(String(ativo[id]));
-                    } else {
-                        choicesInstances[id].setChoiceByValue('');
-                    }
+                    if (ativo[id]) { choicesInstances[id].setChoiceByValue(String(ativo[id])); } 
+                    else { choicesInstances[id].setChoiceByValue(''); }
                 } else if (element) {
                     element.value = ativo[id] || '';
                 }
             });
         };
-
         function handleFormSubmit(e) { 
             e.preventDefault(); 
             const ativoData = getFormData(); 
             if (editingIndex !== null) { 
-                ativos[editingIndex] = { ...ativos[editingIndex], ...ativoData }; 
+                const existingAsset = ativos[editingIndex];
+                ativoData.assetId = existingAsset.assetId;
+                if (ativoData.imageDataUrl && ativoData.imageDataUrl !== existingAsset.imageDataUrl) {
+                    ativoData.imageFilename = generateImageFilename(ativoData.etiqueta, ativoData.assetId);
+                } else {
+                    ativoData.imageFilename = existingAsset.imageFilename;
+                    ativoData.imageDataUrl = existingAsset.imageDataUrl;
+                }
+                ativos[editingIndex] = { ...existingAsset, ...ativoData }; 
             } else { 
+                ativoData.assetId = Date.now().toString(36) + Math.random().toString(36).substring(2);
+                if (ativoData.imageDataUrl) {
+                    ativoData.imageFilename = generateImageFilename(ativoData.etiqueta, ativoData.assetId);
+                }
                 ativos.push(ativoData); 
             } 
             saveAtivos(); 
@@ -793,7 +574,6 @@
             renderTable(); 
             alert(editingIndex !== null ? 'Ativo atualizado!' : 'Ativo cadastrado!'); 
         };
-
         function startEditing(index) { 
             editingIndex = index; 
             const ativo = ativos[index]; 
@@ -812,17 +592,15 @@
             window.scrollTo({ top: 0, behavior: 'smooth' }); 
             toggleConditionalFields(); 
         }; 
-        
-        function generateImageFilename(etiqueta) {
-            if (!etiqueta) return null;
+        function generateImageFilename(etiqueta, assetId) {
+            if (!etiqueta || !assetId) return null;
             const today = new Date();
             const day = String(today.getDate()).padStart(2, '0');
             const month = String(today.getMonth() + 1).padStart(2, '0');
             const year = today.getFullYear();
             const cleanEtiqueta = String(etiqueta).replace(/[^a-zA-Z0-9.-]/g, '_');
-            return `${cleanEtiqueta}-${day}${month}${year}.jpg`;
+            return `${cleanEtiqueta}_${assetId}_${day}${month}${year}.jpg`;
         }
-
         function resetFormMode() {
             editingIndex = null;
             form.reset();
@@ -839,7 +617,6 @@
             document.getElementById('cancel-edit-btn').style.display = 'none';
             toggleConditionalFields();
         };
-
         function escapeCsvCell(cell) {
             if (cell === null || cell === undefined) return '';
             cell = String(cell);
@@ -848,22 +625,14 @@
             }
             return cell;
         }
-
         function exportToCsv() {
-            if (ativos.length === 0) {
-                alert('Nenhum ativo para exportar.');
-                return;
-            }
+            if (ativos.length === 0) { alert('Nenhum ativo para exportar.'); return; }
             const headers = [...formFields.filter(f => f !== 'imageDataUrl'), 'imageFilename'];
             const csvRows = [headers.join(',')];
-
             ativos.forEach(ativo => {
-                const row = headers.map(header => {
-                    return escapeCsvCell(ativo[header]);
-                });
+                const row = headers.map(header => { return escapeCsvCell(ativo[header]); });
                 csvRows.push(row.join(','));
             });
-
             const csvString = csvRows.join('\r\n');
             const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement('a');
@@ -876,6 +645,7 @@
             document.body.removeChild(link);
         }
 
+        // --- INÍCIO DA MUDANÇA PRINCIPAL ---
         function exportSystemData() {
             if (ativos.length === 0) {
                 alert('Nenhum dado para exportar.');
@@ -884,17 +654,34 @@
             const zip = new JSZip();
             const imagesFolder = zip.folder("images");
             
+            // Cria uma cópia profunda para não modificar os dados originais em uso na tela
             const ativosForExport = JSON.parse(JSON.stringify(ativos));
 
             ativosForExport.forEach(ativo => {
-                if (ativo.imageDataUrl && ativo.imageFilename) {
-                    const imageData = ativo.imageDataUrl.split(',')[1];
-                    if (imageData) {
-                        imagesFolder.file(ativo.imageFilename, imageData, { base64: true });
-                        ativo.imageDataUrl = `images/${ativo.imageFilename}`;
+                // Verifica se o ativo possui uma imagem válida (em formato data URL)
+                if (ativo.imageDataUrl && ativo.imageDataUrl.startsWith('data:image')) {
+                    
+                    // FORÇA a regeneração do nome do arquivo para o padrão correto
+                    const correctFilename = generateImageFilename(ativo.etiqueta, ativo.assetId);
+
+                    if (correctFilename) {
+                        const imageData = ativo.imageDataUrl.split(',')[1];
+                        
+                        // Adiciona o arquivo de imagem ao ZIP com o NOME CORRETO
+                        imagesFolder.file(correctFilename, imageData, { base64: true });
+
+                        // ATUALIZA o objeto do ativo que será salvo no data.json
+                        ativo.imageFilename = correctFilename;
+                        ativo.imageDataUrl = `images/${correctFilename}`; // Referência para reimportação
                     } else {
+                        // Caso não consiga gerar um nome (ex: sem etiqueta), remove os dados da imagem
                         delete ativo.imageDataUrl;
+                        delete ativo.imageFilename;
                     }
+                } else {
+                    // Se não tiver imagem ou o formato for inválido, garante que não seja exportado
+                    delete ativo.imageDataUrl;
+                    delete ativo.imageFilename;
                 }
             });
 
@@ -915,95 +702,113 @@
                 document.body.removeChild(link);
             });
         }
+        // --- FIM DA MUDANÇA PRINCIPAL ---
 
-        function handleSystemImport(event) {
+        async function handleSystemImport(event) {
             const file = event.target.files[0];
             if (!file) return;
-
-            JSZip.loadAsync(file).then(function(zip) {
+            try {
+                const zip = await JSZip.loadAsync(file);
                 const dataFile = zip.file("data.json");
-                if (dataFile) {
-                    dataFile.async("string").then(async function(content) {
-                        try {
-                            const appData = JSON.parse(content);
-                            if (confirm('Isso substituirá todos os dados atuais do sistema. Deseja continuar?')) {
-                                const importedAssets = appData.assets || [];
-                                
-                                for (const ativo of importedAssets) {
-                                    if (ativo.imageDataUrl && typeof ativo.imageDataUrl === 'string' && ativo.imageDataUrl.startsWith('images/')) {
-                                        const imageFile = zip.file(ativo.imageDataUrl);
-                                        if (imageFile) {
-                                            const base64Data = await imageFile.async("base64");
-                                            const mimeType = ativo.imageFilename && ativo.imageFilename.endsWith('png') ? 'image/png' : 'image/jpeg';
-                                            ativo.imageDataUrl = `data:${mimeType};base64,${base64Data}`;
-                                        }
-                                    }
-                                }
-
-                                ativos = importedAssets;
-                                columnVisibility = appData.settings?.columnVisibility || loadColumnVisibility();
-                                saveAtivos();
-                                saveColumnVisibility();
-                                renderTable();
-                                renderColumnToggleUI();
-                                alert('Dados do sistema importados com sucesso!');
-                            }
-                        } catch (e) {
-                            alert('Erro ao processar o arquivo de dados (JSON inválido ou erro na imagem).');
-                            console.error("Import Error:", e);
+                if (!dataFile) { alert('Arquivo de backup inválido (data.json não encontrado).'); return; }
+                const content = await dataFile.async("string");
+                const appData = JSON.parse(content);
+                if (confirm('Isso substituirá todos os dados atuais do sistema. Deseja continuar?')) {
+                    const importedAssets = appData.assets || [];
+                    for (const ativo of importedAssets) {
+                        if (!ativo.assetId) {
+                            ativo.assetId = Date.now().toString(36) + Math.random().toString(36).substring(2);
                         }
-                    });
-                } else {
-                    alert('Arquivo de backup inválido (data.json não encontrado).');
+                        if (ativo.etiqueta) {
+                            ativo.imageFilename = generateImageFilename(ativo.etiqueta, ativo.assetId) || ativo.imageFilename;
+                        }
+                        if (ativo.imageDataUrl && typeof ativo.imageDataUrl === 'string' && ativo.imageDataUrl.startsWith('images/')) {
+                            const imageFile = zip.file(ativo.imageDataUrl);
+                            if (imageFile) {
+                                try {
+                                    const base64Data = await imageFile.async("base64");
+                                    const mimeType = imageFile.name.endsWith('png') ? 'image/png' : 'image/jpeg';
+                                    const originalDataUrl = `data:${mimeType};base64,${base64Data}`;
+                                    ativo.imageDataUrl = await compressImage(originalDataUrl, 800, 800, 0.7);
+                                } catch (imgErr) {
+                                    console.error(`Falha ao processar a imagem ${imageFile.name} na importação.`, imgErr);
+                                    ativo.imageDataUrl = null;
+                                    ativo.imageFilename = null;
+                                }
+                            }
+                        }
+                    }
+                    ativos = importedAssets;
+                    columnVisibility = appData.settings?.columnVisibility || loadColumnVisibility();
+                    saveAtivos();
+                    saveColumnVisibility();
+                    renderTable();
+                    renderColumnToggleUI();
+                    alert('Dados do sistema importados com sucesso!');
                 }
-            }).catch(function(err) {
-                alert('Erro ao ler o arquivo ZIP: ' + err.message);
-            });
-            event.target.value = '';
+            } catch (e) {
+                alert('Erro ao processar o arquivo ZIP. Verifique o console para detalhes.');
+                console.error("Import Error:", e);
+            } finally {
+                event.target.value = '';
+            }
         }
-
+        function compressImage(dataUrl, maxWidth, maxHeight, quality) {
+            return new Promise((resolve, reject) => {
+                if (!dataUrl) { return reject(new Error("Nenhum dado de imagem fornecido para compressão.")); }
+                const img = new Image();
+                img.src = dataUrl;
+                img.onload = () => {
+                    let width = img.width;
+                    let height = img.height;
+                    if (width > height) {
+                        if (width > maxWidth) { height *= maxWidth / width; width = maxWidth; }
+                    } else {
+                        if (height > maxHeight) { width *= maxHeight / height; height = maxHeight; }
+                    }
+                    const canvas = document.createElement('canvas');
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    const compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+                    resolve(compressedDataUrl);
+                };
+                img.onerror = (err) => {
+                    console.error("Falha ao carregar a imagem para compressão.", err);
+                    reject(new Error("O arquivo selecionado não parece ser uma imagem válida."));
+                };
+            });
+        }
         function handleCsvImport(event) {
             const file = event.target.files[0];
             if (!file) return;
-
             const reader = new FileReader();
             reader.onload = function(e) {
                 const text = e.target.result;
                 const lines = text.split(/\r\n|\n/);
-                if (lines.length < 2) {
-                    alert('CSV inválido ou vazio.');
-                    return;
-                }
-                
+                if (lines.length < 2) { alert('CSV inválido ou vazio.'); return; }
                 const parseCsvRow = rowString => {
-                    const regex = /(?:\")([^\"]*(?:\\[^\"]*)*)(?:\")|([^,]+)/g;
-                    let match;
-                    const result = [];
+                    const regex = /(?:\")([^\"\\]*(?:\\\\[^\"\\]*)*)(?:\")|([^,]+)/g;
+                    let match; const result = [];
                     while (match = regex.exec(rowString)) {
-                        let value = match[1] ? match[1].replace(/\"\"/g, '\"') : match[2];
+                        let value = match[1] ? match[1].replace(/\\\"\\\"/g, '"') : match[2];
                         result.push(value.trim());
                     }
                     return result;
                 };
-
                 const headers = parseCsvRow(lines[0]);
                 const newAtivos = [];
                 for (let i = 1; i < lines.length; i++) {
                     if (!lines[i]) continue;
                     const values = parseCsvRow(lines[i]);
                     if (values.length === 0 || values.every(v => !v)) continue;
-
                     const ativo = {};
                     headers.forEach((header, index) => {
-                        if (values[index] && formFields.includes(header)) {
-                            ativo[header] = values[index];
-                        }
+                        if (values[index] && formFields.includes(header)) { ativo[header] = values[index]; }
                     });
-                    if (Object.keys(ativo).length > 0) {
-                        newAtivos.push(ativo);
-                    }
+                    if (Object.keys(ativo).length > 0) { newAtivos.push(ativo); }
                 }
-
                 if (newAtivos.length > 0) {
                     if (confirm(`Foram encontrados ${newAtivos.length} ativos no arquivo. Deseja adicioná-los à lista existente?`)) {
                         ativos.push(...newAtivos);
@@ -1011,27 +816,14 @@
                         renderTable();
                         alert(`${newAtivos.length} ativos importados com sucesso!`);
                     }
-                } else {
-                    alert('Nenhum ativo válido encontrado no CSV.');
-                }
+                } else { alert('Nenhum ativo válido encontrado no CSV.'); }
                 importCsvInput.value = '';
             };
             reader.readAsText(file, 'UTF-8');
         }
-
         function openCamera() {
-            cameraModal.innerHTML = `
-                <div class="modal-content">
-                    <h3 class="section-title">Capturar Imagem</h3>
-                    <video id="camera-stream" autoplay playsinline style="width: 100%; border-radius: 8px;"></video>
-                    <div class="form-actions">
-                        <button type="button" id="capture-image-btn" class="btn">Capturar</button>
-                        <button type="button" id="close-camera-btn" class="btn btn-secondary">Cancelar</button>
-                    </div>
-                </div>
-            `;
+            cameraModal.innerHTML = `<div class="modal-content"><h3 class="section-title">Capturar Imagem</h3><video id="camera-stream" autoplay playsinline style="width: 100%; border-radius: 8px;"></video><div class="form-actions"><button type="button" id="capture-image-btn" class="btn">Capturar</button><button type="button" id="close-camera-btn" class="btn btn-secondary">Cancelar</button></div></div>`;
             cameraModal.style.display = 'block';
-
             navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
                 .then(stream => {
                     cameraStream = stream;
@@ -1044,36 +836,35 @@
                     closeCamera();
                 });
         }
-
         function closeCamera() {
-            if (cameraStream) {
-                cameraStream.getTracks().forEach(track => track.stop());
-            }
+            if (cameraStream) { cameraStream.getTracks().forEach(track => track.stop()); }
             cameraStream = null;
             cameraModal.style.display = 'none';
             cameraModal.innerHTML = '';
         }
-
-        function captureImage() {
+        async function captureImage() {
             const videoElement = document.getElementById('camera-stream');
             if (!videoElement) return;
-
             const canvas = document.createElement('canvas');
             canvas.width = videoElement.videoWidth;
             canvas.height = videoElement.videoHeight;
             canvas.getContext('2d').drawImage(videoElement, 0, 0, canvas.width, canvas.height);
             const dataUrl = canvas.toDataURL('image/jpeg');
-            const fileName = `capture_${new Date().toISOString()}.jpg`; // Temporary name
-
-            currentImageData = { fileName, dataUrl };
-
-            const imagePreview = document.getElementById('image-preview');
-            if (imagePreview) {
-                imagePreview.src = dataUrl;
-                imagePreview.style.display = 'block';
+            try {
+                const compressedDataUrl = await compressImage(dataUrl, 800, 800, 0.7);
+                const fileName = `capture_${new Date().toISOString()}.jpg`;
+                currentImageData = { fileName, dataUrl: compressedDataUrl };
+                const imagePreview = document.getElementById('image-preview');
+                if (imagePreview) {
+                    imagePreview.src = compressedDataUrl;
+                    imagePreview.style.display = 'block';
+                }
+                closeCamera();
+            } catch (error) {
+                alert(error.message);
+                console.error("Image capture/compression failed:", error);
+                closeCamera();
             }
-
-            closeCamera();
         }
 
         // --- EVENT LISTENERS ---
@@ -1087,23 +878,27 @@
                 const file = e.target.files[0];
                 if (file) {
                     const reader = new FileReader();
-                    reader.onload = (loadEvent) => {
-                        // Use original file name as a temporary name
-                        currentImageData = { fileName: file.name, dataUrl: loadEvent.target.result };
-                        const imagePreview = document.getElementById('image-preview');
-                        imagePreview.src = loadEvent.target.result;
-                        imagePreview.style.display = 'block';
+                    reader.onload = async (loadEvent) => {
+                        try {
+                            const compressedDataUrl = await compressImage(loadEvent.target.result, 800, 800, 0.7);
+                            currentImageData = { fileName: file.name, dataUrl: compressedDataUrl };
+                            const imagePreview = document.getElementById('image-preview');
+                            imagePreview.src = compressedDataUrl;
+                            imagePreview.style.display = 'block';
+                        } catch (error) {
+                            alert(error.message);
+                            console.error("Image compression failed:", error);
+                        }
                     };
+                    reader.onerror = () => { alert('Falha ao ler o arquivo de imagem.'); };
                     reader.readAsDataURL(file);
                 }
             }
         });
-
         importCsvInput.addEventListener('change', handleCsvImport);
         importSystemInput.addEventListener('change', handleSystemImport);
         exportCsvBtn.addEventListener('click', exportToCsv);
         exportSystemBtn.addEventListener('click', exportSystemData);
-        
         document.querySelectorAll('.tab-button').forEach(tab => tab.addEventListener('click', (e) => { 
             document.querySelector('.tab-button.active')?.classList.remove('active'); 
             document.querySelector('.tab-content.active')?.classList.remove('active'); 
@@ -1111,10 +906,9 @@
             document.getElementById(e.currentTarget.dataset.tab).classList.add('active'); 
             if(e.currentTarget.dataset.tab === 'tab-list') renderTable(); 
         }));
-
         tableBody.addEventListener('click', (e) => {
             if (e.target.classList.contains('remove-btn')) { 
-                if(confirm('Tem certeza?')) {
+                if(confirm('Tem certeza?')){
                     const index = parseInt(e.target.dataset.index, 10);
                     ativos.splice(index, 1);
                     saveAtivos();
@@ -1134,32 +928,24 @@
                 updateBulkActionUI();
             }
         });
-
         selectAllCheckbox.addEventListener('click', (e) => { 
-            document.querySelectorAll('#asset-table-body .row-checkbox').forEach(checkbox => { 
-                checkbox.checked = e.target.checked; 
-            }); 
+            document.querySelectorAll('#asset-table-body .row-checkbox').forEach(checkbox => { checkbox.checked = e.target.checked; }); 
             updateBulkActionUI(); 
         });
-
         document.getElementById('bulk-delete-btn')?.addEventListener('click', handleBulkDelete);
         document.getElementById('bulk-edit-btn')?.addEventListener('click', openBulkEditModal);
-
         document.getElementById('bulk-edit-modal').addEventListener('click', (e) => {
             if (e.target.id === 'close-bulk-modal-btn') closeBulkEditModal();
             if (e.target.id === 'save-bulk-edit-btn') handleBulkEditSave();
         });
-
         cameraModal.addEventListener('click', (e) => {
             if (e.target.id === 'capture-image-btn') captureImage();
             if (e.target.id === 'close-camera-btn') closeCamera();
         });
-
         addFilterBtn.addEventListener('click', () => {
             activeFilters.push({});
             renderFilterControls();
         });
-
         filterContainer.addEventListener('click', e => {
             if (e.target.classList.contains('remove-filter-btn')) {
                 activeFilters.splice(e.target.dataset.index, 1);
@@ -1168,34 +954,29 @@
                 renderTable();
             }
         });
-
         filterContainer.addEventListener('change', e => {
             const index = e.target.dataset.index;
             if (e.target.classList.contains('filter-column')) {
                 activeFilters[index].column = e.target.value;
-                activeFilters[index].value = ''; // Reset value
-                renderFilterControls(); // Re-render to get correct input
+                activeFilters[index].value = '';
+                renderFilterControls();
                 renderTable();
             } else if (e.target.classList.contains('filter-value')) {
-                // Handle both native select and Choices.js select
                 const choicesInstance = filterChoicesInstances[`filter-value-${index}`];
                 activeFilters[index].value = choicesInstance ? choicesInstance.getValue(true) : e.target.value;
                 renderTable();
             }
         });
-
         filterContainer.addEventListener('input', e => {
             if (e.target.classList.contains('filter-value') && e.target.tagName === 'INPUT') {
                 activeFilters[e.target.dataset.index].value = e.target.value;
                 renderTable();
             }
         });
-
         columnToggleBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             columnToggleDropdown.classList.toggle('show');
         });
-
         columnToggleDropdown.addEventListener('change', (e) => {
             const key = e.target.dataset.key;
             if (key) {
@@ -1204,7 +985,6 @@
                 renderTable();
             }
         });
-
         document.addEventListener('click', (e) => {
             if (!columnToggleDropdown.contains(e.target) && e.target !== columnToggleBtn) {
                 columnToggleDropdown.classList.remove('show');
