@@ -8,6 +8,9 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     
+    <!-- === ADICIONADO DEXIE.JS (BIBLIOTECA PARA INDEXEDDB) === -->
+    <script src="https://unpkg.com/dexie@3/dist/dexie.js"></script>
+
     <style>
         :root {
             --tiffany-blue: #96D1D3; --midnight-green: #003e4d; --teal: #01848C; --teal-bg: #005C73;
@@ -112,14 +115,28 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const STORAGE_KEY = 'gerenciadorDeAtivosData';
-            const loadAtivos = () => { try { const data = localStorage.getItem(STORAGE_KEY); return data ? JSON.parse(data) : []; } catch (e) { return []; } };
+            // --- MUDANÇA: Conexão com o mesmo banco de dados do index.html ---
+            const db = new Dexie('gerenciadorDeAtivosDB');
+            db.version(1).stores({
+                ativos: '++id, assetId'
+            });
+
+            // --- MUDANÇA: A função agora é assíncrona e lê do IndexedDB ---
+            const loadAtivos = async () => {
+                try {
+                    return await db.ativos.toArray();
+                } catch (e) {
+                    console.error("Falha ao carregar ativos do IndexedDB:", e);
+                    return [];
+                }
+            };
 
             let statusChart, tipoChart, estadoChart;
             const chartColors = ['#01848C', '#96D1D3', '#f39c12', '#e74c3c', '#3498db', '#9b59b6', '#34495e', '#1abc9c', '#7f8c8d'];
 
-            function updateDashboard() {
-                const ativos = loadAtivos();
+            // --- MUDANÇA: A função agora é assíncrona para poder usar 'await' ---
+            async function updateDashboard() {
+                const ativos = await loadAtivos(); // Usa 'await' para esperar os dados do DB
 
                 // KPI: Total de Ativos
                 document.getElementById('total-ativos-kpi').textContent = ativos.length;
@@ -207,7 +224,8 @@
             function renderRecentes(ativos) {
                 const container = document.getElementById('recentes-container');
                 container.innerHTML = '';
-                const recentes = ativos.slice(-5).reverse();
+                // Ordena os ativos pelo ID (que é auto-incrementado) para pegar os mais recentes
+                const recentes = ativos.sort((a, b) => b.id - a.id).slice(0, 5);
                 if (recentes.length === 0) {
                     container.innerHTML = '<li class="list-group-item bg-transparent text-light text-center">Nenhum ativo cadastrado.</li>';
                     return;
@@ -227,13 +245,9 @@
                 });
             }
 
-            // Atualização em tempo real
-            window.addEventListener('storage', (event) => {
-                if (event.key === STORAGE_KEY) {
-                    console.log('Dados atualizados, recarregando dashboard...');
-                    updateDashboard();
-                }
-            });
+            // --- MUDANÇA: O evento 'storage' não funciona com IndexedDB. ---
+            // A atualização acontecerá sempre que a página do dashboard for carregada.
+            // O listener antigo foi removido.
 
             // Carga inicial
             updateDashboard();
