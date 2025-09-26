@@ -12,6 +12,9 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css"/>
     
+    <!-- === ADICIONADO DEXIE.JS (BIBLIOTECA PARA INDEXEDDB) === -->
+    <script src="https://unpkg.com/dexie@3/dist/dexie.js"></script>
+
     <style>
         :root {
             --tiffany-blue: #96D1D3; --midnight-green: #003e4d; --teal: #01848C; --teal-bg: #005C73;
@@ -159,7 +162,7 @@
     <!-- MODAIS E ELEMENTOS FLUTUANTES -->
     <div class="modal fade" id="bulk-edit-modal" tabindex="-1"><div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">Edição em Massa</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"></div></div></div></div>
     <div class="modal fade" id="camera-modal" tabindex="-1"><div class="modal-dialog modal-lg modal-dialog-centered"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">Capturar Imagem</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body p-0"><video id="camera-stream" autoplay playsinline class="w-100"></video></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button><button type="button" class="btn btn-primary" id="capture-image-btn"><i class="bi bi-camera me-2"></i>Capturar</button></div></div></div></div>
-    <div class="modal fade" id="image-edit-modal" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">Alterar Imagem do Ativo</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body text-center"><p>Escolha como deseja alterar a imagem:</p><div class="d-grid gap-2"><label for="quick-image-upload" class="btn btn-primary"><i class="bi bi-image me-2"></i>Selecionar Arquivo</label><input type="file" id="quick-image-upload" class="d-none" accept="image/*"><button id="quick-image-capture" class="btn btn-outline-primary"><i class="bi bi-camera me-2"></i>Capturar com a Câmera</button></div></div></div></div></div>
+    <div class="modal fade" id="image-edit-modal" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">Alterar Imagem do Ativo</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body text-center"><p>Escolha como deseja alterar a imagem:</p><div class="d-grid gap-2"><label for="quick-image-upload" class="btn btn-primary"><i class="bi bi-image me-2"></i>Selecionar Arquivo</label><input type="file" id="quick-image-upload" class="d-none" accept="image/*"><button id="quick-image-capture" class="btn btn-outline-primary"><i class="bi bi-camera me-2"></i>Capturar com a Câmera</button></div></div></div></div>
     
     <div id="floating-actions-bar" class="p-2">
         <div class="container d-flex justify-content-end align-items-center gap-2">
@@ -177,8 +180,16 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
     <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const STORAGE_KEY = 'gerenciadorDeAtivosData';
+    // --- MUDANÇA: CONFIGURAÇÃO DO BANCO DE DADOS INDEXEDDB COM DEXIE ---
+    const db = new Dexie('gerenciadorDeAtivosDB');
+    db.version(1).stores({
+        // '++id' é uma chave primária auto-incrementada.
+        // 'assetId' é um índice para garantir que cada ativo seja único.
+        ativos: '++id, assetId'
+    });
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        // --- MUDANÇA: As constantes globais e variáveis permanecem, mas as funções de save/load de localStorage foram removidas. ---
         const VISIBILITY_KEY = 'gerenciadorDeAtivosCardVisibility';
         const form = document.getElementById('asset-form');
         const assetListContainer = document.getElementById('asset-list-container');
@@ -195,7 +206,7 @@
         const imageEditModal = new bootstrap.Modal('#image-edit-modal');
         const quickImageUploadInput = document.getElementById('quick-image-upload');
         const quickImageCaptureBtn = document.getElementById('quick-image-capture');
-        let editingIndex = null;
+        let editingAsset = null; // Alterado para armazenar o objeto inteiro
         let editingImageIndex = null;
         let currentImageData = { fileName: null, dataUrl: null };
         let cameraStream = null;
@@ -213,10 +224,14 @@
         const options = { empresa: ['PPay', 'MNTZZ', 'VG'], tipoItem: ["Notebook", "Celular", "Desktop", "Fonte Notebook", "Radio Comunicador", "Monitor", "Apoio de Pé", "Teclado", "Mouse", "HUB USB", "Roteador", "Microondas", "Mesa", "Cadeira", "Armario", "Ar Condicionado", "Suporte de Ar Condicionado", "Suporte Papel Higiênico", "Suporte Sabonete Líquido", "Geladeira", "Lixeira", "Extintor", "Sofá", "Mesa Ping-Pong", "Poltrona", "Suporte Papel Toalha", "Espelho", "Quadro Branco", "Estante", "Filtro de Água", "Frigobar", "Prateleira", "Cortina", "Cafeteira",  "Tablet", "Carregador", "Câmera de Segurança", "Headset", "Outro"], statusLocalizacao: ['Em estoque', 'Em uso', 'Em manutenção', 'Defeito'], dpto: ["FACILITIES", "TI", "INFRA", "CS", "JURIDICO", "FINANCEIRO", "MARKETING", "EVENTOS", "ADM", "DIRETORIA"], unidade: ['TERRACINHO', 'MATRIZ', 'PO'], classificacaoContabil: ["Móveis e Utensílios", "Computadores e Periféricos", "Aparelhos telefônicos", "Bens de pequeno valor", "Máquinas e equipamentos", "Adornos"], estadoBem: ['Novo', 'Bom', 'Regular', 'Ruim', 'Sucata'], descarte: ['Não', 'Sim'], processador: ['i3', 'i5', 'i7', 'Ryzen 3', 'Ryzen 5', 'Ryzen 7'], memoriaRam: ['4GB', '8GB', '12GB', '16GB', '32GB'], memoriaRom: ['128GB SSD', '256GB SSD', '512GB SSD', '1TB SSD', '500GB HDD', '1TB HDD'], placaDeVideo: ['Não', 'Sim'] };
         const formFields = ['etiqueta', 'statusLocalizacao', 'tipoItem', 'marca', 'modelo', 'nSerie', 'imei1', 'imei2', 'descricao', 'classificacaoContabil', 'localizacao', 'usuario', 'empresa', 'dpto', 'unidade', 'notaFiscal', 'valor', 'dataCompra', 'estadoBem', 'descarte', 'proprietario', 'numeroTelefone', 'processador', 'memoriaRam', 'memoriaRom', 'placaDeVideo'];
         const bulkEditFields = ['tipoItem', 'marca', 'modelo', 'statusLocalizacao', 'usuario', 'empresa', 'dpto', 'unidade', 'localizacao', 'estadoBem', 'descarte', 'descricao', 'classificacaoContabil', 'proprietario', 'notaFiscal', 'valor', 'dataCompra'];
-        const loadAtivos = () => { try { const data = localStorage.getItem(STORAGE_KEY); return data ? JSON.parse(data) : []; } catch (e) { return []; } };
-        const saveAtivos = () => { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(ativos)); } catch (e) { alert("Não foi possível salvar os dados."); } };
-        let ativos = loadAtivos();
-        (() => { let migrationNeeded = false; ativos.forEach(ativo => { if (!ativo.assetId) { ativo.assetId = Date.now().toString(36) + Math.random().toString(36).substring(2); migrationNeeded = true; } }); if (migrationNeeded) { console.log('Migração de dados concluída.'); saveAtivos(); } })();
+        
+        let ativos = []; // Esta variável ainda é usada para renderização, mas é preenchida a partir do DB.
+
+        // --- MUDANÇA: Função para recarregar dados do DB e re-renderizar a lista ---
+        const refreshAssetList = async () => {
+            ativos = await db.ativos.toArray();
+            renderAssetList();
+        };
 
         const createFieldHtml = (id, label, type = 'text') => { const fullLabel = fieldLabels[id] || label; if (type === 'select') { return `<div class="mb-3"><label for="${id}" class="form-label">${fullLabel}</label><select id="${id}"></select></div>`; } else if (type === 'textarea') { return `<div class="mb-3"><label for="${id}" class="form-label">${fullLabel}</label><textarea id="${id}" rows="3" class="form-control"></textarea></div>`; } else { return `<div class="mb-3"><label for="${id}" class="form-label">${fullLabel}</label><input type="${type}" id="${id}" class="form-control" ${type === 'number' ? 'step="0.01"' : ''}></div>`; } };
         function renderMainForm() { form.innerHTML = `<div class="row"><div class="col-12"><h5 class="section-title">Informações do Ativo</h5></div><div class="col-md-6 col-lg-4">${createFieldHtml('etiqueta')}</div><div class="col-md-6 col-lg-4">${createFieldHtml('tipoItem', null, 'select')}</div><div class="col-md-6 col-lg-4">${createFieldHtml('marca')}</div><div class="col-md-6 col-lg-4">${createFieldHtml('modelo')}</div><div class="col-md-6 col-lg-4">${createFieldHtml('nSerie')}</div><div class="col-12 mb-3"><label class="form-label">Imagem do Ativo</label><div class="d-flex align-items-start gap-3"><img id="image-preview" alt="Pré-visualização" style="max-width: 120px; max-height: 120px; border-radius: 0.375rem; border: 1px dashed var(--teal); display: none;"><div class="d-flex flex-wrap gap-2"><button type="button" id="open-camera-btn" class="btn btn-outline-primary"><i class="bi bi-camera me-1"></i>Capturar</button><label for="select-file-btn" class="btn btn-outline-primary"><i class="bi bi-image me-1"></i>Selecionar</label><input type="file" id="select-file-btn" class="d-none" accept="image/*"></div></div></div></div><div id="celular-fields" class="row gx-3" style="display: none;"><div class="col-12"><h5 class="section-title mt-3">Detalhes do Celular</h5></div><div class="col-md-4">${createFieldHtml('imei1')}</div><div class="col-md-4">${createFieldHtml('imei2')}</div><div class="col-md-4">${createFieldHtml('numeroTelefone')}</div></div><div id="notebook-fields" class="row gx-3" style="display: none;"><div class="col-12"><h5 class="section-title mt-3">Especificações</h5></div><div class="col-md-6 col-lg-3">${createFieldHtml('processador', null, 'select')}</div><div class="col-md-6 col-lg-3">${createFieldHtml('memoriaRam', null, 'select')}</div><div class="col-md-6 col-lg-3">${createFieldHtml('memoriaRom', null, 'select')}</div><div class="col-md-6 col-lg-3">${createFieldHtml('placaDeVideo', null, 'select')}</div></div><div class="row mt-3"><div class="col-12"><h5 class="section-title">Status e Localização</h5></div><div class="col-md-6 col-lg-3">${createFieldHtml('statusLocalizacao', null, 'select')}</div><div class="col-md-6 col-lg-3">${createFieldHtml('usuario')}</div><div class="col-md-6 col-lg-2">${createFieldHtml('empresa', null, 'select')}</div><div class="col-md-6 col-lg-2">${createFieldHtml('dpto', null, 'select')}</div><div class="col-md-6 col-lg-2">${createFieldHtml('unidade', null, 'select')}</div><div class="col-12">${createFieldHtml('localizacao')}</div></div><div class="row mt-3"><div class="col-12"><h5 class="section-title">Condição e Descrição</h5></div><div class="col-md-6">${createFieldHtml('estadoBem', null, 'select')}</div><div class="col-md-6">${createFieldHtml('descarte', null, 'select')}</div><div class="col-12">${createFieldHtml('descricao', null, 'textarea')}</div></div><div class="row mt-3"><div class="col-12"><h5 class="section-title">Informações de Compra</h5></div><div class="col-md-6 col-lg-4">${createFieldHtml('classificacaoContabil', null, 'select')}</div><div class="col-md-6 col-lg-4">${createFieldHtml('proprietario')}</div><div class="col-md-6 col-lg-4">${createFieldHtml('notaFiscal')}</div><div class="col-md-6 col-lg-6">${createFieldHtml('valor', null, 'number')}</div><div class="col-md-6 col-lg-6">${createFieldHtml('dataCompra', null, 'date')}</div></div><div class="d-flex justify-content-end gap-2 mt-4"><button type="button" id="cancel-edit-btn" class="btn btn-secondary" style="display: none;">Cancelar</button><button type="submit" id="submit-btn" class="btn btn-primary">Salvar Ativo</button></div>`; }
@@ -232,13 +247,12 @@
             if (filteredAtivos.length === 0) { assetListContainer.innerHTML = `<div class="col-12 text-center p-5 bg-dark bg-opacity-10 rounded">Nenhum ativo encontrado.</div>`;
             } else {
                 filteredAtivos.forEach((ativo, i) => {
-                    const originalIndex = ativos.indexOf(ativo);
                     let detailsHtml = Object.keys(fieldLabels).filter(key => cardVisibility[key] && ativo[key]).map(key => `<p class="mb-1 detail-item"><i class="bi bi-dot"></i> <strong>${fieldLabels[key]}:</strong> ${ativo[key]}</p>`).join('');
                     const card = document.createElement('div');
                     card.className = 'asset-card rounded p-3';
-                    card.dataset.index = originalIndex;
+                    card.dataset.id = ativo.id; // Usar a chave primária do DB
                     card.style.animationDelay = `${i * 30}ms`;
-                    card.innerHTML = `<div class="row g-3 align-items-center"><div class="col-auto"><a href="#" class="editable-image-container" data-index="${originalIndex}"><img src="${ativo.imageDataUrl || 'data:image/svg+xml,%3Csvg width="80" height="80" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80"%3E%3Crect width="80" height="80" fill="%23212529"%3E%3C/rect%3E%3Ctext x="50%" y="50%" fill="%23868e96" dy=".3em" text-anchor="middle"%3ESem Foto%3C/text%3E%3C/svg%3E'}" class="asset-image rounded"></a></div><div class="col"><div class="d-flex justify-content-between align-items-start"><div><h5 class="asset-card-title mb-0">${ativo.etiqueta || 'Sem Etiqueta'}</h5><small class="asset-card-subtitle">${ativo.tipoItem || 'N/A'}</small></div>${getStatusBadge(ativo.statusLocalizacao)}</div><hr class="my-2" style="border-color: var(--teal);"><div class="asset-card-details">${detailsHtml || '<p class="mb-1 detail-item">Nenhum detalhe para exibir.</p>'}</div></div><div class="col-auto d-flex flex-row flex-sm-column justify-content-end align-items-center gap-2"><div class="form-check"><input class="form-check-input row-checkbox" type="checkbox" data-index="${originalIndex}"></div><button class="btn btn-sm btn-outline-primary edit-btn" data-index="${originalIndex}" title="Editar Ativo"><i class="bi bi-pencil-fill"></i></button><button class="btn btn-sm btn-outline-danger remove-btn" data-index="${originalIndex}" title="Remover Ativo"><i class="bi bi-trash-fill"></i></button></div></div>`;
+                    card.innerHTML = `<div class="row g-3 align-items-center"><div class="col-auto"><a href="#" class="editable-image-container" data-id="${ativo.id}"><img src="${ativo.imageDataUrl || 'data:image/svg+xml,%3Csvg width="80" height="80" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80"%3E%3Crect width="80" height="80" fill="%23212529"%3E%3C/rect%3E%3Ctext x="50%" y="50%" fill="%23868e96" dy=".3em" text-anchor="middle"%3ESem Foto%3C/text%3E%3C/svg%3E'}" class="asset-image rounded"></a></div><div class="col"><div class="d-flex justify-content-between align-items-start"><div><h5 class="asset-card-title mb-0">${ativo.etiqueta || 'Sem Etiqueta'}</h5><small class="asset-card-subtitle">${ativo.tipoItem || 'N/A'}</small></div>${getStatusBadge(ativo.statusLocalizacao)}</div><hr class="my-2" style="border-color: var(--teal);"><div class="asset-card-details">${detailsHtml || '<p class="mb-1 detail-item">Nenhum detalhe para exibir.</p>'}</div></div><div class="col-auto d-flex flex-row flex-sm-column justify-content-end align-items-center gap-2"><div class="form-check"><input class="form-check-input row-checkbox" type="checkbox" data-id="${ativo.id}"></div><button class="btn btn-sm btn-outline-primary edit-btn" data-id="${ativo.id}" title="Editar Ativo"><i class="bi bi-pencil-fill"></i></button><button class="btn btn-sm btn-outline-danger remove-btn" data-id="${ativo.id}" title="Remover Ativo"><i class="bi bi-trash-fill"></i></button></div></div>`;
                     assetListContainer.appendChild(card);
                     setTimeout(() => card.classList.add('visible'), 0);
                 });
@@ -246,26 +260,196 @@
             updateBulkActionUI(); lastCheckedCheckbox = null;
         }
 
-        async function handleQuickImageUpdate(dataUrl) { if (editingImageIndex === null) return; try { const ativo = ativos[editingImageIndex]; const compressedDataUrl = await compressImage(dataUrl, 800, 800, 0.7); ativo.imageDataUrl = compressedDataUrl; ativo.imageFilename = generateImageFilename(ativo.etiqueta, ativo.assetId); saveAtivos(); renderAssetList(); alert('Imagem atualizada!'); } catch (error) { alert('Falha ao atualizar imagem: ' + error.message); } finally { editingImageIndex = null; imageEditModal.hide(); cameraBootstrapModal.hide(); } }
+        // --- MUDANÇA: Atualiza a imagem diretamente no DB ---
+        async function handleQuickImageUpdate(dataUrl) {
+            if (editingImageIndex === null) return;
+            try {
+                const compressedDataUrl = await compressImage(dataUrl, 800, 800, 0.7);
+                const assetToUpdate = ativos.find(a => a.id === editingImageIndex);
+                
+                await db.ativos.update(editingImageIndex, {
+                    imageDataUrl: compressedDataUrl,
+                    imageFilename: generateImageFilename(assetToUpdate.etiqueta, assetToUpdate.assetId)
+                });
+                
+                alert('Imagem atualizada!');
+                await refreshAssetList();
+            } catch (error) {
+                alert('Falha ao atualizar imagem: ' + error.message);
+                console.error(error);
+            } finally {
+                editingImageIndex = null;
+                imageEditModal.hide();
+                cameraBootstrapModal.hide();
+            }
+        }
+
         function toggleFloatingBar() { const wrapperRect = bulkActionsWrapper.getBoundingClientRect(); const isOutOfView = wrapperRect.bottom < 0 || wrapperRect.top > window.innerHeight; const hasSelection = document.querySelectorAll('.row-checkbox:checked').length > 0; floatingActionsBar.classList.toggle('show', isOutOfView && hasSelection); }
         function updateBulkActionUI() { const selectedCount = document.querySelectorAll('.row-checkbox:checked').length; const anySelected = selectedCount > 0; document.querySelectorAll('#bulk-actions-container button, #floating-actions-bar').forEach(el => el.style.display = 'none'); if (anySelected) { const text = `(${selectedCount})`; document.getElementById('bulk-actions-container').style.display = 'flex'; document.getElementById('bulk-edit-btn').style.display = 'inline-flex'; document.getElementById('bulk-delete-btn').style.display = 'inline-flex'; document.getElementById('bulk-delete-btn').innerHTML = `<i class="bi bi-trash me-1"></i>Excluir ${text}`; document.getElementById('bulk-edit-btn').innerHTML = `<i class="bi bi-pencil-square me-1"></i>Ação ${text}`; document.getElementById('floating-actions-bar').style.display = 'block'; document.getElementById('floating-selection-count').textContent = `${selectedCount} selecionado(s)`; document.getElementById('floating-bulk-delete-btn').innerHTML = `<i class="bi bi-trash me-1"></i>Excluir ${text}`; document.getElementById('floating-bulk-edit-btn').innerHTML = `<i class="bi bi-pencil-square me-1"></i>Ação ${text}`; } const allVisibleCheckboxes = document.querySelectorAll('.row-checkbox'); selectAllCheckbox.checked = allVisibleCheckboxes.length > 0 && selectedCount === allVisibleCheckboxes.length; selectAllCheckbox.indeterminate = selectedCount > 0 && selectedCount < allVisibleCheckboxes.length; toggleFloatingBar(); }
-        function handleBulkDelete() { const selectedCheckboxes = document.querySelectorAll('.row-checkbox:checked'); if (selectedCheckboxes.length === 0) return; if (confirm(`Excluir os ${selectedCheckboxes.length} ativos selecionados?`)) { const indicesToDelete = Array.from(selectedCheckboxes).map(cb => parseInt(cb.dataset.index, 10)); ativos = ativos.filter((_, index) => !indicesToDelete.includes(index)); saveAtivos(); renderAssetList(); } }
+        
+        // --- MUDANÇA: Exclusão em massa direto no DB ---
+        async function handleBulkDelete() {
+            const selectedCheckboxes = document.querySelectorAll('.row-checkbox:checked');
+            if (selectedCheckboxes.length === 0) return;
+            if (confirm(`Excluir os ${selectedCheckboxes.length} ativos selecionados?`)) {
+                const idsToDelete = Array.from(selectedCheckboxes).map(cb => parseInt(cb.dataset.id, 10));
+                await db.ativos.bulkDelete(idsToDelete);
+                await refreshAssetList();
+            }
+        }
+
         function openBulkEditModal() { const selectedCheckboxes = document.querySelectorAll('.row-checkbox:checked'); if (selectedCheckboxes.length === 0) return; renderBulkEditForm(); for (const key in bulkChoicesInstances) { if (bulkChoicesInstances[key]) { bulkChoicesInstances[key].destroy(); delete bulkChoicesInstances[key]; } } initializeChoices('bulk-', bulkChoicesInstances); document.getElementById('bulk-edit-count').textContent = selectedCheckboxes.length; bulkEditModal.show(); }
-        function handleBulkEditSave() { const selectedIndices = Array.from(document.querySelectorAll('.row-checkbox:checked')).map(cb => parseInt(cb.dataset.index, 10)); if (selectedIndices.length === 0) return; let changesMade = false; selectedIndices.forEach(index => { const ativo = ativos[index]; bulkEditFields.forEach(field => { const bulkElement = document.getElementById(`bulk-${field}`); if (!bulkElement) return; let value; if (bulkChoicesInstances[`bulk-${field}`]) { value = bulkChoicesInstances[`bulk-${field}`].getValue(true); } else { value = bulkElement.value; } if (value !== null && value !== undefined && value !== '') { if (ativo[field] !== value) { ativo[field] = value; changesMade = true; } } }); }); if (changesMade) { saveAtivos(); renderAssetList(); alert(`${selectedIndices.length} ativos atualizados!`); } else { alert("Nenhuma alteração feita."); } bulkEditModal.hide(); }
+        
+        // --- MUDANÇA: Edição em massa direto no DB ---
+        async function handleBulkEditSave() {
+            const selectedIds = Array.from(document.querySelectorAll('.row-checkbox:checked')).map(cb => parseInt(cb.dataset.id, 10));
+            if (selectedIds.length === 0) return;
+            
+            const changes = {};
+            bulkEditFields.forEach(field => {
+                const bulkElement = document.getElementById(`bulk-${field}`);
+                if (!bulkElement) return;
+                let value = bulkChoicesInstances[`bulk-${field}`] ? bulkChoicesInstances[`bulk-${field}`].getValue(true) : bulkElement.value;
+                if (value !== null && value !== undefined && value !== '') {
+                    changes[field] = value;
+                }
+            });
+
+            if (Object.keys(changes).length > 0) {
+                await db.ativos.where('id').anyOf(selectedIds).modify(changes);
+                await refreshAssetList();
+                alert(`${selectedIds.length} ativos atualizados!`);
+            } else {
+                alert("Nenhuma alteração feita.");
+            }
+            bulkEditModal.hide();
+        }
+
         function initializeChoices(prefix = '', instanceObject = choicesInstances) { for (const id in options) { const selectElement = document.getElementById(`${prefix}${id}`); if (selectElement) { instanceObject[`${prefix}${id}`] = new Choices(selectElement, { choices: options[id].map(val => ({ value: val, label: val })), removeItemButton: prefix !== 'bulk-', searchResultLimit: 15, itemSelectText: '', placeholder: true, placeholderValue: 'Selecione', allowHTML: false }); } } const tipoItemElement = document.getElementById('tipoItem'); if (tipoItemElement) { tipoItemElement.addEventListener('change', toggleConditionalFields); } }
         function toggleConditionalFields() { const tipoItemSelect = choicesInstances['tipoItem']; if (!tipoItemSelect) return; const tipo = tipoItemSelect.getValue(true); const notebookFields = document.getElementById('notebook-fields'); const celularFields = document.getElementById('celular-fields'); if (notebookFields) notebookFields.style.display = ['Notebook', 'Desktop'].includes(tipo) ? 'flex' : 'none'; if (celularFields) celularFields.style.display = tipo === 'Celular' ? 'flex' : 'none'; }
         const getFormData = () => { const data = {}; formFields.forEach(id => { const element = document.getElementById(id); if (element) data[id] = choicesInstances[id] ? choicesInstances[id].getValue(true) : element.value; }); data.imageDataUrl = currentImageData.dataUrl; return data; };
         const setFormData = (ativo) => { formFields.forEach(id => { const element = document.getElementById(id); if (choicesInstances[id]) { if (ativo[id]) { choicesInstances[id].setChoiceByValue(String(ativo[id])); } else { choicesInstances[id].setChoiceByValue(''); } } else if (element) { element.value = ativo[id] || ''; } }); };
-        function handleFormSubmit(e) { e.preventDefault(); const ativoData = getFormData(); if (editingIndex !== null) { const existingAsset = ativos[editingIndex]; ativoData.assetId = existingAsset.assetId; if (ativoData.imageDataUrl && ativoData.imageDataUrl !== existingAsset.imageDataUrl) { ativoData.imageFilename = generateImageFilename(ativoData.etiqueta, ativoData.assetId); } else { ativoData.imageFilename = existingAsset.imageFilename; ativoData.imageDataUrl = existingAsset.imageDataUrl; } ativos[editingIndex] = { ...existingAsset, ...ativoData }; } else { ativoData.assetId = Date.now().toString(36) + Math.random().toString(36).substring(2); if (ativoData.imageDataUrl) { ativoData.imageFilename = generateImageFilename(ativoData.etiqueta, ativoData.assetId); } ativos.push(ativoData); } saveAtivos(); resetFormMode(); renderAssetList(); alert(editingIndex !== null ? 'Ativo atualizado!' : 'Ativo cadastrado!'); bootstrap.Tab.getInstance('#list-tab-btn').show(); }
-        function startEditing(index) { editingIndex = index; const ativo = ativos[index]; setFormData(ativo); const imagePreview = document.getElementById('image-preview'); currentImageData = { fileName: ativo.imageFilename, dataUrl: ativo.imageDataUrl }; if (ativo.imageDataUrl) { imagePreview.src = ativo.imageDataUrl; imagePreview.style.display = 'block'; } else { imagePreview.style.display = 'none'; } document.getElementById('submit-btn').textContent = 'Atualizar Ativo'; document.getElementById('cancel-edit-btn').style.display = 'inline-block'; bootstrap.Tab.getInstance('#form-tab-btn').show(); window.scrollTo({ top: 0, behavior: 'smooth' }); toggleConditionalFields(); };
+        
+        // --- MUDANÇA: Salva ou atualiza um único item no DB ---
+        async function handleFormSubmit(e) {
+            e.preventDefault();
+            const ativoData = getFormData();
+            
+            try {
+                if (editingAsset) { // Modo de edição
+                    const assetIdToUpdate = editingAsset.id;
+                    if (ativoData.imageDataUrl && ativoData.imageDataUrl !== editingAsset.imageDataUrl) {
+                        ativoData.imageFilename = generateImageFilename(ativoData.etiqueta, editingAsset.assetId);
+                    } else {
+                        ativoData.imageFilename = editingAsset.imageFilename;
+                        ativoData.imageDataUrl = editingAsset.imageDataUrl;
+                    }
+                    // Junta os dados antigos com os novos e salva
+                    await db.ativos.put({ ...editingAsset, ...ativoData });
+                    alert('Ativo atualizado!');
+                } else { // Modo de cadastro
+                    ativoData.assetId = Date.now().toString(36) + Math.random().toString(36).substring(2);
+                    if (ativoData.imageDataUrl) {
+                        ativoData.imageFilename = generateImageFilename(ativoData.etiqueta, ativoData.assetId);
+                    }
+                    await db.ativos.add(ativoData);
+                    alert('Ativo cadastrado!');
+                }
+                
+                resetFormMode();
+                await refreshAssetList();
+                bootstrap.Tab.getInstance('#list-tab-btn').show();
+
+            } catch (error) {
+                alert('Não foi possível salvar o ativo.');
+                console.error("Erro ao salvar no IndexedDB:", error);
+            }
+        }
+
+        async function startEditing(id) {
+            const ativo = await db.ativos.get(id);
+            if (!ativo) return;
+            
+            editingAsset = ativo;
+            setFormData(ativo);
+            const imagePreview = document.getElementById('image-preview');
+            currentImageData = { fileName: ativo.imageFilename, dataUrl: ativo.imageDataUrl };
+            if (ativo.imageDataUrl) {
+                imagePreview.src = ativo.imageDataUrl;
+                imagePreview.style.display = 'block';
+            } else {
+                imagePreview.style.display = 'none';
+            }
+            document.getElementById('submit-btn').textContent = 'Atualizar Ativo';
+            document.getElementById('cancel-edit-btn').style.display = 'inline-block';
+            bootstrap.Tab.getInstance('#form-tab-btn').show();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            toggleConditionalFields();
+        };
+
         const generateImageFilename = (etiqueta, assetId) => { if (!etiqueta || !assetId) return null; const today = new Date(); const day = String(today.getDate()).padStart(2, '0'); const month = String(today.getMonth() + 1).padStart(2, '0'); const year = today.getFullYear(); const cleanEtiqueta = String(etiqueta).replace(/[^a-zA-Z0-9.-]/g, '_'); return `${cleanEtiqueta}_${assetId}_${day}${month}${year}.jpg`; };
-        function resetFormMode() { editingIndex = null; form.reset(); for (const id in choicesInstances) { if (choicesInstances[id]) choicesInstances[id].setChoiceByValue(''); } const imagePreview = document.getElementById('image-preview'); if (imagePreview) { imagePreview.style.display = 'none'; imagePreview.src = ''; } currentImageData = { fileName: null, dataUrl: null }; document.getElementById('submit-btn').textContent = 'Salvar Ativo'; document.getElementById('cancel-edit-btn').style.display = 'none'; toggleConditionalFields(); };
+        function resetFormMode() { 
+            editingAsset = null;
+            form.reset(); 
+            for (const id in choicesInstances) { if (choicesInstances[id]) choicesInstances[id].setChoiceByValue(''); } 
+            const imagePreview = document.getElementById('image-preview'); 
+            if (imagePreview) { imagePreview.style.display = 'none'; imagePreview.src = ''; } 
+            currentImageData = { fileName: null, dataUrl: null }; 
+            document.getElementById('submit-btn').textContent = 'Salvar Ativo'; 
+            document.getElementById('cancel-edit-btn').style.display = 'none'; 
+            toggleConditionalFields(); 
+        };
         const escapeCsvCell = (cell) => { if (cell === null || cell === undefined) return ''; cell = String(cell); if (cell.includes(',') || cell.includes('"') || cell.includes('\n')) { return `"${cell.replace(/"/g, '""')}"`; } return cell; };
         function exportToCsv() { if (ativos.length === 0) return alert('Nenhum ativo para exportar.'); const headers = [...formFields.filter(f => f !== 'imageDataUrl'), 'imageFilename']; const csvRows = [headers.join(',')]; ativos.forEach(ativo => csvRows.push(headers.map(header => escapeCsvCell(ativo[header])).join(','))); const blob = new Blob([csvRows.join('\r\n')], { type: 'text/csv;charset=utf-8;' }); const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = 'ativos.csv'; link.click(); }
         function exportSystemData() { if (ativos.length === 0) return alert('Nenhum dado para exportar.'); const zip = new JSZip(); const imagesFolder = zip.folder("images"); const ativosForExport = JSON.parse(JSON.stringify(ativos)); ativosForExport.forEach(ativo => { if (ativo.imageDataUrl && ativo.imageDataUrl.startsWith('data:image')) { const correctFilename = generateImageFilename(ativo.etiqueta, ativo.assetId); if (correctFilename) { const imageData = ativo.imageDataUrl.split(',')[1]; imagesFolder.file(correctFilename, imageData, { base64: true }); ativo.imageFilename = correctFilename; ativo.imageDataUrl = `images/${correctFilename}`; } else { delete ativo.imageDataUrl; delete ativo.imageFilename; } } else { delete ativo.imageDataUrl; delete ativo.imageFilename; } }); const appData = { assets: ativosForExport, settings: {} }; zip.file("data.json", JSON.stringify(appData, null, 2)); zip.generateAsync({ type: "blob" }).then(content => { const link = document.createElement('a'); link.href = URL.createObjectURL(content); link.download = 'gerenciador_de_ativos_backup.zip'; link.click(); }); }
-        async function handleSystemImport(event) { const file = event.target.files[0]; if (!file) return; try { const zip = await JSZip.loadAsync(file); const dataFile = zip.file("data.json"); if (!dataFile) return alert('Arquivo de backup inválido.'); const content = await dataFile.async("string"); const appData = JSON.parse(content); if (confirm('Isso substituirá todos os dados atuais. Deseja continuar?')) { const importedAssets = appData.assets || []; for (const ativo of importedAssets) { if (!ativo.assetId) ativo.assetId = Date.now().toString(36) + Math.random().toString(36).substring(2); if (ativo.etiqueta) ativo.imageFilename = generateImageFilename(ativo.etiqueta, ativo.assetId) || ativo.imageFilename; if (ativo.imageDataUrl && typeof ativo.imageDataUrl === 'string' && ativo.imageDataUrl.startsWith('images/')) { const imageFile = zip.file(ativo.imageDataUrl); if (imageFile) { try { const base64Data = await imageFile.async("base64"); const mimeType = imageFile.name.endsWith('png') ? 'image/png' : 'image/jpeg'; ativo.imageDataUrl = await compressImage(`data:${mimeType};base64,${base64Data}`, 800, 800, 0.7); } catch (imgErr) { console.error(`Falha ao processar a imagem ${imageFile.name}.`, imgErr); ativo.imageDataUrl = null; ativo.imageFilename = null; } } } } ativos = importedAssets; saveAtivos(); renderAssetList(); alert('Dados importados com sucesso!'); } } catch (e) { alert('Erro ao processar o arquivo ZIP.'); console.error("Import Error:", e); } finally { event.target.value = ''; } }
+        
+        // --- MUDANÇA: Importação limpa e adiciona ao DB ---
+        async function handleSystemImport(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            try {
+                const zip = await JSZip.loadAsync(file);
+                const dataFile = zip.file("data.json");
+                if (!dataFile) return alert('Arquivo de backup inválido.');
+                const content = await dataFile.async("string");
+                const appData = JSON.parse(content);
+                if (confirm('Isso substituirá todos os dados atuais. Deseja continuar?')) {
+                    const importedAssets = appData.assets || [];
+                    for (const ativo of importedAssets) {
+                        delete ativo.id; // Remove a chave primária antiga para que o DB gere uma nova
+                        if (!ativo.assetId) ativo.assetId = Date.now().toString(36) + Math.random().toString(36).substring(2);
+                        if (ativo.etiqueta) ativo.imageFilename = generateImageFilename(ativo.etiqueta, ativo.assetId) || ativo.imageFilename;
+                        if (ativo.imageDataUrl && typeof ativo.imageDataUrl === 'string' && ativo.imageDataUrl.startsWith('images/')) {
+                            const imageFile = zip.file(ativo.imageDataUrl);
+                            if (imageFile) {
+                                try {
+                                    const base64Data = await imageFile.async("base64");
+                                    const mimeType = imageFile.name.endsWith('png') ? 'image/png' : 'image/jpeg';
+                                    ativo.imageDataUrl = await compressImage(`data:${mimeType};base64,${base64Data}`, 800, 800, 0.7);
+                                } catch (imgErr) { console.error(`Falha ao processar a imagem ${imageFile.name}.`, imgErr); ativo.imageDataUrl = null; ativo.imageFilename = null; }
+                            }
+                        }
+                    }
+                    
+                    await db.transaction('rw', db.ativos, async () => {
+                        await db.ativos.clear();
+                        await db.ativos.bulkAdd(importedAssets);
+                    });
+
+                    await refreshAssetList();
+                    alert('Dados importados com sucesso!');
+                }
+            } catch (e) {
+                alert('Erro ao processar o arquivo ZIP.');
+                console.error("Import Error:", e);
+            } finally {
+                event.target.value = '';
+            }
+        }
+
         const compressImage = (dataUrl, maxWidth, maxHeight, quality) => { return new Promise((resolve, reject) => { if (!dataUrl) return reject(new Error("No image data.")); const img = new Image(); img.src = dataUrl; img.onload = () => { let width = img.width, height = img.height; if (width > height) { if (width > maxWidth) { height *= maxWidth / width; width = maxWidth; } } else { if (height > maxHeight) { width *= maxHeight / height; height = maxHeight; } } const canvas = document.createElement('canvas'); canvas.width = width; canvas.height = height; canvas.getContext('2d').drawImage(img, 0, 0, width, height); resolve(canvas.toDataURL('image/jpeg', quality)); }; img.onerror = () => reject(new Error("Invalid image file.")); }); };
-        function handleCsvImport(event) { const file = event.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = function(e) { const text = e.target.result; const lines = text.split(/\r\n|\n/); if (lines.length < 2) return alert('CSV inválido.'); const parseCsvRow = r => { const regex = /(?:\")([^\"\\]*(?:\\\\[^\"\\]*)*)(?:\")|([^,]+)/g; let m, res = []; while (m = regex.exec(r)) { res.push(m[1] ? m[1].replace(/\\\"\\\"/g, '"') : m[2].trim()); } return res; }; const headers = parseCsvRow(lines[0]); const newAtivos = []; for (let i = 1; i < lines.length; i++) { if (!lines[i]) continue; const values = parseCsvRow(lines[i]); if (values.length === 0 || values.every(v => !v)) continue; const ativo = {}; headers.forEach((h, i) => { if (values[i] && formFields.includes(h)) ativo[h] = values[i]; }); if (Object.keys(ativo).length > 0) newAtivos.push(ativo); } if (newAtivos.length > 0) { if (confirm(`Adicionar ${newAtivos.length} ativos?`)) { ativos.push(...newAtivos); saveAtivos(); renderAssetList(); alert(`${newAtivos.length} ativos importados!`); } } else { alert('Nenhum ativo válido encontrado no CSV.'); } event.target.value = ''; }; reader.readAsText(file, 'UTF-8'); }
+        async function handleCsvImport(event) { const file = event.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = async function(e) { const text = e.target.result; const lines = text.split(/\r\n|\n/); if (lines.length < 2) return alert('CSV inválido.'); const parseCsvRow = r => { const regex = /(?:\")([^\"\\]*(?:\\\\[^\"\\]*)*)(?:\")|([^,]+)/g; let m, res = []; while (m = regex.exec(r)) { res.push(m[1] ? m[1].replace(/\\\"\\\"/g, '"') : m[2].trim()); } return res; }; const headers = parseCsvRow(lines[0]); const newAtivos = []; for (let i = 1; i < lines.length; i++) { if (!lines[i]) continue; const values = parseCsvRow(lines[i]); if (values.length === 0 || values.every(v => !v)) continue; const ativo = {}; headers.forEach((h, i) => { if (values[i] && formFields.includes(h)) ativo[h] = values[i]; }); if (Object.keys(ativo).length > 0) newAtivos.push(ativo); } if (newAtivos.length > 0) { if (confirm(`Adicionar ${newAtivos.length} ativos?`)) { try { await db.ativos.bulkAdd(newAtivos); await refreshAssetList(); alert(`${newAtivos.length} ativos importados!`); } catch(error) { alert('Falha ao importar ativos do CSV.'); console.error(error); } } } else { alert('Nenhum ativo válido encontrado no CSV.'); } event.target.value = ''; }; reader.readAsText(file, 'UTF-8'); }
         function openCamera() { navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } }).then(stream => { cameraStream = stream; document.getElementById('camera-stream').srcObject = stream; cameraBootstrapModal.show(); }).catch(() => alert("Não foi possível acessar a câmera.")); }
         function closeCamera() { if (cameraStream) cameraStream.getTracks().forEach(track => track.stop()); cameraStream = null; cameraBootstrapModal.hide(); }
         async function captureImage() { const videoElement = document.getElementById('camera-stream'); if (!videoElement || videoElement.readyState < 2) return; const canvas = document.createElement('canvas'); canvas.width = videoElement.videoWidth; canvas.height = videoElement.videoHeight; canvas.getContext('2d').drawImage(videoElement, 0, 0, canvas.width, canvas.height); const dataUrl = canvas.toDataURL('image/jpeg'); if (editingImageIndex !== null) { await handleQuickImageUpdate(dataUrl); } else { try { const compressedDataUrl = await compressImage(dataUrl, 800, 800, 0.7); currentImageData = { fileName: `capture.jpg`, dataUrl: compressedDataUrl }; document.getElementById('image-preview').src = compressedDataUrl; document.getElementById('image-preview').style.display = 'block'; closeCamera(); } catch (error) { alert(error.message); closeCamera(); } } }
@@ -279,7 +463,7 @@
         document.getElementById('import-system-input').addEventListener('change', handleSystemImport);
         document.getElementById('export-csv-btn').addEventListener('click', exportToCsv);
         document.getElementById('export-system-btn').addEventListener('click', exportSystemData);
-        assetListContainer.addEventListener('click', (e) => { const link = e.target.closest('a.editable-image-container'); const btn = e.target.closest('button'); if (link) { e.preventDefault(); editingImageIndex = parseInt(link.dataset.index, 10); imageEditModal.show(); } if (btn?.classList.contains('remove-btn')) { if (confirm('Tem certeza?')) { const index = parseInt(btn.dataset.index, 10); ativos.splice(index, 1); saveAtivos(); renderAssetList(); } } if (btn?.classList.contains('edit-btn')) { startEditing(parseInt(btn.dataset.index, 10)); } });
+        assetListContainer.addEventListener('click', (e) => { const link = e.target.closest('a.editable-image-container'); const btn = e.target.closest('button'); const id = parseInt(btn?.dataset.id || link?.dataset.id, 10); if (link) { e.preventDefault(); editingImageIndex = id; imageEditModal.show(); } if (btn?.classList.contains('remove-btn')) { if (confirm('Tem certeza?')) { db.ativos.delete(id).then(refreshAssetList); } } if (btn?.classList.contains('edit-btn')) { startEditing(id); } });
         assetListContainer.addEventListener('change', e => { if (e.target.classList.contains('row-checkbox')) { if (e.shiftKey && lastCheckedCheckbox) { const checkboxes = Array.from(assetListContainer.querySelectorAll('.row-checkbox')); const start = checkboxes.indexOf(lastCheckedCheckbox); const end = checkboxes.indexOf(e.target); const range = (start < end) ? checkboxes.slice(start, end + 1) : checkboxes.slice(end, start + 1); range.forEach(checkbox => checkbox.checked = lastCheckedCheckbox.checked); } lastCheckedCheckbox = e.target; updateBulkActionUI(); } });
         selectAllCheckbox.addEventListener('change', (e) => { document.querySelectorAll('#asset-list-container .row-checkbox').forEach(checkbox => { checkbox.checked = e.target.checked; }); updateBulkActionUI(); });
         ['bulk-delete-btn', 'floating-bulk-delete-btn'].forEach(id => document.getElementById(id)?.addEventListener('click', handleBulkDelete));
@@ -289,18 +473,19 @@
         document.getElementById('camera-modal').addEventListener('hidden.bs.modal', () => { if (cameraStream) { cameraStream.getTracks().forEach(track => track.stop()); cameraStream = null; } });
         addFilterBtn.addEventListener('click', () => { activeFilters.push({}); renderFilterControls(); renderAssetList(); });
         filterContainer.addEventListener('click', e => { if (e.target.classList.contains('remove-filter-btn')) { activeFilters.splice(e.target.dataset.index, 1); renderFilterControls(); renderAssetList(); } });
-        filterContainer.addEventListener('change', e => { const index = e.target.dataset.index; if (e.target.matches('select.form-select-sm')) { activeFilters[index].column = e.target.value; activeFilters[index].value = ''; renderFilterControls(); renderAssetList(); } else if (e.target.classList.contains('filter-value')) { const choicesInstance = filterChoicesInstances[`filter-value-${index}`]; activeFilters[index].value = choicesInstance ? choicesInstance.getValue(true) : e.target.value; renderAssetList(); } });
-        filterContainer.addEventListener('input', e => { if (e.target.classList.contains('filter-value') && e.target.tagName === 'INPUT') { activeFilters[e.target.dataset.index].value = e.target.value; renderAssetList(); } });
+        filterContainer.addEventListener('change', e => { const index = e.target.dataset.index; if (e.target.matches('select.form-select-sm')) { activeFilters[index].column = e.target.value; activeFilters[index].value = ''; renderFilterControls(); refreshAssetList(); } else if (e.target.classList.contains('filter-value')) { const choicesInstance = filterChoicesInstances[`filter-value-${index}`]; activeFilters[index].value = choicesInstance ? choicesInstance.getValue(true) : e.target.value; refreshAssetList(); } });
+        filterContainer.addEventListener('input', e => { if (e.target.classList.contains('filter-value') && e.target.tagName === 'INPUT') { activeFilters[e.target.dataset.index].value = e.target.value; refreshAssetList(); } });
         quickImageUploadInput.addEventListener('change', (e) => { const file = e.target.files[0]; if(file) { const reader = new FileReader(); reader.onload = (loadEvent) => handleQuickImageUpdate(loadEvent.target.result); reader.readAsDataURL(file); } e.target.value = ''; });
         quickImageCaptureBtn.addEventListener('click', () => { imageEditModal.hide(); openCamera(); });
         infoToggleDropdown.addEventListener('change', (e) => { const key = e.target.dataset.key; if (key) { cardVisibility[key] = e.target.checked; saveCardVisibility(); renderAssetList(); } });
         quickSearchInput.addEventListener('input', (e) => { quickSearchTerm = e.target.value.toLowerCase(); renderAssetList(); });
         
+        // --- MUDANÇA: Carga inicial dos dados e da UI ---
         renderMainForm();
         initializeChoices('', choicesInstances);
         renderFilterControls();
         renderInfoToggleUI();
-        renderAssetList();
+        await refreshAssetList(); // Carrega os dados do DB e renderiza a lista inicial
     });
     </script>
 </body>
