@@ -12,9 +12,10 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css"/>
     
-    <!-- === ADICIONADO DEXIE.JS (BIBLIOTECA PARA INDEXEDDB) === -->
     <script src="https://unpkg.com/dexie@3/dist/dexie.js"></script>
-    <script src="https://unpkg.com/html5-qrcode@2.0.9/dist/html5-qrcode.min.js"></script>
+    
+    <!-- VERSÃO ATUALIZADA E OTIMIZADA DO SCANNER -->
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 
     <style>
         :root {
@@ -78,28 +79,15 @@
         .accordion-button::after { filter: brightness(0) invert(1); }
         .accordion-item { background-color: transparent; border-color: var(--teal); }
         .accordion-body { background-color: rgba(0,0,0,0.2); }
+        
+        /* ESTILOS OTIMIZADOS PARA O SCANNER */
         #barcode-reader-container { position: relative; padding: 1rem; background-color: var(--midnight-green); border-radius: .5rem; }
         #barcode-reader { border-radius: .375rem; overflow: hidden; }
-        #barcode-reader-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
-        #barcode-reader-overlay::before { content: ""; position: absolute; top: 50%; left: 0; right: 0; height: 2px; background: red; box-shadow: 0 0 10px red; animation: scan 1.5s infinite ease-in-out; }
-        @keyframes scan { 0%, 100% { top: 10%; } 50% { top: 90%; } }
-        #barcode-reader button {
-            background-color: var(--teal);
-            border-color: var(--teal);
-            color: var(--white);
-            font-weight: 500;
-            padding: .5rem 1rem;
-            border-radius: .375rem;
-            margin-top: 1rem;
-        }
-        #barcode-reader select {
-            background-color: rgba(0, 0, 0, 0.25);
-            border-color: var(--teal);
-            color: var(--white);
-            border-radius: .375rem;
-            padding: .5rem;
-            margin-top: 1rem;
-        }
+        #barcode-reader video { border-radius: .375rem !important; }
+        #barcode-reader-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; pointer-events: none; }
+        #barcode-reader-overlay::before, #barcode-reader-overlay::after { content: ''; position: absolute; background-color: var(--tiffany-blue); box-shadow: 0 0 5px var(--tiffany-blue); }
+        #barcode-reader-overlay::before { left: 1.5rem; right: 1.5rem; top: 50%; height: 2px; animation: scan 1.75s infinite ease-in-out; }
+        @keyframes scan { 0%, 100% { transform: translateY(-80px); } 50% { transform: translateY(80px); } }
     </style>
 </head>
 <body>
@@ -192,7 +180,7 @@
                 </div>
                 <div class="modal-body">
                     <div id="barcode-reader-container">
-                        <div id="barcode-reader"></div>
+                        <div id="barcode-reader" style="width: 100%;"></div>
                         <div id="barcode-reader-overlay"></div>
                     </div>
                 </div>
@@ -219,16 +207,12 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
     <script>
-    // --- MUDANÇA: CONFIGURAÇÃO DO BANCO DE DADOS INDEXEDDB COM DEXIE ---
     const db = new Dexie('gerenciadorDeAtivosDB');
     db.version(1).stores({
-        // '++id' é uma chave primária auto-incrementada.
-        // 'assetId' é um índice para garantir que cada ativo seja único.
         ativos: '++id, assetId'
     });
 
     document.addEventListener('DOMContentLoaded', async () => {
-        // --- MUDANÇA: As constantes globais e variáveis permanecem, mas as funções de save/load de localStorage foram removidas. ---
         const VISIBILITY_KEY = 'gerenciadorDeAtivosCardVisibility';
         const form = document.getElementById('asset-form');
         const assetListContainer = document.getElementById('asset-list-container');
@@ -244,13 +228,14 @@
         const cameraBootstrapModal = new bootstrap.Modal('#camera-modal');
         const imageEditModal = new bootstrap.Modal('#image-edit-modal');
         const barcodeScannerModal = new bootstrap.Modal('#barcode-scanner-modal');
+        const barcodeScannerModalEl = document.getElementById('barcode-scanner-modal');
         const quickImageUploadInput = document.getElementById('quick-image-upload');
         const quickImageCaptureBtn = document.getElementById('quick-image-capture');
-        let editingAsset = null; // Alterado para armazenar o objeto inteiro
+        let editingAsset = null;
         let editingImageIndex = null;
         let currentImageData = { fileName: null, dataUrl: null };
         let cameraStream = null;
-        let html5QrcodeScanner = null;
+        let html5QrCode = null;
         const choicesInstances = {};
         const bulkChoicesInstances = {};
         const filterChoicesInstances = {};
@@ -266,9 +251,8 @@
         const formFields = ['etiqueta', 'statusLocalizacao', 'tipoItem', 'marca', 'modelo', 'nSerie', 'imei1', 'imei2', 'descricao', 'classificacaoContabil', 'localizacao', 'usuario', 'empresa', 'dpto', 'unidade', 'notaFiscal', 'valor', 'dataCompra', 'estadoBem', 'descarte', 'proprietario', 'numeroTelefone', 'processador', 'memoriaRam', 'memoriaRom', 'placaDeVideo'];
         const bulkEditFields = ['tipoItem', 'marca', 'modelo', 'statusLocalizacao', 'usuario', 'empresa', 'dpto', 'unidade', 'localizacao', 'estadoBem', 'descarte', 'descricao', 'classificacaoContabil', 'proprietario', 'notaFiscal', 'valor', 'dataCompra'];
         
-        let ativos = []; // Esta variável ainda é usada para renderização, mas é preenchida a partir do DB.
+        let ativos = [];
 
-        // --- MUDANÇA: Função para recarregar dados do DB e re-renderizar a lista ---
         const refreshAssetList = async () => {
             ativos = await db.ativos.toArray();
             renderAssetList();
@@ -293,29 +277,15 @@
         function getStatusBadge(status) { const statusClass = (status || 'sem-status').toLowerCase().replace(/\s+/g, '-'); return `<span class="status-badge status-${statusClass}">${status || 'N/A'}</span>`; }
 
         function renderAssetList() {
-            const filteredAtivos = ativos.filter(ativo => {
-                const searchMatch = quickSearchTerm === '' || Object.values(ativo).some(val => String(val).toLowerCase().includes(quickSearchTerm));
-                const filterMatch = activeFilters.every(filter => {
-                    if (!filter.column || !filter.value) return true;
-                    const ativoValue = ativo[filter.column]?.toString() || '';
-                    if (options[filter.column]) {
-                        return ativoValue === filter.value;
-                    } else {
-                        return ativoValue.toLowerCase().includes(filter.value.toLowerCase());
-                    }
-                });
-                return searchMatch && filterMatch;
-            });
+            const filteredAtivos = ativos.filter(ativo => { const searchMatch = quickSearchTerm === '' || Object.values(ativo).some(val => String(val).toLowerCase().includes(quickSearchTerm)); const filterMatch = activeFilters.every(filter => { if (!filter.column || !filter.value) return true; const ativoValue = ativo[filter.column]?.toString() || ''; if (options[filter.column]) { return ativoValue === filter.value; } else { return ativoValue.toLowerCase().includes(filter.value.toLowerCase()); } }); return searchMatch && filterMatch; });
             assetListContainer.innerHTML = '';
-            if (filteredAtivos.length === 0) {
-                assetListContainer.innerHTML = `<div class="col-12 text-center p-5 bg-dark bg-opacity-10 rounded">Nenhum ativo encontrado.</div>`;
+            if (filteredAtivos.length === 0) { assetListContainer.innerHTML = `<div class="col-12 text-center p-5 bg-dark bg-opacity-10 rounded">Nenhum ativo encontrado.</div>`;
             } else {
                 filteredAtivos.forEach((ativo, i) => {
                     let detailsHtml = Object.keys(fieldLabels).filter(key => cardVisibility[key] && ativo[key]).map(key => `<p class="mb-1 detail-item"><i class="bi bi-dot"></i> <strong>${fieldLabels[key]}:</strong> ${ativo[key]}</p>`).join('');
                     const card = document.createElement('div');
                     card.className = 'asset-card rounded p-3';
-                    card.dataset.id = ativo.id; // Usar a chave primária do DB
-                    card.style.animationDelay = `${i * 30}ms`;
+                    card.dataset.id = ativo.id; card.style.animationDelay = `${i * 30}ms`;
                     card.innerHTML = `<div class="row g-3 align-items-center"><div class="col-auto"><a href="#" class="editable-image-container" data-id="${ativo.id}"><img src="${ativo.imageDataUrl || 'data:image/svg+xml,%3Csvg width="80" height="80" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80"%3E%3Crect width="80" height="80" fill="%23212529"%3E%3C/rect%3E%3Ctext x="50%" y="50%" fill="%23868e96" dy=".3em" text-anchor="middle"%3ESem Foto%3C/text%3E%3C/svg%3E'}" class="asset-image rounded"></a></div><div class="col"><div class="d-flex justify-content-between align-items-start"><div><h5 class="asset-card-title mb-0">${ativo.etiqueta || 'Sem Etiqueta'}</h5><small class="asset-card-subtitle">${ativo.tipoItem || 'N/A'}</small></div>${getStatusBadge(ativo.statusLocalizacao)}</div><hr class="my-2" style="border-color: var(--teal);">
 <div class="asset-card-details">${detailsHtml || '<p class="mb-1 detail-item">Nenhum detalhe para exibir.</p>'}</div></div><div class="col-auto d-flex flex-row flex-sm-column justify-content-end align-items-center gap-2"><div class="form-check"><input class="form-check-input row-checkbox" type="checkbox" data-id="${ativo.id}"></div><button class="btn btn-sm btn-outline-primary edit-btn" data-id="${ativo.id}" title="Editar Ativo"><i class="bi bi-pencil-fill"></i></button><button class="btn btn-sm btn-outline-danger remove-btn" data-id="${ativo.id}" title="Remover Ativo"><i class="bi bi-trash-fill"></i></button></div></div>`;
                     assetListContainer.appendChild(card);
@@ -325,18 +295,12 @@
             updateBulkActionUI(); lastCheckedCheckbox = null;
         }
 
-        // --- MUDANÇA: Atualiza a imagem diretamente no DB ---
         async function handleQuickImageUpdate(dataUrl) {
             if (editingImageIndex === null) return;
             try {
                 const compressedDataUrl = await compressImage(dataUrl, 800, 800, 0.7);
                 const assetToUpdate = ativos.find(a => a.id === editingImageIndex);
-                
-                await db.ativos.update(editingImageIndex, {
-                    imageDataUrl: compressedDataUrl,
-                    imageFilename: generateImageFilename(assetToUpdate.etiqueta, assetToUpdate.assetId)
-                });
-                
+                await db.ativos.update(editingImageIndex, { imageDataUrl: compressedDataUrl, imageFilename: generateImageFilename(assetToUpdate.etiqueta, assetToUpdate.assetId) });
                 alert('Imagem atualizada!');
                 await refreshAssetList();
             } catch (error) {
@@ -352,7 +316,6 @@
         function toggleFloatingBar() { const wrapperRect = bulkActionsWrapper.getBoundingClientRect(); const isOutOfView = wrapperRect.bottom < 0 || wrapperRect.top > window.innerHeight; const hasSelection = document.querySelectorAll('.row-checkbox:checked').length > 0; floatingActionsBar.classList.toggle('show', isOutOfView && hasSelection); }
         function updateBulkActionUI() { const selectedCount = document.querySelectorAll('.row-checkbox:checked').length; const anySelected = selectedCount > 0; document.querySelectorAll('#bulk-actions-container button, #floating-actions-bar').forEach(el => el.style.display = 'none'); if (anySelected) { const text = `(${selectedCount})`; document.getElementById('bulk-actions-container').style.display = 'flex'; document.getElementById('bulk-edit-btn').style.display = 'inline-flex'; document.getElementById('bulk-delete-btn').style.display = 'inline-flex'; document.getElementById('bulk-delete-btn').innerHTML = `<i class="bi bi-trash me-1"></i>Excluir ${text}`; document.getElementById('bulk-edit-btn').innerHTML = `<i class="bi bi-pencil-square me-1"></i>Ação ${text}`; document.getElementById('floating-actions-bar').style.display = 'block'; document.getElementById('floating-selection-count').textContent = `${selectedCount} selecionado(s)`; document.getElementById('floating-bulk-delete-btn').innerHTML = `<i class="bi bi-trash me-1"></i>Excluir ${text}`; document.getElementById('floating-bulk-edit-btn').innerHTML = `<i class="bi bi-pencil-square me-1"></i>Ação ${text}`; } const allVisibleCheckboxes = document.querySelectorAll('.row-checkbox'); selectAllCheckbox.checked = allVisibleCheckboxes.length > 0 && selectedCount === allVisibleCheckboxes.length; selectAllCheckbox.indeterminate = selectedCount > 0 && selectedCount < allVisibleCheckboxes.length; toggleFloatingBar(); }
         
-        // --- MUDANÇA: Exclusão em massa direto no DB ---
         async function handleBulkDelete() {
             const selectedCheckboxes = document.querySelectorAll('.row-checkbox:checked');
             if (selectedCheckboxes.length === 0) return;
@@ -365,28 +328,21 @@
 
         function openBulkEditModal() { const selectedCheckboxes = document.querySelectorAll('.row-checkbox:checked'); if (selectedCheckboxes.length === 0) return; renderBulkEditForm(); for (const key in bulkChoicesInstances) { if (bulkChoicesInstances[key]) { bulkChoicesInstances[key].destroy(); delete bulkChoicesInstances[key]; } } initializeChoices('bulk-', bulkChoicesInstances); document.getElementById('bulk-edit-count').textContent = selectedCheckboxes.length; bulkEditModal.show(); }
         
-        // --- MUDANÇA: Edição em massa direto no DB ---
         async function handleBulkEditSave() {
             const selectedIds = Array.from(document.querySelectorAll('.row-checkbox:checked')).map(cb => parseInt(cb.dataset.id, 10));
             if (selectedIds.length === 0) return;
-            
             const changes = {};
             bulkEditFields.forEach(field => {
                 const bulkElement = document.getElementById(`bulk-${field}`);
                 if (!bulkElement) return;
                 let value = bulkChoicesInstances[`bulk-${field}`] ? bulkChoicesInstances[`bulk-${field}`].getValue(true) : bulkElement.value;
-                if (value !== null && value !== undefined && value !== '') {
-                    changes[field] = value;
-                }
+                if (value !== null && value !== undefined && value !== '') { changes[field] = value; }
             });
-
             if (Object.keys(changes).length > 0) {
                 await db.ativos.where('id').anyOf(selectedIds).modify(changes);
                 await refreshAssetList();
                 alert(`${selectedIds.length} ativos atualizados!`);
-            } else {
-                alert("Nenhuma alteração feita.");
-            }
+            } else { alert("Nenhuma alteração feita."); }
             bulkEditModal.hide();
         }
 
@@ -395,24 +351,20 @@
         const getFormData = () => { const data = {}; formFields.forEach(id => { const element = document.getElementById(id); if (element) data[id] = choicesInstances[id] ? choicesInstances[id].getValue(true) : element.value; }); data.imageDataUrl = currentImageData.dataUrl; return data; }; 
         const setFormData = (ativo) => { formFields.forEach(id => { const element = document.getElementById(id); if (choicesInstances[id]) { if (ativo[id]) { choicesInstances[id].setChoiceByValue(String(ativo[id])); } else { choicesInstances[id].setChoiceByValue(''); } } else if (element) { element.value = ativo[id] || ''; } }); }; 
         
-        // --- MUDANÇA: Salva ou atualiza um único item no DB ---
         async function handleFormSubmit(e) {
             e.preventDefault();
             const ativoData = getFormData();
-            
             try {
-                if (editingAsset) { // Modo de edição
-                    const assetIdToUpdate = editingAsset.id;
+                if (editingAsset) {
                     if (ativoData.imageDataUrl && ativoData.imageDataUrl !== editingAsset.imageDataUrl) {
                         ativoData.imageFilename = generateImageFilename(ativoData.etiqueta, editingAsset.assetId);
                     } else {
                         ativoData.imageFilename = editingAsset.imageFilename;
                         ativoData.imageDataUrl = editingAsset.imageDataUrl;
                     }
-                    // Junta os dados antigos com os novos e salva
                     await db.ativos.put({ ...editingAsset, ...ativoData });
                     alert('Ativo atualizado!');
-                } else { // Modo de cadastro
+                } else {
                     ativoData.assetId = Date.now().toString(36) + Math.random().toString(36).substring(2);
                     if (ativoData.imageDataUrl) {
                         ativoData.imageFilename = generateImageFilename(ativoData.etiqueta, ativoData.assetId);
@@ -420,11 +372,9 @@
                     await db.ativos.add(ativoData);
                     alert('Ativo cadastrado!');
                 }
-                
                 resetFormMode();
                 await refreshAssetList();
                 bootstrap.Tab.getInstance('#list-tab-btn').show();
-
             } catch (error) {
                 alert('Não foi possível salvar o ativo.');
                 console.error("Erro ao salvar no IndexedDB:", error);
@@ -434,7 +384,6 @@
         async function startEditing(id) {
             const ativo = await db.ativos.get(id);
             if (!ativo) return;
-            
             editingAsset = ativo;
             setFormData(ativo);
             const imagePreview = document.getElementById('image-preview');
@@ -468,11 +417,9 @@
         function exportToCsv() { if (ativos.length === 0) return alert('Nenhum ativo para exportar.'); const headers = [...formFields.filter(f => f !== 'imageDataUrl'), 'imageFilename']; const csvRows = [headers.join(',')]; ativos.forEach(ativo => csvRows.push(headers.map(header => escapeCsvCell(ativo[header])).join(','))); const blob = new Blob([csvRows.join('\r\n')], { type: 'text/csv;charset=utf-8;' }); const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = 'ativos.csv'; link.click(); }
         function exportSystemData() { if (ativos.length === 0) return alert('Nenhum dado para exportar.'); const zip = new JSZip(); const imagesFolder = zip.folder("images"); const ativosForExport = JSON.parse(JSON.stringify(ativos)); ativosForExport.forEach(ativo => { if (ativo.imageDataUrl && ativo.imageDataUrl.startsWith('data:image')) { const correctFilename = generateImageFilename(ativo.etiqueta, ativo.assetId); if (correctFilename) { const imageData = ativo.imageDataUrl.split(',')[1]; imagesFolder.file(correctFilename, imageData, { base64: true }); ativo.imageFilename = correctFilename; ativo.imageDataUrl = `images/${correctFilename}`; } else { delete ativo.imageDataUrl; delete ativo.imageFilename; } } else { delete ativo.imageDataUrl; delete ativo.imageFilename; } }); const appData = { assets: ativosForExport, settings: {} }; zip.file("data.json", JSON.stringify(appData, null, 2)); zip.generateAsync({ type: "blob" }).then(content => { const link = document.createElement('a'); link.href = URL.createObjectURL(content); link.download = 'gerenciador_de_ativos_backup.zip'; link.click(); }); }
         
-        // --- MUDANÇA: Importação limpa e adiciona ao DB ---
         async function handleSystemImport(event) {
             const file = event.target.files[0];
             if (!file) return;
-
             try {
                 const zip = await JSZip.loadAsync(file);
                 const dataFile = zip.file("data.json");
@@ -482,7 +429,7 @@
                 if (confirm('Isso substituirá todos os dados atuais. Deseja continuar?')) {
                     const importedAssets = appData.assets || [];
                     for (const ativo of importedAssets) {
-                        delete ativo.id; // Remove a chave primária antiga para que o DB gere uma nova
+                        delete ativo.id;
                         if (!ativo.assetId) ativo.assetId = Date.now().toString(36) + Math.random().toString(36).substring(2);
                         if (ativo.etiqueta) ativo.imageFilename = generateImageFilename(ativo.etiqueta, ativo.assetId) || ativo.imageFilename;
                         if (ativo.imageDataUrl && typeof ativo.imageDataUrl === 'string' && ativo.imageDataUrl.startsWith('images/')) {
@@ -496,12 +443,10 @@
                             }
                         }
                     }
-                    
                     await db.transaction('rw', db.ativos, async () => {
                         await db.ativos.clear();
                         await db.ativos.bulkAdd(importedAssets);
                     });
-
                     await refreshAssetList();
                     alert('Dados importados com sucesso!');
                 }
@@ -514,43 +459,55 @@
         }
 
         const compressImage = (dataUrl, maxWidth, maxHeight, quality) => { return new Promise((resolve, reject) => { if (!dataUrl) return reject(new Error("No image data.")); const img = new Image(); img.src = dataUrl; img.onload = () => { let width = img.width, height = img.height; if (width > height) { if (width > maxWidth) { height *= maxWidth / width; width = maxWidth; } } else { if (height > maxHeight) { width *= maxHeight / height; height = maxHeight; } } const canvas = document.createElement('canvas'); canvas.width = width; canvas.height = height; canvas.getContext('2d').drawImage(img, 0, 0, width, height); resolve(canvas.toDataURL('image/jpeg', quality)); }; img.onerror = () => reject(new Error("Invalid image file.")); }); };
-        async function handleCsvImport(event) { const file = event.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = async function(e) { const text = e.target.result; const lines = text.split(/\r\n|\n/); if (lines.length < 2) return alert('CSV inválido.'); const parseCsvRow = r => { const regex = /(?:"")([^""\\]*(?:\\""[^""\\]*)*)(?:"")|([^,]+)/g; let m, res = []; while (m = regex.exec(r)) { res.push(m[1] ? m[1].replace(/\\""\\""/g, '""') : m[2].trim()); } return res; }; const headers = parseCsvRow(lines[0]); const newAtivos = []; for (let i = 1; i < lines.length; i++) { if (!lines[i]) continue; const values = parseCsvRow(lines[i]); if (values.length === 0 || values.every(v => !v)) continue; const ativo = {}; headers.forEach((h, i) => { if (values[i] && formFields.includes(h)) ativo[h] = values[i]; }); if (Object.keys(ativo).length > 0) newAtivos.push(ativo); } if (newAtivos.length > 0) { if (confirm(`Adicionar ${newAtivos.length} ativos?`)) { try { await db.ativos.bulkAdd(newAtivos); await refreshAssetList(); alert(`${newAtivos.length} ativos importados!`); } catch(error) { alert('Falha ao importar ativos do CSV.'); console.error(error); } } } else { alert('Nenhum ativo válido encontrado no CSV.'); } event.target.value = ''; }; reader.readAsText(file, 'UTF-8'); }
+        async function handleCsvImport(event) { const file = event.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = async function(e) { const text = e.target.result; const lines = text.split(/\r\n|\n/); if (lines.length < 2) return alert('CSV inválido.'); const parseCsvRow = r => { const regex = /(?:\")([^\"\\]*(?:\\\"[^\"\\]*)*)(?:\")|([^,]+)/g; let m, res = []; while (m = regex.exec(r)) { res.push(m[1] ? m[1].replace(/\\\"\\\"/g, '"') : m[2].trim()); } return res; }; const headers = parseCsvRow(lines[0]); const newAtivos = []; for (let i = 1; i < lines.length; i++) { if (!lines[i]) continue; const values = parseCsvRow(lines[i]); if (values.length === 0 || values.every(v => !v)) continue; const ativo = {}; headers.forEach((h, i) => { if (values[i] && formFields.includes(h)) ativo[h] = values[i]; }); if (Object.keys(ativo).length > 0) newAtivos.push(ativo); } if (newAtivos.length > 0) { if (confirm(`Adicionar ${newAtivos.length} ativos?`)) { try { await db.ativos.bulkAdd(newAtivos); await refreshAssetList(); alert(`${newAtivos.length} ativos importados!`); } catch(error) { alert('Falha ao importar ativos do CSV.'); console.error(error); } } } else { alert('Nenhum ativo válido encontrado no CSV.'); } event.target.value = ''; }; reader.readAsText(file, 'UTF-8'); }
         function openCamera() { navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } }).then(stream => { cameraStream = stream; document.getElementById('camera-stream').srcObject = stream; cameraBootstrapModal.show(); }).catch(() => alert("Não foi possível acessar a câmera.")); }
         function closeCamera() { if (cameraStream) cameraStream.getTracks().forEach(track => track.stop()); cameraStream = null; cameraBootstrapModal.hide(); }
         async function captureImage() { const videoElement = document.getElementById('camera-stream'); if (!videoElement || videoElement.readyState < 2) return; const canvas = document.createElement('canvas'); canvas.width = videoElement.videoWidth; canvas.height = videoElement.videoHeight; canvas.getContext('2d').drawImage(videoElement, 0, 0, canvas.width, canvas.height); const dataUrl = canvas.toDataURL('image/jpeg'); if (editingImageIndex !== null) { await handleQuickImageUpdate(dataUrl); } else { try { const compressedDataUrl = await compressImage(dataUrl, 800, 800, 0.7); currentImageData = { fileName: `capture.jpg`, dataUrl: compressedDataUrl }; document.getElementById('image-preview').src = compressedDataUrl; document.getElementById('image-preview').style.display = 'block'; closeCamera(); } catch (error) { alert(error.message); closeCamera(); } } }
         
-        function onScanSuccess(decodedText, decodedResult) {
+        // --- CÓDIGO DO SCANNER OTIMIZADO ---
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        function playBeep() {
+            if (!audioContext || audioContext.state === 'suspended') { audioContext.resume(); }
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(880, audioContext.currentTime);
+            gainNode.gain.setValueAtTime(0.5, audioContext.currentTime);
+            oscillator.start();
+            oscillator.stop(audioContext.currentTime + 0.1);
+        }
+
+        const onScanSuccess = (decodedText, decodedResult) => {
+            playBeep();
             document.getElementById('etiqueta').value = decodedText;
-            html5QrcodeScanner.clear();
-            barcodeScannerModal.hide();
-        }
+            if (html5QrCode && html5QrCode.isScanning) {
+                html5QrCode.stop().then(() => barcodeScannerModal.hide()).catch(err => console.error("Erro ao parar scanner:", err));
+            } else {
+                barcodeScannerModal.hide();
+            }
+        };
 
-        function onScanError(errorMessage) {
-            // handle scan error
-        }
+        const onScanFailure = (error) => { /* Ignorar erros comuns de "não encontrado" */ };
 
-        document.getElementById('barcode-scanner-modal').addEventListener('shown.bs.modal', () => {
+        barcodeScannerModalEl.addEventListener('shown.bs.modal', () => {
+            if (!html5QrCode) {
+                html5QrCode = new Html5Qrcode("barcode-reader");
+            }
             const config = {
-                fps: 10,
-                qrbox: 250,
-                formatsToSupport: [
-                    Html5QrcodeSupportedFormats.QR_CODE,
-                    Html5QrcodeSupportedFormats.CODE_128,
-                    Html5QrcodeSupportedFormats.CODE_39,
-                    Html5QrcodeSupportedFormats.CODE_93,
-                    Html5QrcodeSupportedFormats.EAN_13,
-                    Html5QrcodeSupportedFormats.EAN_8,
-                    Html5QrcodeSupportedFormats.UPC_A,
-                    Html5QrcodeSupportedFormats.UPC_E
-                ]
+                fps: 15,
+                qrbox: { width: 300, height: 150 },
+                supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA],
+                formatsToSupport: [ Html5QrcodeSupportedFormats.CODE_128, Html5QrcodeSupportedFormats.CODE_39, Html5QrcodeSupportedFormats.EAN_13 ]
             };
-            html5QrcodeScanner = new Html5QrcodeScanner("barcode-reader", config);
-            html5QrcodeScanner.render(onScanSuccess, onScanError);
+            html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess, onScanFailure)
+                .catch(err => alert(`Não foi possível iniciar o scanner: ${err}`));
         });
 
-        document.getElementById('barcode-scanner-modal').addEventListener('hidden.bs.modal', () => {
-            if (html5QrcodeScanner) {
-                html5QrcodeScanner.clear();
+        barcodeScannerModalEl.addEventListener('hidden.bs.modal', () => {
+            if (html5QrCode && html5QrCode.isScanning) {
+                html5QrCode.stop().catch(err => console.error("Erro ao parar o scanner ao fechar modal:", err));
             }
         });
 
@@ -558,8 +515,8 @@
         backToTopButton.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
         form.addEventListener('submit', handleFormSubmit);
         form.addEventListener('click', (e) => { 
-            if (e.target.id === 'cancel-edit-btn') resetFormMode(); 
-            if (e.target.id === 'open-camera-btn') openCamera(); 
+            if (e.target.closest('#cancel-edit-btn')) resetFormMode(); 
+            if (e.target.closest('#open-camera-btn')) openCamera(); 
             if (e.target.closest('#scan-barcode-btn')) {
                 barcodeScannerModal.show();
             }
@@ -586,12 +543,11 @@
         infoToggleDropdown.addEventListener('change', (e) => { const key = e.target.dataset.key; if (key) { cardVisibility[key] = e.target.checked; saveCardVisibility(); renderAssetList(); } });
         quickSearchInput.addEventListener('input', (e) => { quickSearchTerm = e.target.value.toLowerCase(); renderAssetList(); });
         
-        // --- MUDANÇA: Carga inicial dos dados e da UI ---
         renderMainForm();
         initializeChoices('', choicesInstances);
         renderFilterControls();
         renderInfoToggleUI();
-        await refreshAssetList(); // Carrega os dados do DB e renderiza a lista inicial
+        await refreshAssetList();
     });
     </script>
 </body>
