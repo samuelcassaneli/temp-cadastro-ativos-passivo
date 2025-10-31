@@ -414,8 +414,94 @@
             toggleConditionalFields(); 
         };
         const escapeCsvCell = (cell) => { if (cell === null || cell === undefined) return ''; cell = String(cell); if (cell.includes(',') || cell.includes('"') || cell.includes('\n')) { return `"${cell.replace(/"/g, '""')}"`; } return cell; };
-        function exportToCsv() { if (ativos.length === 0) return alert('Nenhum ativo para exportar.'); const headers = [...formFields.filter(f => f !== 'imageDataUrl'), 'imageFilename']; const csvRows = [headers.join(',')]; ativos.forEach(ativo => csvRows.push(headers.map(header => escapeCsvCell(ativo[header])).join(','))); const blob = new Blob([csvRows.join('\r\n')], { type: 'text/csv;charset=utf-8;' }); const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = 'ativos.csv'; link.click(); }
-        function exportSystemData() { if (ativos.length === 0) return alert('Nenhum dado para exportar.'); const zip = new JSZip(); const imagesFolder = zip.folder("images"); const ativosForExport = JSON.parse(JSON.stringify(ativos)); ativosForExport.forEach(ativo => { if (ativo.imageDataUrl && ativo.imageDataUrl.startsWith('data:image')) { const correctFilename = generateImageFilename(ativo.etiqueta, ativo.assetId); if (correctFilename) { const imageData = ativo.imageDataUrl.split(',')[1]; imagesFolder.file(correctFilename, imageData, { base64: true }); ativo.imageFilename = correctFilename; ativo.imageDataUrl = `images/${correctFilename}`; } else { delete ativo.imageDataUrl; delete ativo.imageFilename; } } else { delete ativo.imageDataUrl; delete ativo.imageFilename; } }); const appData = { assets: ativosForExport, settings: {} }; zip.file("data.json", JSON.stringify(appData, null, 2)); zip.generateAsync({ type: "blob" }).then(content => { const link = document.createElement('a'); link.href = URL.createObjectURL(content); link.download = 'gerenciador_de_ativos_backup.zip'; link.click(); }); }
+        
+        // --- FUNÇÃO EXPORTAR CSV REVISADA ---
+        function exportToCsv() {
+            if (ativos.length === 0) return alert('Nenhum ativo para exportar.');
+            
+            const zip = new JSZip();
+            const imagesFolder = zip.folder("images");
+            const headers = [...formFields.filter(f => f !== 'imageDataUrl'), 'imageFilename'];
+            const csvRows = [headers.join(',')];
+
+            ativos.forEach(ativo => {
+                const ativoForCsv = { ...ativo };
+                
+                // Processa e adiciona a imagem ao ZIP
+                if (ativo.imageDataUrl && ativo.imageDataUrl.startsWith('data:image')) {
+                    const correctFilename = generateImageFilename(ativo.etiqueta, ativo.assetId);
+                    if (correctFilename) {
+                        const imageData = ativo.imageDataUrl.split(',')[1];
+                        imagesFolder.file(correctFilename, imageData, { base64: true });
+                        ativoForCsv.imageFilename = correctFilename; // Adiciona o nome do arquivo para a linha do CSV
+                    }
+                }
+                
+                // Remove o dado da imagem em base64 do objeto que vai para o CSV
+                delete ativoForCsv.imageDataUrl;
+                
+                csvRows.push(headers.map(header => escapeCsvCell(ativoForCsv[header])).join(','));
+            });
+
+            zip.file("ativos.csv", csvRows.join('\r\n'));
+
+            zip.generateAsync({ type: "blob" }).then(content => {
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(content);
+                link.download = 'ativos_export_csv.zip';
+                link.click();
+            });
+        }
+
+        // --- FUNÇÃO EXPORTAR SISTEMA REVISADA ---
+        function exportSystemData() {
+            if (ativos.length === 0) return alert('Nenhum dado para exportar.');
+            
+            const zip = new JSZip();
+            const imagesFolder = zip.folder("images");
+            const ativosForExport = JSON.parse(JSON.stringify(ativos));
+            
+            // Prepara os dados para o JSON e adiciona as imagens ao ZIP
+            ativosForExport.forEach(ativo => {
+                if (ativo.imageDataUrl && ativo.imageDataUrl.startsWith('data:image')) {
+                    const correctFilename = generateImageFilename(ativo.etiqueta, ativo.assetId);
+                    if (correctFilename) {
+                        const imageData = ativo.imageDataUrl.split(',')[1];
+                        imagesFolder.file(correctFilename, imageData, { base64: true });
+                        ativo.imageFilename = correctFilename;
+                        ativo.imageDataUrl = `images/${correctFilename}`; // Atualiza o caminho para o JSON
+                    } else {
+                        delete ativo.imageDataUrl;
+                        delete ativo.imageFilename;
+                    }
+                } else {
+                    delete ativo.imageDataUrl;
+                    delete ativo.imageFilename;
+                }
+            });
+
+            // Adiciona o arquivo data.json ao ZIP
+            const appData = { assets: ativosForExport, settings: {} };
+            zip.file("data.json", JSON.stringify(appData, null, 2));
+
+            // Adiciona o arquivo ativos.csv ao ZIP
+            const headers = [...formFields.filter(f => f !== 'imageDataUrl'), 'imageFilename'];
+            const csvRows = [headers.join(',')];
+            ativosForExport.forEach(ativo => {
+                const ativoForCsv = { ...ativo };
+                delete ativoForCsv.imageDataUrl; // Remove o caminho da imagem do CSV
+                csvRows.push(headers.map(header => escapeCsvCell(ativoForCsv[header])).join(','));
+            });
+            zip.file("ativos.csv", csvRows.join('\r\n'));
+
+            // Gera e baixa o arquivo ZIP
+            zip.generateAsync({ type: "blob" }).then(content => {
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(content);
+                link.download = 'gerenciador_de_ativos_backup.zip';
+                link.click();
+            });
+        }
         
         async function handleSystemImport(event) {
             const file = event.target.files[0];
